@@ -1,0 +1,16 @@
+*.swp
+*.dSYM
+*.pyc
+*.o
+*.log
+*.sqlite
+.installed.cfg
+bin
+develop-eggs
+dist
+downloads
+eggs
+parts
+*.egg-info
+build
+*.bdb
