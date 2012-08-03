@@ -20,7 +20,7 @@ def index(request):
 def real_index(request):
     return "home.html"
     
-@d
+@d  # served at /json/, converts object to json string
 def json(request):
     return {"sum": int(request.GET.get("x", 0)) + int(request.GET.get("y", 0))}
 
