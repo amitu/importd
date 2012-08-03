@@ -36,7 +36,11 @@ class D(object):
         from fhurl import RequestForm, fhurl
         self.fhurl = fhurl
         self.RequestForm = RequestForm
-    
+
+    def dotslash(self, pth):
+        import os
+        return os.path.join(self.APP_DIR, pth)
+        
     def add_view(self, regex, view, *args, **kw):
         self.urlpatterns += self.patterns("", self.url(regex, view, *args, **kw))
         
@@ -91,6 +95,10 @@ class D(object):
                 return decorated
             return ddecorator
         else:
+            import inspect, os
+            self.APP_DIR = os.path.dirname(
+                os.path.realpath(inspect.stack()[1][1])
+            )
             if "regexers" in kw: 
                 self.update_regexers(kw.pop("regexers"))
             if "no_atexit" in kw:
@@ -98,7 +106,7 @@ class D(object):
             from django.conf import settings
             kw["ROOT_URLCONF"] = "amitu.d"
             if "TEMPLATE_DIRS" not in kw:
-                kw["TEMPLATE_DIRS"] = ("templates",)
+                kw["TEMPLATE_DIRS"] = (self.dotslash("templates"),)
             settings.configure(**kw)
             self.settings = settings
             self.import_django()
