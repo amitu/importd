@@ -82,11 +82,13 @@ class D(object):
                 self.add_view("^%s/$" % args[0].__name__, decorated)
                 return decorated
             def ddecorator(candidate):
-                if issubclass(candidate, self.forms.Form):
+                from django.forms import forms
+                if type(candidate) == forms.DeclarativeFieldsMetaclass:
                     self.add_form(
                         self.translate_regex(args[0]), candidate, *args[1:], **kw
                     )
                     return candidate
+                print "here"
                 decorated = self.decorate_return(candidate)
                 self.add_view(
                     self.translate_regex(args[0]), decorated, *args[1:], **kw

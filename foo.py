@@ -16,7 +16,7 @@ def index(request):
     import time
     return "index.html", {"msg": time.time()}
 
-@d
+@d("^home/$", name="home")  # named urls
 def real_index(request):
     return "home.html"
     
