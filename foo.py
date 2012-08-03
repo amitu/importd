@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from amitu import d
 
 d(DEBUG=True) # configure django
