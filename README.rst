@@ -8,6 +8,4 @@ Features
 ToDo
 ====
 
- * make template path relative using inspect traceback hacks
- * static file serving
  * figure our whats going on with double imports

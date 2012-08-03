@@ -1,7 +1,6 @@
 class D(object):
     from django.conf.urls.defaults import patterns, url
     urlpatterns = patterns("")
-    class BadCall(Exception): pass
     
     def is_management_command(self, cmd):
         return cmd in "runserver,shell".split(",")
@@ -107,7 +106,13 @@ class D(object):
             kw["ROOT_URLCONF"] = "amitu.d"
             if "TEMPLATE_DIRS" not in kw:
                 kw["TEMPLATE_DIRS"] = (self.dotslash("templates"),)
+            if "STATIC_URL" not in kw:
+                kw["STATIC_URL"] = "static/"
+            if "STATICFILES_DIRS" not in kw:
+                kw["STATICFILES_DIRS"] = (self.dotslash("static"),)
             settings.configure(**kw)
+            from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+            self.urlpatterns += staticfiles_urlpatterns()
             self.settings = settings
             self.import_django()
         return self
