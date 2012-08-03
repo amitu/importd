@@ -29,6 +29,8 @@ class D(object):
         self.url = url
         from django.template import RequestContext
         self.RequestContext = RequestContext
+        from django.core.wsgi import get_wsgi_application
+        self.wsgi_application = get_wsgi_application()
     
     def add_view(self, regex, view, *args, **kw):
         self.urlpatterns += self.patterns("", self.url(regex, view, *args, **kw))
@@ -56,6 +58,8 @@ class D(object):
     def __call__(self, *args, **kw):
         print "__call__", args, kw
         if args:
+            if type(args[0]) == dict and len(args) == 2:
+                return self.wsgi_application(*args)
             if self.is_management_command(args[0]):
                 self.handle_management_command(*args, **kw)
                 return self 
@@ -87,17 +91,23 @@ class D(object):
             self.import_django()
         return self
 
+    def act_as_manage(self):
+        from django.core import management
+        import sys
+        management.execute_from_command_line(sys.argv)
+        
     def atexit(self):
-        """
-        >>> from django.core import management
-        >>> help(management)
-
-        >>> management.execute_from_command_line
-        <function execute_from_command_line at 0x106a4d5f0>
-        >>> management.execute_from_command_line()
-        """
         if hasattr(self, "no_atexit") and self.no_atexit: return
-        self.handle_management_command("runserver", "8000")
+        import sys
+        if len(sys.argv) != 2:
+            return self.act_as_manage()
+        port = sys.argv[1]
+        try:
+            int(port)
+        except ValueError:
+            if ":" not in port:
+                return self.act_as_manage()
+        self.handle_management_command("runserver", port)
         
 import sys, atexit
 d = D()

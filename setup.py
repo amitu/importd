@@ -10,7 +10,7 @@ setup(
     url = 'http://github.com/amitu/amitu-d/',
     license = 'BSD',
 
-    install_requires = ["fhurl"],
+    install_requires = ["fhurl", "gunicorn"],
     namespace_packages = ["amitu"],
     packages = find_packages(),
 
