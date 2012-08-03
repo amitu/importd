@@ -31,9 +31,17 @@ class D(object):
         self.RequestContext = RequestContext
         from django.core.wsgi import get_wsgi_application
         self.wsgi_application = get_wsgi_application()
+        from django import forms
+        self.forms = forms
+        from fhurl import RequestForm, fhurl
+        self.fhurl = fhurl
+        self.RequestForm = RequestForm
     
     def add_view(self, regex, view, *args, **kw):
         self.urlpatterns += self.patterns("", self.url(regex, view, *args, **kw))
+        
+    def add_form(self, regex, form_cls, *args, **kw):
+        self.urlpatterns.append(self.fhurl(regex, form_cls, *args, **kw))
     
     def decorate_return(self, view):
         import functools
@@ -56,7 +64,7 @@ class D(object):
     def translate_regex(self, regex): return regex
     
     def __call__(self, *args, **kw):
-        print "__call__", args, kw
+        #print "__call__", args, kw
         if args:
             if type(args[0]) == dict and len(args) == 2:
                 return self.wsgi_application(*args)
@@ -70,8 +78,13 @@ class D(object):
                 decorated = self.decorate_return(args[0])
                 self.add_view("^%s/$" % args[0].__name__, decorated)
                 return decorated
-            def ddecorator(view):
-                decorated = self.decorate_return(view)
+            def ddecorator(candidate):
+                if issubclass(candidate, self.forms.Form):
+                    self.add_form(
+                        self.translate_regex(args[0]), candidate, *args[1:], **kw
+                    )
+                    return candidate
+                decorated = self.decorate_return(candidate)
                 self.add_view(
                     self.translate_regex(args[0]), decorated, *args[1:], **kw
                 )
@@ -98,15 +111,24 @@ class D(object):
         
     def atexit(self):
         if hasattr(self, "no_atexit") and self.no_atexit: return
+        
         import sys
+        
+        if len(sys.argv) == 1:
+            return self.handle_management_command("runserver", "8000")
+            
         if len(sys.argv) != 2:
             return self.act_as_manage()
+            
         port = sys.argv[1]
+        
         try:
             int(port)
         except ValueError:
             if ":" not in port:
                 return self.act_as_manage()
+            if port.endswith(":d"): return
+        
         self.handle_management_command("runserver", port)
         
 import sys, atexit

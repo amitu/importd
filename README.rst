@@ -9,6 +9,5 @@ ToDo
 ====
 
  * make template path relative using inspect traceback hacks
- * fhurl integration
  * static file serving
  * figure our whats going on with double imports
