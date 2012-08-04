@@ -3,6 +3,7 @@ What is it?
 
 Django is awesome, but starting a new project in it is a pain. amitu.d is inspired from ruby's sinatra. Hello world django project:
 
+```
  from amitu import d
  d(DEBUG=True)
 
@@ -13,6 +14,7 @@ Django is awesome, but starting a new project in it is a pain. amitu.d is inspir
  @d("/post/<int:post_id">/")
  def post(request, post_id):
 	   return "post.html", {"post_id": post_id}
+```
 	
 Features
 ========
