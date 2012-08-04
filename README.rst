@@ -1,9 +1,9 @@
-docs: http://packages.python.org/amitu-d/ (coming soon)
+docs: http://packages.python.org/amitu.d/ (coming soon)
 
 Features
 ========
 
- * minimal app: https://github.com/amitu/amitu-d/blob/master/foo.py
+ * minimal app: https://github.com/amitu/amitu.d/blob/master/foo.py
  * run debug server: $ python foo.py
  * management commands still available: $ python foo.py shell
  * gunicorn support: $ gunicorn foo:d

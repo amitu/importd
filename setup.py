@@ -1,13 +1,13 @@
 from setuptools import setup, find_packages
 
 setup(
-    name = "amitu-d",
-    description = "D, django based miniframework",
+    name = "amitu.d",
+    description = "amitu.d, a django based miniframework, inspired by sinatra",
     version = "0.1.0",
     author = 'Amit Upadhyay',
     author_email = "upadhyay@gmail.com",
 
-    url = 'http://github.com/amitu/amitu-d/',
+    url = 'http://github.com/amitu/amitu.d/',
     license = 'BSD',
 
     install_requires = ["fhurl", "gunicorn"],
