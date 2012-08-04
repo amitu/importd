@@ -16,7 +16,20 @@ Django is awesome, but starting a new project in it is a pain. amitu.d is inspir
  def post(request, post_id):
     return "post.html", {"post_id": post_id}
 
-	
+To run it:
+
+.. code::
+
+  $ python foo.py
+
+This will start the debug server. 
+
+To run it in production:
+
+.. code::
+
+  $ gunicorn foo:d	
+
 Features
 ========
 
