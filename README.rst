@@ -3,7 +3,7 @@ What is it?
 
 Django is awesome, but starting a new project in it is a pain. amitu.d is inspired from ruby's sinatra. Hello world django project:
 
-.. code::
+.. code-block:: python
 
  from amitu import d
  d(DEBUG=True)
