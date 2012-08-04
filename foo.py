@@ -24,9 +24,9 @@ def real_index(request):
 def json(request):
     return {"sum": int(request.GET.get("x", 0)) + int(request.GET.get("y", 0))}
 
-@d("/user/<word:username>/")
-def user(request, username):
-    return {"username": username}
+@d("/edit/<int:id>/", name="edit_page")
+def edit(request, id):
+    return {"id": id}
     
 @d("^fhurl/$")
 class MyForm(d.RequestForm):

@@ -80,7 +80,7 @@ class D(object):
         
     def translate_regex(self, regex):
         if not regex.startswith("/"): return regex
-        return self._R.sub(self._regex_substituter, regex)[1:] + "$"
+        return "^%s$" % self._R.sub(self._regex_substituter, regex)[1:]
     
     def __call__(self, *args, **kw):
         #print "__call__", args, kw
