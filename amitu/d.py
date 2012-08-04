@@ -1,21 +1,29 @@
 class D(object):
     from django.conf.urls.defaults import patterns, url
+    import re
     urlpatterns = patterns("")
-    
-    def is_management_command(self, cmd):
+    regexers = {
+        "word": "\w+",
+        "digit": "\d",
+        "int": "\d+",
+        "int2": "\d{2,2}",
+        "int4": "\d{4,4}",
+    }
+    _R = re.compile("<((\w+:)?\w+)>")
+    def _is_management_command(self, cmd):
         return cmd in "runserver,shell".split(",")
     
-    def handle_management_command(self, cmd, *args, **kw):
+    def _handle_management_command(self, cmd, *args, **kw):
         from django.core import management
         management.call_command(cmd, *args, **kw)
         
     def update_regexers(self, regexers):
-        pass
+        self.regexers.update(regexers)
     
     def update_urls(self, urls):
         self.urlpatterns += urls
         
-    def import_django(self):
+    def _import_django(self):
         from django.http import HttpResponse, Http404, HttpResponseRedirect
         self.HttpResponse = HttpResponse
         self.Http404 = Http404
@@ -46,7 +54,7 @@ class D(object):
     def add_form(self, regex, form_cls, *args, **kw):
         self.urlpatterns.append(self.fhurl(regex, form_cls, *args, **kw))
     
-    def decorate_return(self, view):
+    def _decorate_return(self, view):
         import functools
         @functools.wraps(view)
         def decorated(request, *args, **kw):
@@ -63,22 +71,30 @@ class D(object):
                 res = fhurl.JSONResponse(res)
             return res   
         return decorated
-            
-    def translate_regex(self, regex): return regex
+    
+    def _regex_substituter(self, m):
+        name = m.groups()[0]
+        if ":" not in name: name = "word:%s" % name
+        t, n = name.split(":")
+        return "(?P<%s>%s)" % (n, self.regexers[t])
+        
+    def translate_regex(self, regex):
+        if not regex.startswith("/"): return regex
+        return self._R.sub(self._regex_substituter, regex)[1:] + "$"
     
     def __call__(self, *args, **kw):
         #print "__call__", args, kw
         if args:
             if type(args[0]) == dict and len(args) == 2:
                 return self.wsgi_application(*args)
-            if self.is_management_command(args[0]):
-                self.handle_management_command(*args, **kw)
+            if self._is_management_command(args[0]):
+                self._handle_management_command(*args, **kw)
                 return self 
             if type(args[0]) == list:
                 self.update_urls(args[0])
                 return self
             if callable(args[0]):
-                decorated = self.decorate_return(args[0])
+                decorated = self._decorate_return(args[0])
                 self.add_view("^%s/$" % args[0].__name__, decorated)
                 return decorated
             def ddecorator(candidate):
@@ -88,8 +104,7 @@ class D(object):
                         self.translate_regex(args[0]), candidate, *args[1:], **kw
                     )
                     return candidate
-                print "here"
-                decorated = self.decorate_return(candidate)
+                decorated = self._decorate_return(candidate)
                 self.add_view(
                     self.translate_regex(args[0]), decorated, *args[1:], **kw
                 )
@@ -116,10 +131,10 @@ class D(object):
             from django.contrib.staticfiles.urls import staticfiles_urlpatterns
             self.urlpatterns += staticfiles_urlpatterns()
             self.settings = settings
-            self.import_django()
+            self._import_django()
         return self
 
-    def act_as_manage(self):
+    def _act_as_manage(self):
         from django.core import management
         import sys
         management.execute_from_command_line(sys.argv)
@@ -130,10 +145,10 @@ class D(object):
         import sys
         
         if len(sys.argv) == 1:
-            return self.handle_management_command("runserver", "8000")
+            return self._handle_management_command("runserver", "8000")
             
         if len(sys.argv) != 2:
-            return self.act_as_manage()
+            return self._act_as_manage()
             
         port = sys.argv[1]
         
@@ -141,10 +156,10 @@ class D(object):
             int(port)
         except ValueError:
             if ":" not in port:
-                return self.act_as_manage()
+                return self._act_as_manage()
             if port.endswith(":d"): return
         
-        self.handle_management_command("runserver", port)
+        self._handle_management_command("runserver", port)
         
 import sys, atexit
 d = D()

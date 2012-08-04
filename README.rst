@@ -7,9 +7,11 @@ Features
  * run debug server: $ python foo.py
  * management commands still available: $ python foo.py shell
  * gunicorn support: $ gunicorn foo:d
+ * easier url construction, "/user/<username>/" etc.
  
 ToDo
 ====
 
+ * easy regex thing
  * figure our whats going on with double imports
  * figure out whats going on when gunicorn exits
