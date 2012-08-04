@@ -3,18 +3,18 @@ What is it?
 
 Django is awesome, but starting a new project in it is a pain. amitu.d is inspired from ruby's sinatra. Hello world django project:
 
-::
+.. code::
 
  from amitu import d
  d(DEBUG=True)
 
  @d("/")
  def idx(request):
-    return "index.html"
+    return "index.html" 
 
  @d("/post/<int:post_id">/")
  def post(request, post_id):
-	   return "post.html", {"post_id": post_id}
+    return "post.html", {"post_id": post_id}
 
 	
 Features
