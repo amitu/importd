@@ -30,17 +30,20 @@ To run it in production:
 
   $ gunicorn foo:d	
 
+An example app: https://github.com/amitu/amitu.d/blob/master/foo.py
+
 Features
 ========
 
- * minimal app: https://github.com/amitu/amitu.d/blob/master/foo.py
- * run debug server: $ python foo.py
+ * fully compatible with django
+ * easier url construction eg "/edit/<int:id>/" instead of "^edit/(?P<id>\d+)/$"
+ * most of regularly used django functions and classes available in d. namespace, eg d.HttpResponse, d.render_to_response, d.get_object_or_404 etc
  * automatically maps "templates" folder in foo.py directory to serve templates
  * automatically maps "static" folder in foo.py to serve static content
  * management commands still available: $ python foo.py shell
- * gunicorn support: $ gunicorn foo:d
+ * wsgi compliant
+ * gunicorn support
  * works seamlessly with fhurl (http://packages.python.org/fhurl/)
- * easier url construction eg "/edit/<int:id>/" instead of "^edit/(?P<id>\d+)/$"
  
 Installation
 ============
