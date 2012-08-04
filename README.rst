@@ -44,7 +44,9 @@ Features
  
 Installation
 ============
- 
+
+.. code::
+
  $ easy_install amitu.d
 
 Documentation
@@ -52,8 +54,8 @@ Documentation
 
 docs: http://packages.python.org/amitu.d/ (coming soon) 
 
-ToDo
-====
+ToDo/Known Issues
+=================
 
  * figure our whats going on with double imports
  * figure out whats going on when gunicorn exits
