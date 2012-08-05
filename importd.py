@@ -120,7 +120,7 @@ class D(object):
             if "no_atexit" in kw:
                 self.no_atexit = kw.pop("no_atexit")
             from django.conf import settings
-            kw["ROOT_URLCONF"] = "amitu.d"
+            kw["ROOT_URLCONF"] = "importd.d"
             if "TEMPLATE_DIRS" not in kw:
                 kw["TEMPLATE_DIRS"] = (self.dotslash("templates"),)
             if "STATIC_URL" not in kw:
@@ -164,4 +164,4 @@ class D(object):
 import sys, atexit
 d = D()
 atexit.register(d.atexit)
-sys.modules["amitu.d"] = d
+sys.modules["importd.d"] = d

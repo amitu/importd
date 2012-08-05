@@ -1,4 +1,4 @@
-from amitu import d
+from importd import d
 
 d(DEBUG=True) # configure django
 

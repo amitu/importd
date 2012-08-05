@@ -5,7 +5,7 @@ Django is awesome, but starting a new project in it is a pain. amitu.d is inspir
 
 .. code-block:: python
 
- from amitu import d
+ from importd import d
  d(DEBUG=True)
 
  @d("/")
@@ -30,7 +30,7 @@ To run it in production:
 
   $ gunicorn foo:d	
 
-An example app: https://github.com/amitu/amitu.d/blob/master/foo.py
+An example app: https://github.com/amitu/importd/blob/master/foo.py
 
 Features
 ========
@@ -50,12 +50,12 @@ Installation
 
 .. code::
 
- $ easy_install amitu.d
+ $ easy_install importd
 
 Documentation
 =============
 
-docs: http://packages.python.org/amitu.d/ (coming soon) 
+docs: http://packages.python.org/importd/ (coming soon) 
 
 ToDo/Known Issues
 =================
