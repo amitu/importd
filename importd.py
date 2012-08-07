@@ -93,17 +93,18 @@ class D(object):
         if "no_atexit" in kw:
             self.no_atexit = kw.pop("no_atexit")
         from django.conf import settings
-        kw["ROOT_URLCONF"] = "importd.d"
-        if "TEMPLATE_DIRS" not in kw:
-            kw["TEMPLATE_DIRS"] = (self.dotslash("templates"),)
-        if "STATIC_URL" not in kw:
-            kw["STATIC_URL"] = "static/"
-        if "STATICFILES_DIRS" not in kw:
-            kw["STATICFILES_DIRS"] = (self.dotslash("static"),)
-        settings.configure(**kw)
-        from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-        self.urlpatterns += staticfiles_urlpatterns()
         self.settings = settings
+        if not kw.get("dont_configure", False):
+            kw["ROOT_URLCONF"] = "importd.d"
+            if "TEMPLATE_DIRS" not in kw:
+                kw["TEMPLATE_DIRS"] = (self.dotslash("templates"),)
+            if "STATIC_URL" not in kw:
+                kw["STATIC_URL"] = "static/"
+            if "STATICFILES_DIRS" not in kw:
+                kw["STATICFILES_DIRS"] = (self.dotslash("static"),)
+            settings.configure(**kw)
+            from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+            self.urlpatterns += staticfiles_urlpatterns()
         self._import_django()
         self._configured = True
 
