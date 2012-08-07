@@ -61,6 +61,7 @@ class D(object):
             res = view(request, *args, **kw)
             if isinstance(res, basestring):
                 res = res, {}
+            if isinstance(res, self.HttpResponse): return res
             if isinstance(res, tuple):
                 template_name, context = res
                 res = self.render_to_response(
@@ -69,7 +70,7 @@ class D(object):
             else:
                 import fhurl
                 res = fhurl.JSONResponse(res)
-            return res   
+            return res
         return decorated
     
     def _regex_substituter(self, m):
@@ -81,10 +82,36 @@ class D(object):
     def translate_regex(self, regex):
         if not regex.startswith("/"): return regex
         return "^%s$" % self._R.sub(self._regex_substituter, regex)[1:]
-    
+
+    def _configure_django(self, **kw):
+        import inspect, os
+        self.APP_DIR = os.path.dirname(
+            os.path.realpath(inspect.stack()[1][1])
+        )
+        if "regexers" in kw: 
+            self.update_regexers(kw.pop("regexers"))
+        if "no_atexit" in kw:
+            self.no_atexit = kw.pop("no_atexit")
+        from django.conf import settings
+        kw["ROOT_URLCONF"] = "importd.d"
+        if "TEMPLATE_DIRS" not in kw:
+            kw["TEMPLATE_DIRS"] = (self.dotslash("templates"),)
+        if "STATIC_URL" not in kw:
+            kw["STATIC_URL"] = "static/"
+        if "STATICFILES_DIRS" not in kw:
+            kw["STATICFILES_DIRS"] = (self.dotslash("static"),)
+        settings.configure(**kw)
+        from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+        self.urlpatterns += staticfiles_urlpatterns()
+        self.settings = settings
+        self._import_django()
+        self._configured = True
+
     def __call__(self, *args, **kw):
         #print "__call__", args, kw
         if args:
+            if not hasattr(self, "_configured"):
+                self._configure_django(DEBUG=True)
             if type(args[0]) == dict and len(args) == 2:
                 return self.wsgi_application(*args)
             if self._is_management_command(args[0]):
@@ -111,27 +138,7 @@ class D(object):
                 return decorated
             return ddecorator
         else:
-            import inspect, os
-            self.APP_DIR = os.path.dirname(
-                os.path.realpath(inspect.stack()[1][1])
-            )
-            if "regexers" in kw: 
-                self.update_regexers(kw.pop("regexers"))
-            if "no_atexit" in kw:
-                self.no_atexit = kw.pop("no_atexit")
-            from django.conf import settings
-            kw["ROOT_URLCONF"] = "importd.d"
-            if "TEMPLATE_DIRS" not in kw:
-                kw["TEMPLATE_DIRS"] = (self.dotslash("templates"),)
-            if "STATIC_URL" not in kw:
-                kw["STATIC_URL"] = "static/"
-            if "STATICFILES_DIRS" not in kw:
-                kw["STATICFILES_DIRS"] = (self.dotslash("static"),)
-            settings.configure(**kw)
-            from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-            self.urlpatterns += staticfiles_urlpatterns()
-            self.settings = settings
-            self._import_django()
+            self._configure_django(**kw)
         return self
 
     def _act_as_manage(self):
