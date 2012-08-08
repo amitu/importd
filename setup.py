@@ -5,14 +5,14 @@ setup(
     description = "a django based miniframework, inspired by sinatra",
     long_description=open('README.rst', 'rt').read(),
 
-    version = "0.1.0",
+    version = "0.1.1",
     author = 'Amit Upadhyay',
     author_email = "upadhyay@gmail.com",
 
-    url = 'http://amitu.github.com/importd/',
+    url = 'http://amitu.com/importd/',
     license = 'BSD',
 
-    install_requires = ["fhurl", "gunicorn"],
+    install_requires = ["fhurl", "gunicorn", "smarturls"],
     py_modules = ["importd"],
 
     zip_safe = True,

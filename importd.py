@@ -2,14 +2,6 @@ class D(object):
     from django.conf.urls.defaults import patterns, url
     import re
     urlpatterns = patterns("")
-    regexers = {
-        "word": "\w+",
-        "digit": "\d",
-        "int": "\d+",
-        "int2": "\d{2,2}",
-        "int4": "\d{4,4}",
-    }
-    _R = re.compile("<((\w+:)?\w+)>")
     def _is_management_command(self, cmd):
         return cmd in "runserver,shell".split(",")
     
@@ -24,6 +16,8 @@ class D(object):
         self.urlpatterns += urls
         
     def _import_django(self):
+        from smarturls import surl
+        self.surl = surl
         from django.http import HttpResponse, Http404, HttpResponseRedirect
         self.HttpResponse = HttpResponse
         self.Http404 = Http404
@@ -49,7 +43,7 @@ class D(object):
         return os.path.join(self.APP_DIR, pth)
         
     def add_view(self, regex, view, *args, **kw):
-        self.urlpatterns += self.patterns("", self.url(regex, view, *args, **kw))
+        self.urlpatterns += self.patterns("", self.surl(regex, view, *args, **kw))
         
     def add_form(self, regex, form_cls, *args, **kw):
         self.urlpatterns.append(self.fhurl(regex, form_cls, *args, **kw))
@@ -72,16 +66,6 @@ class D(object):
                 res = fhurl.JSONResponse(res)
             return res
         return decorated
-    
-    def _regex_substituter(self, m):
-        name = m.groups()[0]
-        if ":" not in name: name = "word:%s" % name
-        t, n = name.split(":")
-        return "(?P<%s>%s)" % (n, self.regexers[t])
-        
-    def translate_regex(self, regex):
-        if not regex.startswith("/"): return regex
-        return "^%s$" % self._R.sub(self._regex_substituter, regex)[1:]
 
     def _configure_django(self, **kw):
         import inspect, os
@@ -128,14 +112,10 @@ class D(object):
             def ddecorator(candidate):
                 from django.forms import forms
                 if type(candidate) == forms.DeclarativeFieldsMetaclass:
-                    self.add_form(
-                        self.translate_regex(args[0]), candidate, *args[1:], **kw
-                    )
+                    self.add_form(args[0], candidate, *args[1:], **kw)
                     return candidate
                 decorated = self._decorate_return(candidate)
-                self.add_view(
-                    self.translate_regex(args[0]), decorated, *args[1:], **kw
-                )
+                self.add_view(args[0], decorated, *args[1:], **kw)
                 return decorated
             return ddecorator
         else:

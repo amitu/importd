@@ -1,7 +1,8 @@
 What is it?
 ===========
 
-Django is awesome, but starting a new project in it is a pain. amitu.d is inspired from ruby's sinatra. Hello world django project:
+Django is awesome, but starting a new project in it is a pain. amitu.d is
+inspired from ruby's sinatra. Hello world django project:
 
 .. code-block:: python
 
@@ -28,7 +29,7 @@ To run it in production:
 
 .. code::
 
-  $ gunicorn foo:d	
+  $ gunicorn foo:d
 
 An example app: https://github.com/amitu/importd/blob/master/foo.py
 
@@ -36,15 +37,16 @@ Features
 ========
 
  * fully compatible with django
- * easier url construction eg "/edit/<int:id>/" instead of "^edit/(?P<id>\d+)/$"
- * most of regularly used django functions and classes available in d. namespace, eg d.HttpResponse, d.render_to_response, d.get_object_or_404 etc
+ * supports django-surl
+ * most of regularly used django functions and classes available in d.
+   namespace, eg d.HttpResponse, d.render_to_response, d.get_object_or_404 etc
  * automatically maps "templates" folder in foo.py directory to serve templates
  * automatically maps "static" folder in foo.py to serve static content
  * management commands still available: $ python foo.py shell
  * wsgi compliant
  * gunicorn support
  * works seamlessly with fhurl (http://packages.python.org/fhurl/)
- 
+
 Installation
 ============
 
@@ -55,7 +57,7 @@ Installation
 Documentation
 =============
 
-docs: http://packages.python.org/importd/ (coming soon) 
+docs: http://amitu.com/importd/
 
 ToDo/Known Issues
 =================
