@@ -37,7 +37,7 @@ Features
 ========
 
  * fully compatible with django
- * supports django-surl
+ * supports smarturls
  * most of regularly used django functions and classes available in d.
    namespace, eg d.HttpResponse, d.render_to_response, d.get_object_or_404 etc
  * automatically maps "templates" folder in foo.py directory to serve templates

@@ -1,20 +1,19 @@
 class D(object):
-    from django.conf.urls.defaults import patterns, url
-    import re
+    from django.conf.urls.defaults import patterns
     urlpatterns = patterns("")
     def _is_management_command(self, cmd):
         return cmd in "runserver,shell".split(",")
-    
+
     def _handle_management_command(self, cmd, *args, **kw):
         from django.core import management
         management.call_command(cmd, *args, **kw)
-        
+
     def update_regexers(self, regexers):
         self.regexers.update(regexers)
-    
+
     def update_urls(self, urls):
         self.urlpatterns += urls
-        
+
     def _import_django(self):
         from smarturls import surl
         self.surl = surl
@@ -41,13 +40,15 @@ class D(object):
     def dotslash(self, pth):
         import os
         return os.path.join(self.APP_DIR, pth)
-        
+
     def add_view(self, regex, view, *args, **kw):
-        self.urlpatterns += self.patterns("", self.surl(regex, view, *args, **kw))
-        
+        self.urlpatterns += self.patterns(
+            "", self.surl(regex, view, *args, **kw)
+        )
+
     def add_form(self, regex, form_cls, *args, **kw):
         self.urlpatterns.append(self.fhurl(regex, form_cls, *args, **kw))
-    
+
     def _decorate_return(self, view):
         import functools
         @functools.wraps(view)
@@ -126,29 +127,29 @@ class D(object):
         from django.core import management
         import sys
         management.execute_from_command_line(sys.argv)
-        
+
     def atexit(self):
         if hasattr(self, "no_atexit") and self.no_atexit: return
-        
+
         import sys
-        
+
         if len(sys.argv) == 1:
             return self._handle_management_command("runserver", "8000")
-            
+
         if len(sys.argv) != 2:
             return self._act_as_manage()
-            
+
         port = sys.argv[1]
-        
+
         try:
             int(port)
         except ValueError:
             if ":" not in port:
                 return self._act_as_manage()
             if port.endswith(":d"): return
-        
+
         self._handle_management_command("runserver", port)
-        
+
 import sys, atexit
 d = D()
 atexit.register(d.atexit)
