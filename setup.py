@@ -5,7 +5,7 @@ setup(
     description = "a django based miniframework, inspired by sinatra",
     long_description=open('README.rst', 'rt').read(),
 
-    version = "0.1.1",
+    version = "0.1.2",
     author = 'Amit Upadhyay',
     author_email = "upadhyay@gmail.com",
 

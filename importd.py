@@ -71,7 +71,7 @@ class D(object):
     def _configure_django(self, **kw):
         import inspect, os
         self.APP_DIR = os.path.dirname(
-            os.path.realpath(inspect.stack()[1][1])
+            os.path.realpath(inspect.stack()[2][1])
         )
         if "regexers" in kw: 
             self.update_regexers(kw.pop("regexers"))
@@ -87,14 +87,35 @@ class D(object):
                 kw["STATIC_URL"] = "static/"
             if "STATICFILES_DIRS" not in kw:
                 kw["STATICFILES_DIRS"] = (self.dotslash("static"),)
+            if "DATABASES" not in kw:
+                kw["DATABASES"] = {
+                    "default": {
+                        'ENGINE': "django.db.backends.sqlite3",
+                        'NAME': self.dotslash("db.sqlite")
+                    }
+                }
+            if "DEBUG" not in kw: kw["DEBUG"] = True
             settings.configure(**kw)
+            # import .views and .forms for each installed app
+            for app in settings.INSTALLED_APPS:
+                try:
+                    __import__("%s.views" % app)
+                except ImportError, e:
+                    pass
+                try:
+                    __import__("%s.forms" % app)
+                except ImportError:
+                    pass
+                try:
+                    __import__("%s.signals" % app)
+                except ImportError:
+                    pass
             from django.contrib.staticfiles.urls import staticfiles_urlpatterns
             self.urlpatterns += staticfiles_urlpatterns()
         self._import_django()
         self._configured = True
 
     def __call__(self, *args, **kw):
-        #print "__call__", args, kw
         if args:
             if not hasattr(self, "_configured"):
                 self._configure_django(DEBUG=True)
