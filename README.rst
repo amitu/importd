@@ -1,7 +1,7 @@
 What is it?
 ===========
 
-Django is awesome, but starting a new project in it is a pain. amitu.d is
+Django is awesome, but starting a new project in it is a pain. importd is
 inspired from ruby's sinatra. Hello world django project:
 
 .. code-block:: python
