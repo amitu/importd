@@ -33,9 +33,10 @@ class D(object):
         self.wsgi_application = get_wsgi_application()
         from django import forms
         self.forms = forms
-        from fhurl import RequestForm, fhurl
+        from fhurl import RequestForm, fhurl, JSONResponse
         self.fhurl = fhurl
         self.RequestForm = RequestForm
+        self.JSONResponse = JSONResponse
 
     def dotslash(self, pth):
         import os
@@ -63,8 +64,7 @@ class D(object):
                     template_name, context, self.RequestContext(request)
                 )
             else:
-                import fhurl
-                res = fhurl.JSONResponse(res)
+                res = self.JSONResponse(res)
             return res
         return decorated
 
