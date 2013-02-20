@@ -1,10 +1,12 @@
-Django Generic Form Handler View -- fhurl
-*****************************************
+importd - d is for django
+*************************
 
 importd is the fastest way to django. No project creation, no apps, no
 settings.py, just an import.
 
-Installation::
+Installation:
+
+.. code-block:: sh
 
     $ easy_install importd
 
@@ -30,6 +32,7 @@ suffecient, eg hello.py::
 To run this hello.py:
 
 .. code-block:: sh
+
     $ python hello.py
     Validating models...
 
@@ -40,7 +43,8 @@ To run this hello.py:
 
 To see if it works:
 
-.. code-block::sh
+.. code-block:: sh
+
     $ curl "http://localhost:8000"
     hello world
 
@@ -55,7 +59,7 @@ management commands
 
 importd, along with atexit magic acts as management command too:
 
-.. code-block::sh
+.. code-block:: sh
 
     $ python hello.py help shell
     python hello.py help shell (02-18 21:14)
@@ -92,7 +96,7 @@ automatically configure django
 manually configuring django
 ---------------------------
 
-`importd` automatically configures django when needed. This can be disabled by 
+`importd` automatically configures django when needed. This can be disabled by
 calling d(dont_configure=True) before any other importd functionality.
 
 wsgi server
@@ -113,7 +117,7 @@ gunicorn should be in your path.
 
 Running hello.py with gunicorn:
 
-.. code-block::sh
+.. code-block:: sh
 
     $ gunicorn -w 2 hello:d
     2013-02-18 21:20:06 [50844] [INFO] Starting gunicorn 0.17.2
@@ -140,8 +144,8 @@ importd is relocatable
 importd based script, like hello.py can be invoked from any folder, templates
 and static folders would be properly configured.
 
-.. code-block::sh
-    
+.. code-block:: sh
+
     $ cd /any/folder
     $ python /full/path/to/hello.py
     Validating models...
@@ -191,7 +195,7 @@ In this case hello method is mapped to /.
 
 @d decorator also supprts named urls via name keyword argument, eg::
 
-    form importd import d
+    from importd import d
 
     @d("^home/$", name="home")  # named urls
     def home(request):
@@ -234,6 +238,109 @@ construction for you.
 
 importd works well with fhurl
 -----------------------------
+
+fhurl is a generic view for forms and ajax. importd integrates well with fhurl.::
+
+    from importd import d
+
+    @d("^fhurl/$")
+    class MyForm(d.RequestForm):
+        x = d.forms.IntegerField(help_text="x in hrs")
+        y = d.forms.IntegerField(help_text="y in dollars per hr")
+
+        def save(self):
+            return self.cleaned_data["x"] * self.cleaned_data["y"]
+
+Running this:
+
+.. code-block:: sh
+
+    $ python h2.py
+    Validating models...
+
+    0 errors found
+    February 20, 2013 - 09:40:56
+    Django version 1.5c1, using settings None
+    Development server is running at http://127.0.0.1:8000/
+    Quit the server with CONTROL-C.
+
+Usage:
+
+.. code-block:: sh
+
+    $ curl http://localhost:8000/fhurl/
+    {"errors": {"y": ["This field is required."], "x": ["This field is required."]}, "success": false}
+    $ curl "http://localhost:8000/fhurl/?x=10"
+    {"errors": {"y": ["This field is required."]}, "success": false}
+    $ curl "http://localhost:8000/fhurl/?x=asd"
+    {"errors": {"y": ["This field is required."], "x": ["Enter a whole number."]}, "success": false}
+    $ curl "http://localhost:8000/fhurl/?x=10&y=10"
+    {"response": 100, "success": true}
+    $ curl "http://localhost:8000/fhurl/?x=10&y=10&validate_only=true"
+    {"valid": true, "errors": {}}
+    $ curl "http://localhost:8000/fhurl/?x=10&y=asd&validate_only=true"
+    {"errors": {"y": ["Enter a whole number."]}, "valid": false}
+    $ curl "http://localhost:8000/fhurl/?json=true"
+    {"y": {"help_text": "y in dollars per hr", "required": true}, "x": {"help_text": "x in hrs", "required": true}}
+
+fhurl can do a lot more, works with templates, renders the form and displays
+the form with errors, all with just one or two lines, check it out in fhurl
+docs.
+
+fhurl with template::
+
+    from importd import d
+
+    @d("^fhurl/$", template="form.html")
+    class MyForm(d.RequestForm):
+        x = d.forms.IntegerField(help_text="x in hrs")
+        y = d.forms.IntegerField(help_text="y in dollars per hr")
+
+        def get_json(self, _):
+            # _ contains the data returned by .save() method
+            return self.cleaned_data["x"] * self.cleaned_data["y"]
+
+        def save(self):
+            # .save() is always called, both in html mode or json mode
+            # if json=true is passed, then get_json() is also called and
+            # its result is returned.
+            # else .save() is supposed to return a string that is redirected
+            # fhurl assumes you always want to redirect to a new page after
+            # saving a form, so that user does not accidentally resubmit the
+            # form by hitting ctrl-R or on browser restart etc
+
+            p = self.cleaned_data["x"] * self.cleaned_data["y"]
+            return "/form-saved" # redirect to this url
+
+form.html:
+
+.. code-block:: html+django
+
+    {% csrf_token %}
+    <form>{{ form }}</form>
+
+Usage:
+
+.. code-block:: sh
+
+    $ curl "http://localhost:8000/fhurl/"
+    <input type='hidden' name='csrfmiddlewaretoken' value='e1hIW2A0HWJMB27epijcc3XKD7JVB0nQ' />
+    <form><tr><th><label for="id_x">X:</label></th><td><input id="id_x" name="x" type="text" /><br /><span class="helptext">x in hrs</span></td></tr>
+    <tr><th><label for="id_y">Y:</label></th><td><input id="id_y" name="y" type="text" /><br /><span class="helptext">y in dollars per hr</span></td></tr></form>
+    $ curl -b "csrftoken=cnoaUDrr08haTTAMjpGWaPPBgt5rG1ZW" -d "csrfmiddlewaretoken=cnoaUDrr08haTTAMjpGWaPPBgt5rG1ZW&x=10a" "http://localhost:8000/fhurl/"
+    <input type='hidden' name='csrfmiddlewaretoken' value='cnoaUDrr08haTTAMjpGWaPPBgt5rG1ZW' />
+    <form><tr><th><label for="id_x">X:</label></th><td><ul class="errorlist"><li>Enter a whole number.</li></ul><input id="id_x" name="x" type="text" value="10a" /><br /><span class="helptext">x in hrs</span></td></tr>
+    <tr><th><label for="id_y">Y:</label></th><td><ul class="errorlist"><li>This field is required.</li></ul><input id="id_y" name="y" type="text" /><br /><span class="helptext">y in dollars per hr</span></td></tr></form>
+    $ curl -i -b "csrftoken=cnoaUDrr08haTTAMjpGWaPPBgt5rG1ZW" -d "csrfmiddlewaretoken=cnoaUDrr08haTTAMjpGWaPPBgt5rG1ZW&x=10&y=1" "http://localhost:8000/fhurl/"
+    HTTP/1.0 302 FOUND
+    Date: Wed, 20 Feb 2013 15:41:06 GMT
+    Server: WSGIServer/0.1 Python/2.7.1
+    Content-Type: text/html; charset=utf-8
+    Location: http://localhost:8000/asd
+
+    $ curl -b "csrftoken=cnoaUDrr08haTTAMjpGWaPPBgt5rG1ZW" -d "csrfmiddlewaretoken=cnoaUDrr08haTTAMjpGWaPPBgt5rG1ZW&x=10&y=1" "http://localhost:8000/fhurl/?json=true"   
+    {"response": 10, "success": true}
+
 
 views can return non HttpResponse objects
 -----------------------------------------

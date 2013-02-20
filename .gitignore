@@ -15,3 +15,4 @@ parts
 build
 *.bdb
 t
+.DS_Store

@@ -133,7 +133,7 @@ class D(object):
                 return decorated
             def ddecorator(candidate):
                 from django.forms import forms
-                if type(candidate) == forms.DeclarativeFieldsMetaclass:
+                if type(candidate) == forms.DeclarativeFieldsMetaclass: # unsafe
                     self.add_form(args[0], candidate, *args[1:], **kw)
                     return candidate
                 decorated = self._decorate_return(candidate)
