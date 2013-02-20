@@ -8,6 +8,8 @@ Installation::
 
     $ easy_install importd
 
+Home: http://amitu.com/importd/
+
 importd is being developed on http://github.com/amitu/importd/.
 
 See the Changelog: https://github.com/amitu/importd/blob/master/ChangeLog.rst.
@@ -93,10 +95,17 @@ manually configuring django
 `importd` automatically configures django when needed. This can be disabled by 
 calling d(dont_configure=True) before any other importd functionality.
 
+wsgi server
+-----------
+
+importd based hello.py is a `wsgi app`_ without any more work. 
+
+... wsgi example http://www.tornadoweb.org/documentation/wsgi.html ...
+
 gunicorn server
 ---------------
 
-importd works with gunicorn server, which is recommended for production setup
+importd works with gunicorn_ server, which is recommended for production setup
 instead of runserver command seen above, which is good only for debugging.
 
 gunicorn is a dependency of importd, so if you have importd installed properly,
@@ -172,8 +181,6 @@ url /method-name/.::
 In this case, importd will map hello() method to /hello/ url. This can be
 overriden by passing the URL where the view must be mapped to @d::
 
-Since importd uses smarturls underneath this is equivalent to::
-
     from importd import d
 
     @d("^$")
@@ -203,7 +210,7 @@ app configured.
 importd works well with smarturls
 ---------------------------------
 
-Since importd uses smarturls underneath this::
+Since importd uses smarturls_ underneath this::
 
     from importd import d
 
@@ -222,7 +229,7 @@ is equivalent to::
 Notice the simpler URL passed to @d("/") instead of d("^$"). Either form can be
 used.
 
-Take a look at smarturls documentation to see how smarturls can simplfy url
+Take a look at `smarturls documentation`_ to see how smarturls_ can simplfy url
 construction for you.
 
 importd works well with fhurl
@@ -291,3 +298,66 @@ importd and custom models
 To create custom models, create an app using $ python hello.py startapp
 hello_app and add it to INSTALLED_APPS.
 
+easy access to commonly used django methods and classes
+-------------------------------------------------------
+
+importd contains aliases for django methods and classes::
+
+    from importd import d
+
+    @d
+    def hello(request):
+        return d.render_to_response("hello.html", d.RequestContext(request))
+
+# d.render_to_response == django.shortcuts.render_to_response
+# d.get_object_or_404 == django.shortcuts.get_object_or_404
+# d.HttpResponse == django.http.HttpResponse
+# d.patterns == django.conf.urls.defaults.patterns
+# d.RequestContext == django.template.RequestContext
+# d.forms == django.forms
+
+a more detailed example
+-----------------------
+
+This example features a few more use cases::
+
+    from importd import d
+
+    d(DEBUG=True, INSTALLED_APPS=["django.contrib.auth"]) # configure django
+
+    def real_index2(request):
+        return d.HttpResponse("real_index2")
+
+    # setup other urlpatterns
+    d(d.patterns("",
+        ("^$", real_index2),
+    ))
+
+    @d # /index/, url derived from name of view
+    def index(request):
+        import time
+        return "index.html", {"msg": time.time()}
+
+    @d("^home/$", name="home")  # named urls
+    def real_index(request):
+        return "home.html"
+
+    @d  # served at /json/, converts object to json string, with proper mimetype
+    def json(request):
+        return {
+            "sum": (
+                int(request.GET.get("x", 0)) + int(request.GET.get("y", 0))
+            )
+        }
+
+    @d("/edit/<int:id>/", name="edit_page") # translats to ^edit/(?P<id>\d+)/$
+    def edit(request, id):
+        return {"id": id}
+
+    @d("^fhurl/$")
+    class MyForm(d.RequestForm):
+        x = d.forms.IntegerField()
+        y = d.forms.IntegerField()
+
+        def save(self):
+            return self.cleaned_data["x"] + self.cleaned_data["y"]

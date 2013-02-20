@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>amitu-zutils &mdash; zutils v0.1.0 documentation</title>
+    <title>Django Generic Form Handler View – fhurl &mdash; importd v0.1.4 documentation</title>
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.1.0',
+        VERSION:     '0.1.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="zutils v0.1.0 documentation" href="#" /> 
+    <link rel="top" title="importd v0.1.4 documentation" href="#" /> 
   </head>
   <body>
     <div class="related">
@@ -31,7 +31,7 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="#">zutils v0.1.0 documentation</a> &raquo;</li> 
+        <li><a href="#">importd v0.1.4 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -40,16 +40,272 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="amitu-zutils">
-<h1>amitu-zutils<a class="headerlink" href="#amitu-zutils" title="Permalink to this headline">¶</a></h1>
-<p>amitu.zutils is a set of helper utilities to help create zmq services.</p>
-<p>amitu.zutils can be installed by:</p>
-<div class="highlight-python"><pre>easy_install amitu-zutils</pre>
+  <div class="section" id="django-generic-form-handler-view-fhurl">
+<h1>Django Generic Form Handler View &#8211; fhurl<a class="headerlink" href="#django-generic-form-handler-view-fhurl" title="Permalink to this headline">¶</a></h1>
+<p>importd is the fastest way to django. No project creation, no apps, no
+settings.py, just an import.</p>
+<p>Installation:</p>
+<div class="highlight-python"><pre>$ easy_install importd</pre>
 </div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Check out whats new at
-<a class="reference external" href="http://github.com/amitu/zutils/blob/master/ChangeLog.rst">http://github.com/amitu/zutils/blob/master/ChangeLog.rst</a></p>
+<p>Home: <a class="reference external" href="http://amitu.com/importd/">http://amitu.com/importd/</a></p>
+<p>importd is being developed on <a class="reference external" href="http://github.com/amitu/importd/">http://github.com/amitu/importd/</a>.</p>
+<p>See the Changelog: <a class="reference external" href="https://github.com/amitu/importd/blob/master/ChangeLog.rst">https://github.com/amitu/importd/blob/master/ChangeLog.rst</a>.</p>
+<div class="section" id="hello-world-with-importd">
+<h2>hello world with importd<a class="headerlink" href="#hello-world-with-importd" title="Permalink to this headline">¶</a></h2>
+<p>With importd there is no need to create a django project or app. There is no
+settings.py or urls.py, nor is there a need of manage.py. A single file is
+suffecient, eg hello.py:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">importd</span> <span class="kn">import</span> <span class="n">d</span>
+
+<span class="nd">@d</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">d</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">(</span><span class="s">&quot;hello world&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>To run this hello.py:</p>
+<p>To see if it works:</p>
+</div>
+<div class="section" id="atexit-magic">
+<h2>atexit magic<a class="headerlink" href="#atexit-magic" title="Permalink to this headline">¶</a></h2>
+<p>importd uses atexit to magically call runserver as seen in previous case. This
+can be disabled by calling d(no_atexit=True).</p>
+</div>
+<div class="section" id="management-commands">
+<h2>management commands<a class="headerlink" href="#management-commands" title="Permalink to this headline">¶</a></h2>
+<p>importd, along with atexit magic acts as management command too:</p>
+</div>
+<div class="section" id="automatically-configure-django">
+<h2>automatically configure django<a class="headerlink" href="#automatically-configure-django" title="Permalink to this headline">¶</a></h2>
+<p><cite>importd</cite> sets DEBUG to true.</p>
+</div>
+<div class="section" id="manually-configuring-django">
+<h2>manually configuring django<a class="headerlink" href="#manually-configuring-django" title="Permalink to this headline">¶</a></h2>
+<p><cite>importd</cite> automatically configures django when needed. This can be disabled by
+calling d(dont_configure=True) before any other importd functionality.</p>
+</div>
+<div class="section" id="wsgi-server">
+<h2>wsgi server<a class="headerlink" href="#wsgi-server" title="Permalink to this headline">¶</a></h2>
+<p>importd based hello.py is a <a href="#id1"><span class="problematic" id="id2">`wsgi app`_</span></a> without any more work.</p>
+<p>... wsgi example <a class="reference external" href="http://www.tornadoweb.org/documentation/wsgi.html">http://www.tornadoweb.org/documentation/wsgi.html</a> ...</p>
+</div>
+<div class="section" id="gunicorn-server">
+<h2>gunicorn server<a class="headerlink" href="#gunicorn-server" title="Permalink to this headline">¶</a></h2>
+<p>importd works with <a href="#id3"><span class="problematic" id="id4">gunicorn_</span></a> server, which is recommended for production setup
+instead of runserver command seen above, which is good only for debugging.</p>
+<p>gunicorn is a dependency of importd, so if you have importd installed properly,
+gunicorn should be in your path.</p>
+<p>Running hello.py with gunicorn:</p>
+</div>
+<div class="section" id="autoconfigution-of-templates">
+<h2>autoconfigution of templates<a class="headerlink" href="#autoconfigution-of-templates" title="Permalink to this headline">¶</a></h2>
+<p>importd automatically includes templates folder in directory containing hello.py
+to TEMPLATE_DIRS settings.</p>
+</div>
+<div class="section" id="auto-configuration-of-static-folder">
+<h2>auto configuration of static folder<a class="headerlink" href="#auto-configuration-of-static-folder" title="Permalink to this headline">¶</a></h2>
+<p>importd automatically maps /static/ path to folder named <cite>static</cite>, in the same
+directory as hello.py.</p>
+</div>
+<div class="section" id="importd-is-relocatable">
+<h2>importd is relocatable<a class="headerlink" href="#importd-is-relocatable" title="Permalink to this headline">¶</a></h2>
+<p>importd based script, like hello.py can be invoked from any folder, templates
+and static folders would be properly configured.</p>
+<p>If in your program you need to refer to local path, call d.dotslash(path) method
+to translate relative paths to absolute paths properly, so your program
+continues to be relocatable.</p>
+</div>
+<div class="section" id="auto-configuration-of-sqlite3-as-database">
+<h2>auto configuration of sqlite3 as database<a class="headerlink" href="#auto-configuration-of-sqlite3-as-database" title="Permalink to this headline">¶</a></h2>
+<p>For testing many a times sqlite is suffecient, and for those times importd
+automatically configures django with sqlite3 as database, with sqlite file
+stored in <cite>db.sqlite</cite> in the same folder as hello.py.</p>
+<p>This can be disabled by passing actual database settings DATABASES to d().</p>
+</div>
+<div class="section" id="d-decorator">
+<h2>&#64;d decorator<a class="headerlink" href="#d-decorator" title="Permalink to this headline">¶</a></h2>
+<p>importd has a decorator that can be applied to any view to add it to URLS. By
+default the &#64;d decorator takes the name of the view method, and constructs the
+url /method-name/.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">importd</span> <span class="kn">import</span> <span class="n">d</span>
+
+<span class="nd">@d</span>
+<span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">d</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">(</span><span class="s">&quot;hey there!&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In this case, importd will map hello() method to /hello/ url. This can be
+overriden by passing the URL where the view must be mapped to &#64;d:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">importd</span> <span class="kn">import</span> <span class="n">d</span>
+
+<span class="nd">@d</span><span class="p">(</span><span class="s">&quot;^$&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">d</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">(</span><span class="s">&quot;hey there!&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In this case hello method is mapped to /.</p>
+<p>&#64;d decorator also supprts named urls via name keyword argument, eg:</p>
+<div class="highlight-python"><pre>form importd import d
+
+@d("^home/$", name="home")  # named urls
+def home(request):
+    return "home.html"</pre>
+</div>
+</div>
+<div class="section" id="auto-imports">
+<h2>auto imports<a class="headerlink" href="#auto-imports" title="Permalink to this headline">¶</a></h2>
+<p>Since most views.py methods will be defined in views.py of respective
+application, importd automatically imports views module of all apps configured
+to make sure all such decorators get called when django is configured.</p>
+<p>For convenience importd also imports forms modules and signals modules of each
+app configured.</p>
+</div>
+<div class="section" id="importd-works-well-with-smarturls">
+<h2>importd works well with smarturls<a class="headerlink" href="#importd-works-well-with-smarturls" title="Permalink to this headline">¶</a></h2>
+<p>Since importd uses <a href="#id5"><span class="problematic" id="id6">smarturls_</span></a> underneath this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">importd</span> <span class="kn">import</span> <span class="n">d</span>
+
+<span class="nd">@d</span><span class="p">(</span><span class="s">&quot;^$&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">d</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">(</span><span class="s">&quot;hey there!&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>is equivalent to:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">importd</span> <span class="kn">import</span> <span class="n">d</span>
+
+<span class="nd">@d</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">d</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">(</span><span class="s">&quot;hey there!&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Notice the simpler URL passed to &#64;d(&#8220;/&#8221;) instead of d(&#8220;^$&#8221;). Either form can be
+used.</p>
+<p>Take a look at <a href="#id7"><span class="problematic" id="id8">`smarturls documentation`_</span></a> to see how <a href="#id9"><span class="problematic" id="id10">smarturls_</span></a> can simplfy url
+construction for you.</p>
+</div>
+<div class="section" id="importd-works-well-with-fhurl">
+<h2>importd works well with fhurl<a class="headerlink" href="#importd-works-well-with-fhurl" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="views-can-return-non-httpresponse-objects">
+<h2>views can return non HttpResponse objects<a class="headerlink" href="#views-can-return-non-httpresponse-objects" title="Permalink to this headline">¶</a></h2>
+<p>Django views are expected to only return HttpResponse based objects. importd
+allows you to do more than this.</p>
+<p>A view can return a string, which is treated as name of template, which is
+rendered with RequestContext and returned. A view can also return a tuple of
+(str, dict), in this case the str is treated as name of view, and dict as the
+context:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">importd</span> <span class="kn">import</span> <span class="n">d</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="nd">@d</span> <span class="c"># /index/, url derived from name of view</span>
+<span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s">&quot;index.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;msg&quot;</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()}</span>
+</pre></div>
+</div>
+<p>Further a view can also return arbitrary data structures not mentioned above, in
+such cases importd will convert that to JSON and return it to client:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">importd</span> <span class="kn">import</span> <span class="n">d</span>
+
+<span class="nd">@d</span>  <span class="c"># served at /json/, converts object to json string, with proper mimetype</span>
+<span class="k">def</span> <span class="nf">json</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s">&quot;sum&quot;</span><span class="p">:</span> <span class="p">(</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;x&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;y&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="p">)</span>
+    <span class="p">}</span>
+</pre></div>
+</div>
+<p>importd comes with convenience JSONResponse class to return arbitrary json
+object that may be a string, or a (string, dict) tuple.</p>
+</div>
+<div class="section" id="disabling-auto-configuration">
+<h2>disabling auto configuration<a class="headerlink" href="#disabling-auto-configuration" title="Permalink to this headline">¶</a></h2>
+<p>All such configuration should be done at the beginning of the program.</p>
+</div>
+<div class="section" id="importd-with-existing-apps">
+<h2>importd with existing apps<a class="headerlink" href="#importd-with-existing-apps" title="Permalink to this headline">¶</a></h2>
+<p>Nothing special has to be done to work with existing apps, django specific
+INSTALLED_APPS must contain the name of apps as usual, and it can be passed to
+d() method:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">importd</span> <span class="kn">import</span> <span class="n">d</span>
+
+<span class="n">d</span><span class="p">(</span><span class="n">INSTALLED_APPS</span><span class="o">=</span><span class="p">[</span><span class="s">&quot;django.contrib.auth&quot;</span><span class="p">,</span> <span class="s">&quot;django.contrib.contenttypes&quot;</span><span class="p">])</span>
+
+<span class="kn">from</span> <span class="nn">django.contrib.auth.models</span> <span class="kn">import</span> <span class="n">User</span>
+
+<span class="nd">@d</span><span class="p">(</span><span class="s">&quot;/&lt;int:userid&gt;/&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">userid</span><span class="p">):</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">userid</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">d</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">(</span><span class="s">&quot;hey there %&quot;</span> <span class="o">%</span> <span class="n">user</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="importd-and-custom-models">
+<h2>importd and custom models<a class="headerlink" href="#importd-and-custom-models" title="Permalink to this headline">¶</a></h2>
+<p>To create custom models, create an app using $ python hello.py startapp
+hello_app and add it to INSTALLED_APPS.</p>
+</div>
+<div class="section" id="easy-access-to-commonly-used-django-methods-and-classes">
+<h2>easy access to commonly used django methods and classes<a class="headerlink" href="#easy-access-to-commonly-used-django-methods-and-classes" title="Permalink to this headline">¶</a></h2>
+<p>importd contains aliases for django methods and classes:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">importd</span> <span class="kn">import</span> <span class="n">d</span>
+
+<span class="nd">@d</span>
+<span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">d</span><span class="o">.</span><span class="n">render_to_response</span><span class="p">(</span><span class="s">&quot;hello.html&quot;</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">RequestContext</span><span class="p">(</span><span class="n">request</span><span class="p">))</span>
+</pre></div>
+</div>
+<p># d.render_to_response == django.shortcuts.render_to_response
+# d.get_object_or_404 == django.shortcuts.get_object_or_404
+# d.HttpResponse == django.http.HttpResponse
+# d.patterns == django.conf.urls.defaults.patterns
+# d.RequestContext == django.template.RequestContext
+# d.forms == django.forms</p>
+</div>
+<div class="section" id="a-more-detailed-example">
+<h2>a more detailed example<a class="headerlink" href="#a-more-detailed-example" title="Permalink to this headline">¶</a></h2>
+<p>This example features a few more use cases:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">importd</span> <span class="kn">import</span> <span class="n">d</span>
+
+<span class="n">d</span><span class="p">(</span><span class="n">DEBUG</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">INSTALLED_APPS</span><span class="o">=</span><span class="p">[</span><span class="s">&quot;django.contrib.auth&quot;</span><span class="p">])</span> <span class="c"># configure django</span>
+
+<span class="k">def</span> <span class="nf">real_index2</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">d</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">(</span><span class="s">&quot;real_index2&quot;</span><span class="p">)</span>
+
+<span class="c"># setup other urlpatterns</span>
+<span class="n">d</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">patterns</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">,</span>
+    <span class="p">(</span><span class="s">&quot;^$&quot;</span><span class="p">,</span> <span class="n">real_index2</span><span class="p">),</span>
+<span class="p">))</span>
+
+<span class="nd">@d</span> <span class="c"># /index/, url derived from name of view</span>
+<span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">time</span>
+    <span class="k">return</span> <span class="s">&quot;index.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;msg&quot;</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()}</span>
+
+<span class="nd">@d</span><span class="p">(</span><span class="s">&quot;^home/$&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;home&quot;</span><span class="p">)</span>  <span class="c"># named urls</span>
+<span class="k">def</span> <span class="nf">real_index</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s">&quot;home.html&quot;</span>
+
+<span class="nd">@d</span>  <span class="c"># served at /json/, converts object to json string, with proper mimetype</span>
+<span class="k">def</span> <span class="nf">json</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s">&quot;sum&quot;</span><span class="p">:</span> <span class="p">(</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;x&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;y&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="p">)</span>
+    <span class="p">}</span>
+
+<span class="nd">@d</span><span class="p">(</span><span class="s">&quot;/edit/&lt;int:id&gt;/&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;edit_page&quot;</span><span class="p">)</span> <span class="c"># translats to ^edit/(?P&lt;id&gt;\d+)/$</span>
+<span class="k">def</span> <span class="nf">edit</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">&quot;id&quot;</span><span class="p">:</span> <span class="nb">id</span><span class="p">}</span>
+
+<span class="nd">@d</span><span class="p">(</span><span class="s">&quot;^fhurl/$&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">MyForm</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">RequestForm</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">()</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">forms</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&quot;x&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&quot;y&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
 </div>
 </div>
 
@@ -59,6 +315,34 @@
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Django Generic Form Handler View &#8211; fhurl</a><ul>
+<li><a class="reference internal" href="#hello-world-with-importd">hello world with importd</a></li>
+<li><a class="reference internal" href="#atexit-magic">atexit magic</a></li>
+<li><a class="reference internal" href="#management-commands">management commands</a></li>
+<li><a class="reference internal" href="#automatically-configure-django">automatically configure django</a></li>
+<li><a class="reference internal" href="#manually-configuring-django">manually configuring django</a></li>
+<li><a class="reference internal" href="#wsgi-server">wsgi server</a></li>
+<li><a class="reference internal" href="#gunicorn-server">gunicorn server</a></li>
+<li><a class="reference internal" href="#autoconfigution-of-templates">autoconfigution of templates</a></li>
+<li><a class="reference internal" href="#auto-configuration-of-static-folder">auto configuration of static folder</a></li>
+<li><a class="reference internal" href="#importd-is-relocatable">importd is relocatable</a></li>
+<li><a class="reference internal" href="#auto-configuration-of-sqlite3-as-database">auto configuration of sqlite3 as database</a></li>
+<li><a class="reference internal" href="#d-decorator">&#64;d decorator</a></li>
+<li><a class="reference internal" href="#auto-imports">auto imports</a></li>
+<li><a class="reference internal" href="#importd-works-well-with-smarturls">importd works well with smarturls</a></li>
+<li><a class="reference internal" href="#importd-works-well-with-fhurl">importd works well with fhurl</a></li>
+<li><a class="reference internal" href="#views-can-return-non-httpresponse-objects">views can return non HttpResponse objects</a></li>
+<li><a class="reference internal" href="#disabling-auto-configuration">disabling auto configuration</a></li>
+<li><a class="reference internal" href="#importd-with-existing-apps">importd with existing apps</a></li>
+<li><a class="reference internal" href="#importd-and-custom-models">importd and custom models</a></li>
+<li><a class="reference internal" href="#easy-access-to-commonly-used-django-methods-and-classes">easy access to commonly used django methods and classes</a></li>
+<li><a class="reference internal" href="#a-more-detailed-example">a more detailed example</a></li>
+</ul>
+</li>
+</ul>
+
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/index.txt"
@@ -87,11 +371,11 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="#">zutils v0.1.0 documentation</a> &raquo;</li> 
+        <li><a href="#">importd v0.1.4 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2010, Amit Upadhyay.
+        &copy; Copyright 2012, Amit Upadhyay.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
     </div>
   </body>
