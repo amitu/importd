@@ -1,6 +1,8 @@
 class D(object):
     from django.conf.urls.defaults import patterns
     urlpatterns = patterns("")
+    do_atexit = True
+
     def _is_management_command(self, cmd):
         return cmd in "runserver,shell".split(",")
 
@@ -69,16 +71,28 @@ class D(object):
         return decorated
 
     def _configure_django(self, **kw):
-        import inspect, os
+        import inspect, os, warnings
         self.APP_DIR = os.path.dirname(
             os.path.realpath(inspect.stack()[2][1])
         )
+
         if "regexers" in kw: 
             self.update_regexers(kw.pop("regexers"))
+
+        if "atexit" in kw:
+            self.do_atexit = kw.pop("atexit")
+
         if "no_atexit" in kw:
-            self.no_atexit = kw.pop("no_atexit")
+            warnings.warn(
+                "no_atexit deprecated, please use atexit=False", 
+                stacklevel=3
+            )
+            self.do_atexit = not bool(kw.pop("no_atexit"))
+
         from django.conf import settings
+
         self.settings = settings
+
         if not kw.get("dont_configure", False):
             kw["ROOT_URLCONF"] = "importd.d"
             if "TEMPLATE_DIRS" not in kw:
@@ -150,7 +164,7 @@ class D(object):
         management.execute_from_command_line(sys.argv)
 
     def atexit(self):
-        if hasattr(self, "no_atexit") and self.no_atexit: return
+        if not self.do_atexit: return
 
         import sys
 

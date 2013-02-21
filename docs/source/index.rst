@@ -52,7 +52,7 @@ atexit magic
 ------------
 
 importd uses atexit to magically call runserver as seen in previous case. This
-can be disabled by calling d(no_atexit=True).
+can be disabled by calling d(atexit=False).
 
 management commands
 -------------------
