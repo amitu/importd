@@ -63,4 +63,3 @@ ToDo/Known Issues
 =================
 
  * figure our whats going on with double imports
- * figure out whats going on when gunicorn exits

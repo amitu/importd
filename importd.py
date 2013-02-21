@@ -134,6 +134,7 @@ class D(object):
             if not hasattr(self, "_configured"):
                 self._configure_django(DEBUG=True)
             if type(args[0]) == dict and len(args) == 2:
+                self.do_atexit = False
                 return self.wsgi_application(*args)
             if self._is_management_command(args[0]):
                 self._handle_management_command(*args, **kw)
