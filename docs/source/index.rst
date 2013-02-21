@@ -91,7 +91,8 @@ importd, along with atexit magic acts as management command too:
 automatically configure django
 ------------------------------
 
-`importd` sets DEBUG to true.
+`importd` sets DEBUG to true. This can be disabled by
+calling d(DEBUG=False) before any other importd functionality.
 
 manually configuring django
 ---------------------------
@@ -222,6 +223,8 @@ Since importd uses smarturls_ underneath this::
     def hello(request):
         return d.HttpResponse("hey there!")
 
+.. _smarturls: http://amitu.com/smarturls/
+
 is equivalent to::
 
     from importd import d
@@ -233,13 +236,13 @@ is equivalent to::
 Notice the simpler URL passed to @d("/") instead of d("^$"). Either form can be
 used.
 
-Take a look at `smarturls documentation`_ to see how smarturls_ can simplfy url
-construction for you.
+Take a look at smarturls documentation to see how can simplfy url construction
+for you.
 
 importd works well with fhurl
 -----------------------------
 
-fhurl is a generic view for forms and ajax. importd integrates well with fhurl.::
+fhurl_ is a generic view for forms and ajax. importd integrates well with fhurl.::
 
     from importd import d
 
@@ -250,6 +253,8 @@ fhurl is a generic view for forms and ajax. importd integrates well with fhurl.:
 
         def save(self):
             return self.cleaned_data["x"] * self.cleaned_data["y"]
+
+.. _fhurl: http://pythonhosted.org/fhurl/
 
 Running this:
 
@@ -376,11 +381,6 @@ such cases importd will convert that to JSON and return it to client::
 importd comes with convenience JSONResponse class to return arbitrary json
 object that may be a string, or a (string, dict) tuple.
 
-disabling auto configuration
------------------------------
-
-All such configuration should be done at the beginning of the program.
-
 importd with existing apps
 --------------------------
 
@@ -416,12 +416,12 @@ importd contains aliases for django methods and classes::
     def hello(request):
         return d.render_to_response("hello.html", d.RequestContext(request))
 
-# d.render_to_response == django.shortcuts.render_to_response
-# d.get_object_or_404 == django.shortcuts.get_object_or_404
-# d.HttpResponse == django.http.HttpResponse
-# d.patterns == django.conf.urls.defaults.patterns
-# d.RequestContext == django.template.RequestContext
-# d.forms == django.forms
+    # d.render_to_response == django.shortcuts.render_to_response
+    # d.get_object_or_404 == django.shortcuts.get_object_or_404
+    # d.HttpResponse == django.http.HttpResponse
+    # d.patterns == django.conf.urls.defaults.patterns
+    # d.RequestContext == django.template.RequestContext
+    # d.forms == django.forms
 
 a more detailed example
 -----------------------

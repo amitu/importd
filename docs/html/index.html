@@ -117,7 +117,8 @@ Options:
 </div>
 <div class="section" id="automatically-configure-django">
 <h2>automatically configure django<a class="headerlink" href="#automatically-configure-django" title="Permalink to this headline">¶</a></h2>
-<p><cite>importd</cite> sets DEBUG to true.</p>
+<p><cite>importd</cite> sets DEBUG to true. This can be disabled by
+calling d(DEBUG=False) before any other importd functionality.</p>
 </div>
 <div class="section" id="manually-configuring-django">
 <h2>manually configuring django<a class="headerlink" href="#manually-configuring-django" title="Permalink to this headline">¶</a></h2>
@@ -222,7 +223,7 @@ app configured.</p>
 </div>
 <div class="section" id="importd-works-well-with-smarturls">
 <h2>importd works well with smarturls<a class="headerlink" href="#importd-works-well-with-smarturls" title="Permalink to this headline">¶</a></h2>
-<p>Since importd uses <a href="#id5"><span class="problematic" id="id6">smarturls_</span></a> underneath this:</p>
+<p>Since importd uses <a class="reference external" href="http://amitu.com/smarturls/">smarturls</a> underneath this:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">importd</span> <span class="kn">import</span> <span class="n">d</span>
 
 <span class="nd">@d</span><span class="p">(</span><span class="s">&quot;^$&quot;</span><span class="p">)</span>
@@ -240,12 +241,12 @@ app configured.</p>
 </div>
 <p>Notice the simpler URL passed to &#64;d(&#8220;/&#8221;) instead of d(&#8220;^$&#8221;). Either form can be
 used.</p>
-<p>Take a look at <a href="#id7"><span class="problematic" id="id8">`smarturls documentation`_</span></a> to see how <a href="#id9"><span class="problematic" id="id10">smarturls_</span></a> can simplfy url
-construction for you.</p>
+<p>Take a look at smarturls documentation to see how can simplfy url construction
+for you.</p>
 </div>
 <div class="section" id="importd-works-well-with-fhurl">
 <h2>importd works well with fhurl<a class="headerlink" href="#importd-works-well-with-fhurl" title="Permalink to this headline">¶</a></h2>
-<p>fhurl is a generic view for forms and ajax. importd integrates well with fhurl.:</p>
+<p><a class="reference external" href="http://pythonhosted.org/fhurl/">fhurl</a> is a generic view for forms and ajax. importd integrates well with fhurl.:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">importd</span> <span class="kn">import</span> <span class="n">d</span>
 
 <span class="nd">@d</span><span class="p">(</span><span class="s">&quot;^fhurl/$&quot;</span><span class="p">)</span>
@@ -371,10 +372,6 @@ such cases importd will convert that to JSON and return it to client:</p>
 <p>importd comes with convenience JSONResponse class to return arbitrary json
 object that may be a string, or a (string, dict) tuple.</p>
 </div>
-<div class="section" id="disabling-auto-configuration">
-<h2>disabling auto configuration<a class="headerlink" href="#disabling-auto-configuration" title="Permalink to this headline">¶</a></h2>
-<p>All such configuration should be done at the beginning of the program.</p>
-</div>
 <div class="section" id="importd-with-existing-apps">
 <h2>importd with existing apps<a class="headerlink" href="#importd-with-existing-apps" title="Permalink to this headline">¶</a></h2>
 <p>Nothing special has to be done to work with existing apps, django specific
@@ -406,14 +403,15 @@ hello_app and add it to INSTALLED_APPS.</p>
 <span class="nd">@d</span>
 <span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">d</span><span class="o">.</span><span class="n">render_to_response</span><span class="p">(</span><span class="s">&quot;hello.html&quot;</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">RequestContext</span><span class="p">(</span><span class="n">request</span><span class="p">))</span>
+
+<span class="c"># d.render_to_response == django.shortcuts.render_to_response</span>
+<span class="c"># d.get_object_or_404 == django.shortcuts.get_object_or_404</span>
+<span class="c"># d.HttpResponse == django.http.HttpResponse</span>
+<span class="c"># d.patterns == django.conf.urls.defaults.patterns</span>
+<span class="c"># d.RequestContext == django.template.RequestContext</span>
+<span class="c"># d.forms == django.forms</span>
 </pre></div>
 </div>
-<p># d.render_to_response == django.shortcuts.render_to_response
-# d.get_object_or_404 == django.shortcuts.get_object_or_404
-# d.HttpResponse == django.http.HttpResponse
-# d.patterns == django.conf.urls.defaults.patterns
-# d.RequestContext == django.template.RequestContext
-# d.forms == django.forms</p>
 </div>
 <div class="section" id="a-more-detailed-example">
 <h2>a more detailed example<a class="headerlink" href="#a-more-detailed-example" title="Permalink to this headline">¶</a></h2>
@@ -488,7 +486,6 @@ hello_app and add it to INSTALLED_APPS.</p>
 <li><a class="reference internal" href="#importd-works-well-with-smarturls">importd works well with smarturls</a></li>
 <li><a class="reference internal" href="#importd-works-well-with-fhurl">importd works well with fhurl</a></li>
 <li><a class="reference internal" href="#views-can-return-non-httpresponse-objects">views can return non HttpResponse objects</a></li>
-<li><a class="reference internal" href="#disabling-auto-configuration">disabling auto configuration</a></li>
 <li><a class="reference internal" href="#importd-with-existing-apps">importd with existing apps</a></li>
 <li><a class="reference internal" href="#importd-and-custom-models">importd and custom models</a></li>
 <li><a class="reference internal" href="#easy-access-to-commonly-used-django-methods-and-classes">easy access to commonly used django methods and classes</a></li>
