@@ -29,6 +29,9 @@ suffecient, eg hello.py::
     def index(request):
         return d.HttpResponse("hello world")
 
+    if __name__ == "__main__":
+        d.main()
+
 To run this hello.py:
 
 .. code-block:: sh
@@ -48,16 +51,10 @@ To see if it works:
     $ curl "http://localhost:8000"
     hello world
 
-atexit magic
-------------
-
-importd uses atexit to magically call runserver as seen in previous case. This
-can be disabled by calling d(atexit=False).
-
 management commands
 -------------------
 
-importd, along with atexit magic acts as management command too:
+d.main() acts as management command too:
 
 .. code-block:: sh
 
@@ -87,8 +84,10 @@ importd, along with atexit magic acts as management command too:
       --version             show program's version number and exit
       -h, --help            show this help message and exit
 
+Further d.do() method can be used to call management command, eg d.do("syncdb")
+from python code.
 
-automatically configure django
+automatically configure django 
 ------------------------------
 
 `importd` sets DEBUG to true. This can be disabled by
@@ -183,6 +182,9 @@ url /method-name/.::
     def hello(request):
         return d.HttpResponse("hey there!")
 
+    if __name__ == "__main__":
+        d.main()
+
 In this case, importd will map hello() method to /hello/ url. This can be
 overriden by passing the URL where the view must be mapped to @d::
 
@@ -191,6 +193,10 @@ overriden by passing the URL where the view must be mapped to @d::
     @d("^$")
     def hello(request):
         return d.HttpResponse("hey there!")
+
+    if __name__ == "__main__":
+        d.main()
+
 
 In this case hello method is mapped to /.
 
@@ -201,6 +207,10 @@ In this case hello method is mapped to /.
     @d("^home/$", name="home")  # named urls
     def home(request):
         return "home.html"
+
+    if __name__ == "__main__":
+        d.main()
+
 
 auto imports
 ------------
@@ -223,6 +233,10 @@ Since importd uses smarturls_ underneath this::
     def hello(request):
         return d.HttpResponse("hey there!")
 
+    if __name__ == "__main__":
+        d.main()
+
+
 .. _smarturls: http://amitu.com/smarturls/
 
 is equivalent to::
@@ -232,6 +246,10 @@ is equivalent to::
     @d("/")
     def hello(request):
         return d.HttpResponse("hey there!")
+
+    if __name__ == "__main__":
+        d.main()
+
 
 Notice the simpler URL passed to @d("/") instead of d("^$"). Either form can be
 used.
@@ -253,6 +271,10 @@ fhurl_ is a generic view for forms and ajax. importd integrates well with fhurl.
 
         def save(self):
             return self.cleaned_data["x"] * self.cleaned_data["y"]
+
+    if __name__ == "__main__":
+        d.main()
+
 
 .. _fhurl: http://pythonhosted.org/fhurl/
 
@@ -317,6 +339,10 @@ fhurl with template::
             p = self.cleaned_data["x"] * self.cleaned_data["y"]
             return "/form-saved" # redirect to this url
 
+    if __name__ == "__main__":
+        d.main()
+
+
 form.html:
 
 .. code-block:: html+django
@@ -365,6 +391,10 @@ context::
     def index(request):
         return "index.html", {"msg": time.time()}
 
+    if __name__ == "__main__":
+        d.main()
+
+
 Further a view can also return arbitrary data structures not mentioned above, in
 such cases importd will convert that to JSON and return it to client::
 
@@ -377,6 +407,10 @@ such cases importd will convert that to JSON and return it to client::
                 int(request.GET.get("x", 0)) + int(request.GET.get("y", 0))
             )
         }
+
+    if __name__ == "__main__":
+        d.main()
+
 
 importd comes with convenience JSONResponse class to return arbitrary json
 object that may be a string, or a (string, dict) tuple.
@@ -398,6 +432,10 @@ d() method::
     def hello(request, userid):
         user = User.objects.get(userid)
         return d.HttpResponse("hey there %" % user)
+
+    if __name__ == "__main__":
+        d.main()
+
 
 importd and custom models
 -------------------------
@@ -422,6 +460,10 @@ importd contains aliases for django methods and classes::
     # d.patterns == django.conf.urls.defaults.patterns
     # d.RequestContext == django.template.RequestContext
     # d.forms == django.forms
+
+    if __name__ == "__main__":
+        d.main()
+
 
 a more detailed example
 -----------------------
@@ -468,3 +510,6 @@ This example features a few more use cases::
 
         def save(self):
             return self.cleaned_data["x"] + self.cleaned_data["y"]
+
+    if __name__ == "__main__":
+        d.main()

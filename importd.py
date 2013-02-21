@@ -1,7 +1,6 @@
 class D(object):
     from django.conf.urls.defaults import patterns
     urlpatterns = patterns("")
-    do_atexit = True
 
     def _is_management_command(self, cmd):
         return cmd in "runserver,shell".split(",")
@@ -71,23 +70,13 @@ class D(object):
         return decorated
 
     def _configure_django(self, **kw):
-        import inspect, os, warnings
+        import inspect, os
         self.APP_DIR = os.path.dirname(
             os.path.realpath(inspect.stack()[2][1])
         )
 
         if "regexers" in kw: 
             self.update_regexers(kw.pop("regexers"))
-
-        if "atexit" in kw:
-            self.do_atexit = kw.pop("atexit")
-
-        if "no_atexit" in kw:
-            warnings.warn(
-                "no_atexit deprecated, please use atexit=False", 
-                stacklevel=3
-            )
-            self.do_atexit = not bool(kw.pop("no_atexit"))
 
         from django.conf import settings
 
@@ -134,7 +123,6 @@ class D(object):
             if not hasattr(self, "_configured"):
                 self._configure_django(DEBUG=True)
             if type(args[0]) == dict and len(args) == 2:
-                self.do_atexit = False
                 return self.wsgi_application(*args)
             if self._is_management_command(args[0]):
                 self._handle_management_command(*args, **kw)
@@ -159,34 +147,26 @@ class D(object):
             self._configure_django(**kw)
         return self
 
-    def _act_as_manage(self):
+    def _act_as_manage(self, *args):
         from django.core import management
         import sys
-        management.execute_from_command_line(sys.argv)
+        management.execute_from_command_line([sys.argv[0]] + list(args))
 
-    def atexit(self):
-        if not self.do_atexit: return
-
+    def main(self):
         import sys
-
         if len(sys.argv) == 1:
+            self.do("runserver")
+        else:
+            self.do()
+
+    def do(self, *args):
+        import sys
+        if not args: args = sys.argv[1:]
+        if len(args) == 0:
             return self._handle_management_command("runserver", "8000")
 
-        if len(sys.argv) != 2:
-            return self._act_as_manage()
+        return self._act_as_manage(*args)
 
-        port = sys.argv[1]
-
-        try:
-            int(port)
-        except ValueError:
-            if ":" not in port:
-                return self._act_as_manage()
-            if port.endswith(":d"): return
-
-        self._handle_management_command("runserver", port)
-
-import sys, atexit
+import sys
 d = D()
-atexit.register(d.atexit)
 sys.modules["importd.d"] = d

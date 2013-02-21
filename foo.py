@@ -35,3 +35,6 @@ class MyForm(d.RequestForm):
     
     def save(self):
         return self.cleaned_data["x"] + self.cleaned_data["y"]
+        
+if __name__ == "__main__":
+    d.main()

@@ -61,6 +61,9 @@ suffecient, eg hello.py:</p>
 <span class="nd">@d</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">d</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">(</span><span class="s">&quot;hello world&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>To run this hello.py:</p>
@@ -79,14 +82,9 @@ hello world
 </pre></div>
 </div>
 </div>
-<div class="section" id="atexit-magic">
-<h2>atexit magic<a class="headerlink" href="#atexit-magic" title="Permalink to this headline">¶</a></h2>
-<p>importd uses atexit to magically call runserver as seen in previous case. This
-can be disabled by calling d(no_atexit=True).</p>
-</div>
 <div class="section" id="management-commands">
 <h2>management commands<a class="headerlink" href="#management-commands" title="Permalink to this headline">¶</a></h2>
-<p>importd, along with atexit magic acts as management command too:</p>
+<p>d.main() acts as management command too:</p>
 <div class="highlight-sh"><div class="highlight"><pre><span class="nv">$ </span>python hello.py <span class="nb">help </span>shell
 python hello.py <span class="nb">help </span>shell <span class="o">(</span>02-18 21:14<span class="o">)</span>
 Usage: hello.py shell <span class="o">[</span>options<span class="o">]</span>
@@ -114,6 +112,8 @@ Options:
   -h, --help            show this <span class="nb">help </span>message and <span class="nb">exit</span>
 </pre></div>
 </div>
+<p>Further d.do() method can be used to call management command, eg d.do(&#8220;syncdb&#8221;)
+from python code.</p>
 </div>
 <div class="section" id="automatically-configure-django">
 <h2>automatically configure django<a class="headerlink" href="#automatically-configure-django" title="Permalink to this headline">¶</a></h2>
@@ -192,6 +192,9 @@ url /method-name/.:</p>
 <span class="nd">@d</span>
 <span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">d</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">(</span><span class="s">&quot;hey there!&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>In this case, importd will map hello() method to /hello/ url. This can be
@@ -201,6 +204,9 @@ overriden by passing the URL where the view must be mapped to &#64;d:</p>
 <span class="nd">@d</span><span class="p">(</span><span class="s">&quot;^$&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">d</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">(</span><span class="s">&quot;hey there!&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>In this case hello method is mapped to /.</p>
@@ -210,6 +216,9 @@ overriden by passing the URL where the view must be mapped to &#64;d:</p>
 <span class="nd">@d</span><span class="p">(</span><span class="s">&quot;^home/$&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;home&quot;</span><span class="p">)</span>  <span class="c"># named urls</span>
 <span class="k">def</span> <span class="nf">home</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
     <span class="k">return</span> <span class="s">&quot;home.html&quot;</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -229,6 +238,9 @@ app configured.</p>
 <span class="nd">@d</span><span class="p">(</span><span class="s">&quot;^$&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">d</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">(</span><span class="s">&quot;hey there!&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>is equivalent to:</p>
@@ -237,6 +249,9 @@ app configured.</p>
 <span class="nd">@d</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">d</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">(</span><span class="s">&quot;hey there!&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>Notice the simpler URL passed to &#64;d(&#8220;/&#8221;) instead of d(&#8220;^$&#8221;). Either form can be
@@ -256,6 +271,9 @@ for you.</p>
 
     <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&quot;x&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&quot;y&quot;</span><span class="p">]</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>Running this:</p>
@@ -312,6 +330,9 @@ docs.</p>
 
         <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&quot;x&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&quot;y&quot;</span><span class="p">]</span>
         <span class="k">return</span> <span class="s">&quot;/form-saved&quot;</span> <span class="c"># redirect to this url</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>form.html:</p>
@@ -354,6 +375,9 @@ context:</p>
 <span class="nd">@d</span> <span class="c"># /index/, url derived from name of view</span>
 <span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
     <span class="k">return</span> <span class="s">&quot;index.html&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s">&quot;msg&quot;</span><span class="p">:</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()}</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>Further a view can also return arbitrary data structures not mentioned above, in
@@ -367,6 +391,9 @@ such cases importd will convert that to JSON and return it to client:</p>
             <span class="nb">int</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;x&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;y&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
         <span class="p">)</span>
     <span class="p">}</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>importd comes with convenience JSONResponse class to return arbitrary json
@@ -387,6 +414,9 @@ d() method:</p>
 <span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">userid</span><span class="p">):</span>
     <span class="n">user</span> <span class="o">=</span> <span class="n">User</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">userid</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">d</span><span class="o">.</span><span class="n">HttpResponse</span><span class="p">(</span><span class="s">&quot;hey there %&quot;</span> <span class="o">%</span> <span class="n">user</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -410,6 +440,9 @@ hello_app and add it to INSTALLED_APPS.</p>
 <span class="c"># d.patterns == django.conf.urls.defaults.patterns</span>
 <span class="c"># d.RequestContext == django.template.RequestContext</span>
 <span class="c"># d.forms == django.forms</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -456,6 +489,9 @@ hello_app and add it to INSTALLED_APPS.</p>
 
     <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&quot;x&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">cleaned_data</span><span class="p">[</span><span class="s">&quot;y&quot;</span><span class="p">]</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">d</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -471,7 +507,6 @@ hello_app and add it to INSTALLED_APPS.</p>
   <ul>
 <li><a class="reference internal" href="#">importd - d is for django</a><ul>
 <li><a class="reference internal" href="#hello-world-with-importd">hello world with importd</a></li>
-<li><a class="reference internal" href="#atexit-magic">atexit magic</a></li>
 <li><a class="reference internal" href="#management-commands">management commands</a></li>
 <li><a class="reference internal" href="#automatically-configure-django">automatically configure django</a></li>
 <li><a class="reference internal" href="#manually-configuring-django">manually configuring django</a></li>

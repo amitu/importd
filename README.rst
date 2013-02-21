@@ -6,16 +6,20 @@ inspired from ruby's sinatra. Hello world django project:
 
 .. code-block:: python
 
- from importd import d
- d(DEBUG=True)
+    from importd import d
+    d(DEBUG=True)
 
- @d("/")
- def idx(request):
-    return "index.html" 
+    @d("/")
+    def idx(request):
+        return "index.html" 
 
- @d("/post/<int:post_id">/")
- def post(request, post_id):
-    return "post.html", {"post_id": post_id}
+    @d("/post/<int:post_id">/")
+    def post(request, post_id):
+        return "post.html", {"post_id": post_id}
+
+    if __name__ == "__main__":
+        d.main()
+
 
 To run it:
 
