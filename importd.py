@@ -193,17 +193,27 @@ class D(object):
         return "\n".join(source_lines[1:])
 
     def create_views(self):
-        imports = []
-        def create_import_strings(module_name, attributes):
-            imports.append("from {} import {}".format(
-                                                module_name,
-                                                ", ".join(attributes)))
-        self._iterate_imports(create_import_strings)
+        import re
         views = []
+
         for urlpattern in self.urlpatterns:
             # check if its a decorated view from importd
             if hasattr(urlpattern.callback, "orig_view"):
                 views.append(self._get_view_source(urlpattern.callback))
+
+        used_imports = set()
+        for view in views:
+            used_imports.update(re.findall(r'd\.([a-zA-Z]+)', view))
+
+
+        imports = []
+        def create_import_strings(module_name, attributes):
+            to_import = used_imports.intersection(attributes)
+            if to_import:
+                imports.append("from {} import {}".format(
+                                                    module_name,
+                                                    ", ".join(to_import)))
+        self._iterate_imports(create_import_strings)
         return "{}\n\n{}".format("\n".join(imports), "\n\n".join(views))
 
 import sys
