@@ -85,9 +85,10 @@ class D(object):
 
     def _configure_django(self, **kw):
         import inspect, os
-        self.APP_DIR = os.path.dirname(
+        self.APP_DIR, app_filename = os.path.split(
             os.path.realpath(inspect.stack()[2][1])
         )
+        self.APP_NAME = app_filename.partition(".")[0]
 
         if "regexers" in kw: 
             self.update_regexers(kw.pop("regexers"))
@@ -171,7 +172,7 @@ class D(object):
         if len(sys.argv) == 1:
             self.do("runserver")
         elif sys.argv[1] == "convert":
-            print(self.create_views())
+            print(self._create_urls())
         else:
             self.do()
 
@@ -192,7 +193,7 @@ class D(object):
         
         return "\n".join(source_lines[1:])
 
-    def create_views(self):
+    def _create_views(self):
         import re
         views = []
 
@@ -218,6 +219,26 @@ class D(object):
                                                     ", ".join(to_import)))
         self._iterate_imports(create_import_strings)
         return "{}\n\n{}".format("\n".join(imports), "\n\n".join(parsed_views))
+
+    def _create_urls(self):
+        import re
+        patterns = []
+        # from IPython import embed; embed()
+        for pattern in self.urlpatterns:
+            func_module = pattern.callback.__module__
+            if func_module == '__main__':
+                func_module = self.APP_NAME + "/views.py"
+            patterns.append("""(r'{}', {}.{})""".format(pattern.regex.pattern,
+                                                     pattern.callback.__module__,
+                                                     pattern.callback.__name__,
+                                                     ))
+        return """from django.conf.urls.defaults import patterns
+
+        patterns = ("",
+            {}
+            )
+            """.format(",\n".join(patterns))
+
 
 import sys
 d = D()
