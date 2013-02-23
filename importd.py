@@ -15,29 +15,42 @@ class D(object):
     def update_urls(self, urls):
         self.urlpatterns += urls
 
+    # tuple list of django modules imported in d
+    # tuple (a, b) is equivalent to from a import b
+    # if b is an iterable (b = [c, d]), it is equivalent 
+    # to from a import c, d
+    DJANGO_IMPORT = (
+        ('smarturls', 'surl'),
+        ('django.http', ['HttpResponse', 'Http404', 'HttpResponseRedirect']),
+        ('django.shortcuts', ['get_object_or_404', 'render_to_response']),
+        ('django.conf.urls.defaults', ['patterns', 'url']),
+        ('django.template', 'RequestContext'),
+        ('django.core.wsgi', 'get_wsgi_application'),
+        ('django', 'forms'),
+        ('fhurl', ['RequestForm', 'fhurl', 'JSONResponse']),
+        )
+
+    def _iterate_imports(self, callback):
+        """Iterates through imports and calls callback for each
+        (module_name, attributes) pair. If attribute is a string, it is 
+        converted to a list first"""
+
+        for module_name, attributes in self.DJANGO_IMPORT:
+            if isinstance(attributes, basestring):
+                attributes = [attributes]
+            callback(module_name, attributes) 
+
     def _import_django(self):
-        from smarturls import surl
-        self.surl = surl
-        from django.http import HttpResponse, Http404, HttpResponseRedirect
-        self.HttpResponse = HttpResponse
-        self.Http404 = Http404
-        self.HttpResponseRedirect = HttpResponseRedirect
-        from django.shortcuts import get_object_or_404, render_to_response
-        self.get_object_or_404 = get_object_or_404
-        self.render_to_response = render_to_response
-        from django.conf.urls.defaults import patterns, url
-        self.patterns = patterns
-        self.url = url
-        from django.template import RequestContext
-        self.RequestContext = RequestContext
-        from django.core.wsgi import get_wsgi_application
-        self.wsgi_application = get_wsgi_application()
-        from django import forms
-        self.forms = forms
-        from fhurl import RequestForm, fhurl, JSONResponse
-        self.fhurl = fhurl
-        self.RequestForm = RequestForm
-        self.JSONResponse = JSONResponse
+        def set_attr(module_name, attributes):
+            import importlib
+            module = importlib.import_module(module_name)
+            for attribute in attributes:
+                setattr(self, attribute, getattr(module, attribute))
+        self._iterate_imports(set_attr)
+
+        self.wsgi_application = self.get_wsgi_application()
+
+
 
     def dotslash(self, pth):
         import os
@@ -67,6 +80,7 @@ class D(object):
             else:
                 res = self.JSONResponse(res)
             return res
+        decorated.orig_view = view
         return decorated
 
     def _configure_django(self, **kw):
@@ -156,6 +170,8 @@ class D(object):
         import sys
         if len(sys.argv) == 1:
             self.do("runserver")
+        elif sys.argv[1] == "convert":
+            print(self.create_views())
         else:
             self.do()
 
@@ -166,6 +182,29 @@ class D(object):
             return self._handle_management_command("runserver", "8000")
 
         return self._act_as_manage(*args)
+
+    def _get_view_source(self, view):
+        """Takes a view from d.urlpatterns and returns the source of the original
+        view without the decorator"""
+        import inspect
+        source_lines = inspect.getsourcelines(view.orig_view)[0]
+        # from IPython import embed; embed()
+        
+        return "\n".join(source_lines[1:])
+
+    def create_views(self):
+        imports = []
+        def create_import_strings(module_name, attributes):
+            imports.append("from {} import {}".format(
+                                                module_name,
+                                                ", ".join(attributes)))
+        self._iterate_imports(create_import_strings)
+        views = []
+        for urlpattern in self.urlpatterns:
+            # check if its a decorated view from importd
+            if hasattr(urlpattern.callback, "orig_view"):
+                views.append(self._get_view_source(urlpattern.callback))
+        return "{}\n\n{}".format("\n".join(imports), "\n\n".join(views))
 
 import sys
 d = D()
