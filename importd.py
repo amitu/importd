@@ -202,8 +202,11 @@ class D(object):
                 views.append(self._get_view_source(urlpattern.callback))
 
         used_imports = set()
+        parsed_views = []
         for view in views:
-            used_imports.update(re.findall(r'd\.([a-zA-Z]+)', view))
+            dobject_regex = re.compile(r'd\.([a-zA-Z]+)')
+            used_imports.update(dobject_regex.findall(view))
+            parsed_views.append(dobject_regex.sub(lambda m: m.group(1), view))
 
 
         imports = []
@@ -214,7 +217,7 @@ class D(object):
                                                     module_name,
                                                     ", ".join(to_import)))
         self._iterate_imports(create_import_strings)
-        return "{}\n\n{}".format("\n".join(imports), "\n\n".join(views))
+        return "{}\n\n{}".format("\n".join(imports), "\n\n".join(parsed_views))
 
 import sys
 d = D()
