@@ -94,6 +94,7 @@ class D(object):
                         'NAME': self.dotslash("db.sqlite")
                     }
                 }
+
             self.smart_return = False
             if kw.pop("SMART_RETURN", True):
                 self.smart_return = True
@@ -263,7 +264,8 @@ urlpatterns = patterns("",
 
             if not hasattr(django_settings.default_settings, setting) or\
                     getattr(django_settings, setting) !=\
-                    getattr(django_settings.default_settings, setting):
+                    getattr(django_settings.default_settings, setting) or\
+                    setting == "INSTALLED_APPS":
 
                 if setting == "ROOT_URLCONF":
                     setting_value = 'urls'
@@ -271,6 +273,9 @@ urlpatterns = patterns("",
                     setting_value = []
                     for middleware in getattr(django_settings, setting):
                         setting_value.append(middleware.replace('importd.d', "{}.middleware".format(self.APP_NAME)))
+                elif setting == 'INSTALLED_APPS':
+                    setting_value = list(getattr(django_settings, setting))
+                    setting_value.append(self.APP_NAME)
                 else:
                     setting_value = getattr(django_settings, setting)
 
