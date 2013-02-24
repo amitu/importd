@@ -1,6 +1,9 @@
 from importd import d
 
-d(DEBUG=True) # configure django
+d(
+	DEBUG=True,
+	SMART_RETURN=True,
+) # configure django
 
 def real_index2(request):
     return d.HttpResponse("real_index2")
@@ -35,3 +38,6 @@ class MyForm(d.RequestForm):
     
     def save(self):
         return self.cleaned_data["x"] + self.cleaned_data["y"]
+        
+if __name__ == "__main__":
+    d.main()

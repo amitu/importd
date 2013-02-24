@@ -1,9 +1,9 @@
 development
 ===========
 
- * deprecated no_atexit in favor of atexit keyword parameter, 
-   https://github.com/amitu/importd/issues/1
+ * remove atexit magic, d.main() is the replacement
  * gunicorn cleanly exits now
+
 
 0.1.4 - 22-Oct-2012
 ===================
