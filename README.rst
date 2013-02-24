@@ -35,6 +35,12 @@ To run it in production:
 
   $ gunicorn foo:d
 
+To convert to standard django project:
+
+.. code::
+
+  $ python foo.py convert
+
 An example app: https://github.com/amitu/importd/blob/master/foo.py
 
 Features
