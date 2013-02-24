@@ -465,6 +465,14 @@ importd contains aliases for django methods and classes::
         d.main()
 
 
+convert to django project structure
+------------------------------------
+
+You can create a standard django project with::
+
+    python app.py convert
+
+
 a more detailed example
 -----------------------
 
