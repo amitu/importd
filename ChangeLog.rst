@@ -3,7 +3,8 @@ development
 
  * remove atexit magic, d.main() is the replacement
  * gunicorn cleanly exits now
-
+ * "convert" support, convert importd app to traditional django layout
+ * tests
 
 0.1.4 - 22-Oct-2012
 ===================
