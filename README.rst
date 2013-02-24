@@ -6,16 +6,20 @@ inspired from ruby's sinatra. Hello world django project:
 
 .. code-block:: python
 
- from importd import d
- d(DEBUG=True)
+    from importd import d
+    d(DEBUG=True)
 
- @d("/")
- def idx(request):
-    return "index.html" 
+    @d("/")
+    def idx(request):
+        return "index.html" 
 
- @d("/post/<int:post_id">/")
- def post(request, post_id):
-    return "post.html", {"post_id": post_id}
+    @d("/post/<int:post_id">/")
+    def post(request, post_id):
+        return "post.html", {"post_id": post_id}
+
+    if __name__ == "__main__":
+        d.main()
+
 
 To run it:
 
@@ -30,6 +34,18 @@ To run it in production:
 .. code::
 
   $ gunicorn foo:d
+
+To convert to standard django project:
+
+.. code::
+
+  $ python foo.py convert
+
+ or:
+
+ .. code::
+
+   $ python foo.py convert project_name
 
 An example app: https://github.com/amitu/importd/blob/master/foo.py
 
@@ -46,6 +62,7 @@ Features
  * wsgi compliant
  * gunicorn support
  * works seamlessly with fhurl (http://packages.python.org/fhurl/)
+ * easy convertable to django project structure
 
 Installation
 ============
