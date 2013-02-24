@@ -184,7 +184,10 @@ class D(object):
         if len(sys.argv) == 1:
             self.do("runserver")
         elif sys.argv[1] == "convert":
-            self.convert()
+            if len(sys.argv) > 2:
+                self.convert(sys.argv[2])
+            else:
+                self.convert()
         else:
             self.do()
 
@@ -303,7 +306,7 @@ if __name__ == "__main__":
         for src_dir, dirs, files in os.walk(src):
             dst_dir = src_dir.replace(src, dest)
             if not os.path.exists(dst_dir):
-                os.mkdir(dst_dir)
+                os.makedirs(dst_dir)
             for file_ in files:
                 src_file = os.path.join(src_dir, file_)
                 dst_file = os.path.join(dst_dir, file_)
@@ -311,11 +314,11 @@ if __name__ == "__main__":
                     os.remove(dst_file)
                 shutil.copy(src_file, dst_dir)
 
-    def convert(self):
+    def convert(self, project_title=None):
         import os
         import shutil
         print("Creating project directory")
-        project_dir = self.APP_NAME + "_project"
+        project_dir = project_title or self.APP_NAME + "_project"
         try:
             os.makedirs(project_dir)
         except OSError, e:

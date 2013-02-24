@@ -41,6 +41,12 @@ To convert to standard django project:
 
   $ python foo.py convert
 
+ or:
+
+ .. code::
+
+   $ python foo.py convert project_name
+
 An example app: https://github.com/amitu/importd/blob/master/foo.py
 
 Features
