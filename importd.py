@@ -293,8 +293,27 @@ if __name__ == "__main__":
     management.execute_manager(settings)
 """
 
+    def _copy_and_replace(self, src, dest):
+        """Copies files from src to dest, replaces conflicts.
+        From http://stackoverflow.com/questions/7419665/python-move-and-overwrite-files-and-folders (Ray Vega)"""
+
+        import os
+        import shutil
+
+        for src_dir, dirs, files in os.walk(src):
+            dst_dir = src_dir.replace(src, dest)
+            if not os.path.exists(dst_dir):
+                os.mkdir(dst_dir)
+            for file_ in files:
+                src_file = os.path.join(src_dir, file_)
+                dst_file = os.path.join(dst_dir, file_)
+                if os.path.exists(dst_file):
+                    os.remove(dst_file)
+                shutil.copy(src_file, dst_dir)
+
     def convert(self):
         import os
+        import shutil
         print("Creating project directory")
         project_dir = self.APP_NAME + "_project"
         try:
@@ -326,14 +345,24 @@ if __name__ == "__main__":
         with open(os.path.join(self.APP_NAME, "views.py"), 'w') as views:
             views.write(self._create_views())
 
-        print("Creating setings.py")
-        with open("settings.py", 'w') as settings:
-            settings.write(self._create_settings())
-
         if self.smart_return:
             print("Creating middleware.py")
             with open(os.path.join(self.APP_NAME, "middleware.py"), 'w') as middleware:
                 middleware.write(self._create_middleware())
+
+        if os.path.exists("../templates") and os.path.isdir("../templates/"):
+            print("Copying templates")
+            dest = os.path.join(self.APP_NAME, "templates", self.APP_NAME)
+            self._copy_and_replace("../templates/", os.path.join(self.APP_NAME, "templates", self.APP_NAME))
+
+        if os.path.exists("../static") and os.path.isdir("../static/"):
+            print("Copying static")
+            self._copy_and_replace("../static/", os.path.join(self.APP_NAME, "static", self.APP_NAME))
+
+
+        print("Creating setings.py")
+        with open("settings.py", 'w') as settings:
+            settings.write(self._create_settings())
 
         print("Creating urls.py")
         with open("urls.py", 'w') as urls:
