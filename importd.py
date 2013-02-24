@@ -172,7 +172,7 @@ class D(object):
         if len(sys.argv) == 1:
             self.do("runserver")
         elif sys.argv[1] == "convert":
-            print(self._create_settings())
+            self.convert()
         else:
             self.do()
 
@@ -189,9 +189,8 @@ class D(object):
         view without the decorator"""
         import inspect
         source_lines = inspect.getsourcelines(view.orig_view)[0]
-        # from IPython import embed; embed()
         
-        return "\n".join(source_lines[1:])
+        return "".join(source_lines[1:])
 
     def _create_views(self):
         import re
@@ -218,26 +217,25 @@ class D(object):
                                                     module_name,
                                                     ", ".join(to_import)))
         self._iterate_imports(create_import_strings)
-        return "{}\n\n{}".format("\n".join(imports), "\n\n".join(parsed_views))
+        return "{}\n\n\n{}".format("\n".join(imports), "\n\n".join(parsed_views))
 
     def _create_urls(self):
         import re
         patterns = []
-        # from IPython import embed; embed()
         for pattern in self.urlpatterns:
             func_module = pattern.callback.__module__
             if func_module == '__main__':
-                func_module = self.APP_NAME + "/views.py"
-            patterns.append("""(r'{}', {}.{})""".format(pattern.regex.pattern,
-                                                     pattern.callback.__module__,
+                func_module = self.APP_NAME + ".views"
+            patterns.append("""(r'{}', '{}.{}')""".format(pattern.regex.pattern,
+                                                     func_module,
                                                      pattern.callback.__name__,
                                                      ))
         return """from django.conf.urls.defaults import patterns
 
-        patterns = ("",
+urlpatterns = patterns("",
             {}
             )
-            """.format(",\n".join(patterns))
+            """.format((",\n" + " " * 12).join(patterns))
 
     def _create_settings(self):
         import re
@@ -246,7 +244,6 @@ class D(object):
         settings = {setting for setting in dir(django_settings) \
             if not setting.startswith("_") and re.match(r'[A-Z_]+', setting)}
         settings_lines = []
-        # from IPython import embed; embed()
         for setting in settings:
 
             if not hasattr(django_settings.default_settings, setting) or\
@@ -254,12 +251,71 @@ class D(object):
                     getattr(django_settings.default_settings, setting):
 
                 if setting == "ROOT_URLCONF":
-                    setting_value = '"urls.py"'
+                    setting_value = '"urls"'
                 else:
                     setting_value = pformat(getattr(django_settings, setting))
 
                 settings_lines.append('{} = {}'.format(setting, setting_value))
         return "\n\n".join(settings_lines)
+
+    def _create_manage(self):
+        # TODO: look up django-admin.py with shutils and just copy, maybe?
+        return """#!/usr/bin/env python
+from django.core import management
+
+import settings
+
+if __name__ == "__main__":
+    management.execute_manager(settings)
+"""
+
+    def convert(self):
+        import os
+        print("Creating project directory")
+        project_dir = self.APP_NAME + "_project"
+        try:
+            os.makedirs(project_dir)
+        except OSError, e:
+            print("{} already exsists".format(project_dir))
+        os.chdir(project_dir)
+        print ("Creating app directory ({})".format(self.APP_NAME))
+        try:
+            os.makedirs(self.APP_NAME)
+            with open(os.path.join(self.APP_NAME, "__init__.py"), 'w'):
+                pass
+        except OSError, e:
+            print("Directory {} already exists".format(self.APP_NAME))
+
+        print ("Creating __init__.py")
+        with open("__init__.py", 'w'):
+            pass
+
+        print("Creating models.py")
+        with open(os.path.join(self.APP_NAME, "models.py"), 'w'):
+            pass
+
+        print("Creating test.py")
+        with open(os.path.join(self.APP_NAME, "tests.py"), 'w'):
+            pass
+
+        print("Creating views.py")
+        with open(os.path.join(self.APP_NAME, "views.py"), 'w') as views:
+            views.write(self._create_views())
+
+        print("Creating setings.py")
+        with open("settings.py", 'w') as settings:
+            settings.write(self._create_settings())
+
+        print("Creating urls.py")
+        with open("urls.py", 'w') as urls:
+            urls.write(self._create_urls())
+
+        print("Creating manage.py")
+        with open("manage.py", 'w') as manage:
+            manage.write(self._create_manage())
+            os.chmod("manage.py", 0755)
+
+        os.chdir("..")
 
 
 
