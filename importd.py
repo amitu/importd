@@ -38,7 +38,8 @@ class D(object):
         for module_name, attributes in self.DJANGO_IMPORT:
             if isinstance(attributes, basestring):
                 attributes = [attributes]
-            callback(module_name, attributes) 
+            callback(module_name, attributes)             # check if its a decorated view from importd
+
 
     def _import_django(self):
         def set_attr(module_name, attributes):
@@ -64,25 +65,6 @@ class D(object):
     def add_form(self, regex, form_cls, *args, **kw):
         self.urlpatterns.append(self.fhurl(regex, form_cls, *args, **kw))
 
-    def _decorate_return(self, view):
-        import functools
-        @functools.wraps(view)
-        def decorated(request, *args, **kw):
-            res = view(request, *args, **kw)
-            if isinstance(res, basestring):
-                res = res, {}
-            if isinstance(res, self.HttpResponse): return res
-            if isinstance(res, tuple):
-                template_name, context = res
-                res = self.render_to_response(
-                    template_name, context, self.RequestContext(request)
-                )
-            else:
-                res = self.JSONResponse(res)
-            return res
-        decorated.orig_view = view
-        return decorated
-
     def _configure_django(self, **kw):
         import inspect, os
         self.APP_DIR, app_filename = os.path.split(
@@ -93,7 +75,7 @@ class D(object):
         if "regexers" in kw: 
             self.update_regexers(kw.pop("regexers"))
 
-        from django.conf import settings
+        from django.conf import settings, global_settings
 
         self.settings = settings
 
@@ -112,6 +94,10 @@ class D(object):
                         'NAME': self.dotslash("db.sqlite")
                     }
                 }
+            if kw.pop("SMART_RETURN", True):
+                kw.setdefault('MIDDLEWARE_CLASSES', list(global_settings.MIDDLEWARE_CLASSES)).\
+                                                                        insert(0, "importd.d.DecoratorMiddleware")
+
             if "DEBUG" not in kw: kw["DEBUG"] = True
             settings.configure(**kw)
             # import .views and .forms for each installed app
@@ -133,6 +119,32 @@ class D(object):
         self._import_django()
         self._configured = True
 
+    class DecoratorMiddleware(object):
+        """Smart response middleware for views. Converts view return to the following:
+        HttpResponse - stays the same
+        string - renders the template named in the string
+        (string, dict) - renders the template with keyword arguments.
+        object - renders JSONResponse of the object"""
+
+        def process_view(self, request, view_func, view_args, view_kwargs):
+            from django.shortcuts import render_to_response
+            from django.template import RequestContext
+            from django.http import HttpResponse
+
+            from fhurl import JSONResponse
+            res = view_func(request, *view_args, **view_kwargs)
+            if isinstance(res, basestring):
+                res = res, {}
+            if isinstance(res, HttpResponse): return res
+            if isinstance(res, tuple):
+                template_name, context = res
+                res = render_to_response(
+                    template_name, context, RequestContext(request)
+                )
+            else:
+                res = JSONResponse(res)
+            return res
+
     def __call__(self, *args, **kw):
         if args:
             if not hasattr(self, "_configured"):
@@ -146,17 +158,15 @@ class D(object):
                 self.update_urls(args[0])
                 return self
             if callable(args[0]):
-                decorated = self._decorate_return(args[0])
-                self.add_view("^%s/$" % args[0].__name__, decorated)
-                return decorated
+                self.add_view("^%s/$" % args[0].__name__, args[0])
+                return args[0]
             def ddecorator(candidate):
                 from django.forms import forms
                 if type(candidate) == forms.DeclarativeFieldsMetaclass: # unsafe
                     self.add_form(args[0], candidate, *args[1:], **kw)
                     return candidate
-                decorated = self._decorate_return(candidate)
-                self.add_view(args[0], decorated, *args[1:], **kw)
-                return decorated
+                self.add_view(args[0], candidate, *args[1:], **kw)
+                return candidate
             return ddecorator
         else:
             self._configure_django(**kw)
@@ -188,7 +198,7 @@ class D(object):
         """Takes a view from d.urlpatterns and returns the source of the original
         view without the decorator"""
         import inspect
-        source_lines = inspect.getsourcelines(view.orig_view)[0]
+        source_lines = inspect.getsourcelines(view)[0]
         
         return "".join(source_lines[1:])
 
@@ -197,9 +207,7 @@ class D(object):
         views = []
 
         for urlpattern in self.urlpatterns:
-            # check if its a decorated view from importd
-            if hasattr(urlpattern.callback, "orig_view"):
-                views.append(self._get_view_source(urlpattern.callback))
+            views.append(self._get_view_source(urlpattern.callback))
 
         used_imports = set()
         parsed_views = []
@@ -220,7 +228,6 @@ class D(object):
         return "{}\n\n\n{}".format("\n".join(imports), "\n\n".join(parsed_views))
 
     def _create_urls(self):
-        import re
         patterns = []
         for pattern in self.urlpatterns:
             func_module = pattern.callback.__module__
