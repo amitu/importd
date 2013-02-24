@@ -172,7 +172,7 @@ class D(object):
         if len(sys.argv) == 1:
             self.do("runserver")
         elif sys.argv[1] == "convert":
-            print(self._create_urls())
+            print(self._create_settings())
         else:
             self.do()
 
@@ -238,6 +238,29 @@ class D(object):
             {}
             )
             """.format(",\n".join(patterns))
+
+    def _create_settings(self):
+        import re
+        from pprint import pformat
+        from django.conf import settings as django_settings
+        settings = {setting for setting in dir(django_settings) \
+            if not setting.startswith("_") and re.match(r'[A-Z_]+', setting)}
+        settings_lines = []
+        # from IPython import embed; embed()
+        for setting in settings:
+
+            if not hasattr(django_settings.default_settings, setting) or\
+                    getattr(django_settings, setting) !=\
+                    getattr(django_settings.default_settings, setting):
+
+                if setting == "ROOT_URLCONF":
+                    setting_value = '"urls.py"'
+                else:
+                    setting_value = pformat(getattr(django_settings, setting))
+
+                settings_lines.append('{} = {}'.format(setting, setting_value))
+        return "\n\n".join(settings_lines)
+
 
 
 import sys
