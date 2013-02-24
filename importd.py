@@ -94,9 +94,11 @@ class D(object):
                         'NAME': self.dotslash("db.sqlite")
                     }
                 }
+            self.smart_return = False
             if kw.pop("SMART_RETURN", True):
+                self.smart_return = True
                 kw.setdefault('MIDDLEWARE_CLASSES', list(global_settings.MIDDLEWARE_CLASSES)).\
-                                                                        insert(0, "importd.d.DecoratorMiddleware")
+                                                                        insert(0, "importd.d.SmartReturnMiddleware")
 
             if "DEBUG" not in kw: kw["DEBUG"] = True
             settings.configure(**kw)
@@ -119,7 +121,7 @@ class D(object):
         self._import_django()
         self._configured = True
 
-    class DecoratorMiddleware(object):
+    class SmartReturnMiddleware(object):
         """Smart response middleware for views. Converts view return to the following:
         HttpResponse - stays the same
         string - renders the template named in the string
@@ -199,15 +201,18 @@ class D(object):
         view without the decorator"""
         import inspect
         source_lines = inspect.getsourcelines(view)[0]
-        
-        return "".join(source_lines[1:])
+
+        if source_lines[0].startswith("@d"):
+            del source_lines[0]
+        return "".join(source_lines)
 
     def _create_views(self):
         import re
         views = []
 
         for urlpattern in self.urlpatterns:
-            views.append(self._get_view_source(urlpattern.callback))
+            if urlpattern.callback.__module__ == "__main__":
+                views.append(self._get_view_source(urlpattern.callback))
 
         used_imports = set()
         parsed_views = []
@@ -237,7 +242,7 @@ class D(object):
                                                      func_module,
                                                      pattern.callback.__name__,
                                                      ))
-        return """from django.conf.urls.defaults import patterns
+        return """from django.conf.urls import patterns
 
 urlpatterns = patterns("",
             {}
@@ -258,12 +263,24 @@ urlpatterns = patterns("",
                     getattr(django_settings.default_settings, setting):
 
                 if setting == "ROOT_URLCONF":
-                    setting_value = '"urls"'
+                    setting_value = 'urls'
+                elif setting == 'MIDDLEWARE_CLASSES':
+                    setting_value = []
+                    for middleware in getattr(django_settings, setting):
+                        setting_value.append(middleware.replace('importd.d', "{}.middleware".format(self.APP_NAME)))
                 else:
-                    setting_value = pformat(getattr(django_settings, setting))
+                    setting_value = getattr(django_settings, setting)
 
-                settings_lines.append('{} = {}'.format(setting, setting_value))
+                settings_lines.append('{} = {}'.format(setting, pformat(setting_value)))
         return "\n\n".join(settings_lines)
+
+    def _create_middleware(self):
+        import inspect
+        source_lines = inspect.getsourcelines(self.SmartReturnMiddleware)
+        stripped_lines = []
+        for line in source_lines[0]:
+            stripped_lines.append(line[4:])
+        return "".join(stripped_lines)
 
     def _create_manage(self):
         # TODO: look up django-admin.py with shutils and just copy, maybe?
@@ -312,6 +329,11 @@ if __name__ == "__main__":
         print("Creating setings.py")
         with open("settings.py", 'w') as settings:
             settings.write(self._create_settings())
+
+        if self.smart_return:
+            print("Creating middleware.py")
+            with open(os.path.join(self.APP_NAME, "middleware.py"), 'w') as middleware:
+                middleware.write(self._create_middleware())
 
         print("Creating urls.py")
         with open("urls.py", 'w') as urls:
