@@ -30,6 +30,9 @@ class D(object):
             class ImportdModel(base.Model):
                 __metaclass__ = ImportdModelBase
 
+                class Meta:
+                    abstract = True
+
             self.Model = ImportdModel
 
         def __getattr__(self, name):
@@ -340,6 +343,7 @@ urlpatterns = patterns("",
             """.format((",\n" + " " * 12).join(patterns))
 
     def _create_settings(self):
+        import os
         import re
         from pprint import pformat
         from django.conf import settings as django_settings
@@ -350,8 +354,7 @@ urlpatterns = patterns("",
 
             if not hasattr(django_settings.default_settings, setting) or\
                     getattr(django_settings, setting) != \
-                    getattr(django_settings.default_settings, setting) or\
-                    setting == "INSTALLED_APPS":
+                    getattr(django_settings.default_settings, setting):
 
                 if setting == "ROOT_URLCONF":
                     setting_value = 'urls'
@@ -359,9 +362,11 @@ urlpatterns = patterns("",
                     setting_value = []
                     for middleware in getattr(django_settings, setting):
                         setting_value.append(middleware.replace('importd.d', "{}.middleware".format(self.APP_NAME)))
-                elif setting == 'INSTALLED_APPS':
-                    setting_value = list(getattr(django_settings, setting))
-                    setting_value.append(self.APP_NAME)
+                elif setting == "DATABASES":
+                    setting_value = getattr(django_settings, "DATABASES")
+                    db_dir, db_name = os.path.split(setting_value['default']['NAME'])
+                    setting_value['default']['NAME'] = os.path.join(db_dir, self.APP_NAME.replace("app", "project"),
+                                                                    db_name)
                 else:
                     setting_value = getattr(django_settings, setting)
 

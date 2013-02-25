@@ -40,8 +40,8 @@ class MyForm(d.RequestForm):
 
 
 class TestModel(d.models.Model):
-	x = d.models.CharField(max_length=20)
-	y = d.models.CharField(max_length=20)
+    x = d.models.CharField(max_length=20)
+    y = d.models.CharField(max_length=20)
 
 
 if __name__ == "__main__":
