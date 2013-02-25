@@ -16,3 +16,5 @@ build
 *.bdb
 t
 .DS_Store
+docs/html/
+docs/doctrees/

@@ -21,7 +21,7 @@ hello world with importd
 
 With importd there is no need to create a django project or app. There is no
 settings.py or urls.py, nor is there a need of manage.py. A single file is
-suffecient, eg hello.py::
+sufficient, e.g. hello.py::
 
     from importd import d
 
@@ -126,8 +126,8 @@ Running hello.py with gunicorn:
     2013-02-18 21:20:06 [50847] [INFO] Booting worker with pid: 50847
     2013-02-18 21:20:06 [50848] [INFO] Booting worker with pid: 50848
 
-autoconfigution of templates
-----------------------------
+auto-configution of templates
+-----------------------------
 
 importd automatically includes templates folder in directory containing hello.py
 to TEMPLATE_DIRS settings.
@@ -163,7 +163,7 @@ continues to be relocatable.
 auto configuration of sqlite3 as database
 -----------------------------------------
 
-For testing many a times sqlite is suffecient, and for those times importd
+For testing many a times sqlite is sufficient, and for those times importd
 automatically configures django with sqlite3 as database, with sqlite file
 stored in `db.sqlite` in the same folder as hello.py.
 
@@ -186,7 +186,7 @@ url /method-name/.::
         d.main()
 
 In this case, importd will map hello() method to /hello/ url. This can be
-overriden by passing the URL where the view must be mapped to @d::
+overridden by passing the URL where the view must be mapped to @d::
 
     from importd import d
 
@@ -200,7 +200,7 @@ overriden by passing the URL where the view must be mapped to @d::
 
 In this case hello method is mapped to /.
 
-@d decorator also supprts named urls via name keyword argument, eg::
+@d decorator also supports named urls via name keyword argument, eg::
 
     from importd import d
 
@@ -254,7 +254,7 @@ is equivalent to::
 Notice the simpler URL passed to @d("/") instead of d("^$"). Either form can be
 used.
 
-Take a look at smarturls documentation to see how can simplfy url construction
+Take a look at smarturls documentation to see how can simplify url construction
 for you.
 
 importd works well with fhurl

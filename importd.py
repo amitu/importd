@@ -69,10 +69,8 @@ class D(object):
 
     # tuple list of django modules imported in d
     # tuple (a, b) is equivalent to from a import b
-    # if b is an iterable (b = [c, d]), it is equivalent
+    # if b is an iterable (b = [c, d]), it is equivalent 
     # to from a import c, d
-    # if b is an empty string, the module specified in a is
-    # imported, i.e. ('django.db.models', '') := from django.db import models
     DJANGO_IMPORT = (
         ('smarturls', 'surl'),
         ('django.http', ['HttpResponse', 'Http404', 'HttpResponseRedirect']),
@@ -113,7 +111,12 @@ class D(object):
         self._models = self.models
         self.models = self.ModelHandler(self)
 
-        self.wsgi_application = self.get_wsgi_application()
+        try:
+            from django.core.wsgi import get_wsgi_application
+            self.wsgi_application = self.get_wsgi_application()
+        except ImportError:
+            import django.core.handlers.wsgi
+            self.wsgi_application = django.core.handlers.wsgi.WSGIHandler()
 
     def dotslash(self, pth):
         import os
@@ -214,13 +217,16 @@ class D(object):
         def process_view(self, request, view_func, view_args, view_kwargs):
             from django.shortcuts import render_to_response
             from django.template import RequestContext
-            from django.http import HttpResponse
+            try:
+                from django.http.response import HttpResponseBase as RBase
+            except ImportError:
+                from django.http import HttpResponse as RBase
 
             from fhurl import JSONResponse
             res = view_func(request, *view_args, **view_kwargs)
             if isinstance(res, basestring):
                 res = res, {}
-            if isinstance(res, HttpResponse): return res
+            if isinstance(res, RBase): return res
             if isinstance(res, tuple):
                 template_name, context = res
                 res = render_to_response(
@@ -309,6 +315,7 @@ class D(object):
 
         imports = []
 
+        imports = []
         def create_import_strings(module_name, attributes):
             if attributes:
                 to_import = used_imports.intersection(attributes)
