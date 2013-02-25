@@ -67,7 +67,7 @@ Features
  * wsgi compliant
  * gunicorn support
  * works seamlessly with fhurl (http://packages.python.org/fhurl/)
- * easyly convertable to django project structure
+ * easily convertable to django project structure
 
 Installation
 ============
