@@ -11,11 +11,16 @@ inspired from ruby's sinatra. Hello world django project:
 
     @d("/")
     def idx(request):
-        return "index.html" 
+        return "index.html", {"ids":
+        					 d.models.Index.objects.all()}
 
-    @d("/post/<int:post_id">/")
+    @d("/post/<int:post_id>/")
     def post(request, post_id):
+    	d.models.Index.objects.create(post_id=post_id)
         return "post.html", {"post_id": post_id}
+        
+    class Index(d.models.Model):
+    	post_id = d.models.CharField(max_length=10)
 
     if __name__ == "__main__":
         d.main()
