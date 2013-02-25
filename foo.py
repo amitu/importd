@@ -18,7 +18,7 @@ d(# configure other urlpatterns
 def index(request):
     import time
     return "index.html", {"msg": time.time(),
-						  "objs": d.model.TestModel.objects.all()}
+						  "objs": d.models.TestModel.objects.all()}
 
 @d("^edit/$", name="edit")  # named urls
 def real_index(request):
@@ -35,17 +35,13 @@ class MyForm(d.RequestForm):
 
     def save(self):
 		x, y = self.cleaned_data['x'], self.cleaned_data['y']
-		d.model.TestModel.objects.create(x=x, y=y)
+		d.models.TestModel.objects.create(x=x, y=y)
 		return x + y
 
 
-@d.model
 class TestModel(d.models.Model):
 	x = d.models.CharField(max_length=20)
 	y = d.models.CharField(max_length=20)
-
-	class Meta:
-		app_label = "foo_app"
 
 
 if __name__ == "__main__":

@@ -8,13 +8,47 @@ class D(object):
             self.d = d
 
         def __getattr__(self, name):
-            return getattr(d.app_models, name)
+            if name.lower() in dir(self.d.app_models):
+                return getattr(self.d.app_models, name.lower())
+            elif name == "Model":
+                from django.db.models import base
+
+                class ImportdModelBase(base.ModelBase):
+                    """Forces Meta.app_name for each model"""
+
+                    def __new__(cls, name, bases, attrs):
+                        if "Meta" in attrs:
+                            setattr(attrs['Meta'], "app_label",
+                                    self.d.APP_NAME)
+                        else:
+                            attrs["Meta"] = type("Meta", (),
+                                                {"app_label": self.d.APP_NAME})
+                        new_cls = super(ImportdModelBase, cls).__new__(cls,
+                                                                       name,
+                                                                       bases,
+                                                                       attrs)
+                        setattr(self.d.app_models, name.lower(), new_cls)
+                        return new_cls
+
+                class ImportdModel(base.Model):
+                    __metaclass__ = ImportdModelBase
+
+                return ImportdModel
+            else:
+                return getattr(self.d._models, name)
 
         def __call__(self, cls):
-            setattr(d.app_models, cls.__name__, cls)
+            if hasattr(cls, "Meta"):
+                setattr(cls.Meta, "app_label", self.d.APP_NAME)
+            else:
+                class Meta:
+                    app_label = self.d.APP_NAME
+                setattr(cls, "Meta", Meta)
 
-    def __init__(self):
-        self.model = self.ModelHandler(self)
+            from django.db.models import base
+            model = base.ModelBase(cls.__name__, (base.Model,),
+                                   dict(cls.__dict__))
+            setattr(d.app_models, cls.__name__, model)
 
     def _is_management_command(self, cmd):
         return cmd in "runserver,shell".split(",")
@@ -58,7 +92,6 @@ class D(object):
             callback(module_name, attributes)  # check if its a decorated view from importd
 
         # override models.Models so there metaclass magic isn't called
-        self.models.Model = object
 
     def _import_django(self):
         def set_attr(module_name, attributes):
@@ -70,6 +103,8 @@ class D(object):
                 else:
                     setattr(self, module_name.split(".")[-1], module)
         self._iterate_imports(set_attr)
+        self._models = self.models
+        self.models = self.ModelHandler(self)
 
         self.wsgi_application = self.get_wsgi_application()
 
