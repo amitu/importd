@@ -1,12 +1,14 @@
 from django.utils import unittest
 from django.conf import settings
 from django.test.client import Client
+from django.core.urlresolvers import resolve
+
 import os
 
 class BasicTest(unittest.TestCase):
     def test_appdir(self):
         self.assertEqual(self.APP_DIR + "/app/tests.py", __file__)
-        
+
     def test_debug(self):
         # django test sets up DEBUG to True, so this cant be tested like this.
         # self.assertTrue(settings.DEBUG)
@@ -25,7 +27,6 @@ class BasicTest(unittest.TestCase):
         self.assertTrue(settings.FORMS_IMPORTED)
 
     def test_static_mapped(self):
-        from django.core.urlresolvers import resolve
         self.assertEqual(
             resolve("/static/").url_name, 
             "django.contrib.staticfiles.views.serve"
@@ -37,3 +38,4 @@ class BasicTest(unittest.TestCase):
         response = c.get("/static/style.css")
         self.assertEqual(response.status_code, 200)
         settings.DEBUG=False
+
