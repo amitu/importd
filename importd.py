@@ -477,12 +477,12 @@ if __name__ == "__main__":
             print("Copying templates")
             dest = os.path.join(self.APP_NAME, "templates", self.APP_NAME)
             self._copy_and_replace("../templates/", os.path.join(
-                                    self.APP_NAME, "templates", self.APP_NAME))
+                                    self.APP_NAME, "templates"))
 
         if os.path.exists("../static") and os.path.isdir("../static/"):
             print("Copying static")
             self._copy_and_replace("../static/", os.path.join(self.APP_NAME,
-                                                    "static", self.APP_NAME))
+                                                    "static"))
 
         if os.path.exists("../db.sqlite"):
             print("Copying db.sqlite")
