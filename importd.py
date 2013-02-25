@@ -7,33 +7,34 @@ class D(object):
         def __init__(self, d):
             self.d = d
 
+            from django.db.models import base
+
+            class ImportdModelBase(base.ModelBase):
+                """Forces Meta.app_name for each model"""
+
+                def __new__(cls, name, bases, attrs):
+                    if "Meta" in attrs:
+                        setattr(attrs['Meta'], "app_label",
+                                self.d.APP_NAME)
+                    else:
+                        attrs["Meta"] = type("Meta", (),
+                                            {"app_label": self.d.APP_NAME})
+                    new_cls = super(ImportdModelBase, cls).__new__(cls,
+                                                                   name,
+                                                                   bases,
+                                                                   attrs)
+                    if name != "ImportdModel":
+                        setattr(self.d.app_models, name.lower(), new_cls)
+                    return new_cls
+
+            class ImportdModel(base.Model):
+                __metaclass__ = ImportdModelBase
+
+            self.Model = ImportdModel
+
         def __getattr__(self, name):
             if name.lower() in dir(self.d.app_models):
                 return getattr(self.d.app_models, name.lower())
-            elif name == "Model":
-                from django.db.models import base
-
-                class ImportdModelBase(base.ModelBase):
-                    """Forces Meta.app_name for each model"""
-
-                    def __new__(cls, name, bases, attrs):
-                        if "Meta" in attrs:
-                            setattr(attrs['Meta'], "app_label",
-                                    self.d.APP_NAME)
-                        else:
-                            attrs["Meta"] = type("Meta", (),
-                                                {"app_label": self.d.APP_NAME})
-                        new_cls = super(ImportdModelBase, cls).__new__(cls,
-                                                                       name,
-                                                                       bases,
-                                                                       attrs)
-                        setattr(self.d.app_models, name.lower(), new_cls)
-                        return new_cls
-
-                class ImportdModel(base.Model):
-                    __metaclass__ = ImportdModelBase
-
-                return ImportdModel
             else:
                 return getattr(self.d._models, name)
 
@@ -84,11 +85,14 @@ class D(object):
     def _iterate_imports(self, callback):
         """Iterates through imports and calls callback for each
         (module_name, attributes) pair. If attribute is a string, it is 
-        converted to a list first"""
+        converted to a list first. Empty strings become empty lists"""
 
         for module_name, attributes in self.DJANGO_IMPORT:
             if isinstance(attributes, basestring):
-                attributes = [attributes]
+                if attributes:
+                    attributes = [attributes]
+                else:
+                    attributes = []
             callback(module_name, attributes)  # check if its a decorated view from importd
 
         # override models.Models so there metaclass magic isn't called
@@ -97,11 +101,11 @@ class D(object):
         def set_attr(module_name, attributes):
             import importlib
             module = importlib.import_module(module_name)
-            for attribute in attributes:
-                if attribute:
-                    setattr(self, attribute, getattr(module, attribute))
-                else:
-                    setattr(self, module_name.split(".")[-1], module)
+            if attributes:
+                for attribute in attributes:
+                        setattr(self, attribute, getattr(module, attribute))
+            else:
+                setattr(self, module_name.split(".")[-1], module)
         self._iterate_imports(set_attr)
         self._models = self.models
         self.models = self.ModelHandler(self)
@@ -300,14 +304,21 @@ class D(object):
             used_imports.update(dobject_regex.findall(view))
             parsed_views.append(dobject_regex.sub(lambda m: m.group(1), view))
 
-
         imports = []
+
         def create_import_strings(module_name, attributes):
-            to_import = used_imports.intersection(attributes)
-            if to_import:
-                imports.append("from {} import {}".format(
-                                                    module_name,
-                                                    ", ".join(to_import)))
+            if attributes:
+                to_import = used_imports.intersection(attributes)
+                if to_import:
+                    imports.append("from {} import {}".format(
+                                                        module_name,
+                                                        ", ".join(to_import)))
+            else:
+                if module_name.split(".")[-1] in used_imports:
+                    # special case for models
+                    imports.append("from {} import {}".format(
+                                        "{}".format(self.APP_NAME),
+                                            module_name.split(".")[-1]))
         self._iterate_imports(create_import_strings)
         return "{}\n\n\n{}".format("\n".join(imports), "\n\n".join(parsed_views))
 
@@ -365,6 +376,23 @@ urlpatterns = patterns("",
             stripped_lines.append(line[4:])
         return "".join(stripped_lines)
 
+    def _create_models(self):
+        import inspect
+        models = []
+        for attr in dir(self.app_models):
+            model_candidate = getattr(self.app_models, attr)
+            if isinstance(model_candidate, type) and\
+                issubclass(model_candidate, self.models.Model):
+
+                model_source = inspect.getsource(model_candidate).replace(
+                                                        "d.models", "models")
+                models.append(model_source)
+
+        return """from django.db import models
+
+
+{}""".format("\n\n".join(models))
+
     def _create_manage(self):
         # TODO: look up django-admin.py with shutils and just copy, maybe?
         return """#!/usr/bin/env python
@@ -416,9 +444,9 @@ if __name__ == "__main__":
         with open("__init__.py", 'w'):
             pass
 
-        print("Creating app_models.py")
-        with open(os.path.join(self.APP_NAME, "app_models.py"), 'w'):
-            pass
+        print("Creating models.py")
+        with open(os.path.join(self.APP_NAME, "models.py"), 'w') as models:
+            models.write(self._create_models())
 
         print("Creating test.py")
         with open(os.path.join(self.APP_NAME, "tests.py"), 'w'):
@@ -436,12 +464,17 @@ if __name__ == "__main__":
         if os.path.exists("../templates") and os.path.isdir("../templates/"):
             print("Copying templates")
             dest = os.path.join(self.APP_NAME, "templates", self.APP_NAME)
-            self._copy_and_replace("../templates/", os.path.join(self.APP_NAME, "templates", self.APP_NAME))
+            self._copy_and_replace("../templates/", os.path.join(
+                                    self.APP_NAME, "templates", self.APP_NAME))
 
         if os.path.exists("../static") and os.path.isdir("../static/"):
             print("Copying static")
-            self._copy_and_replace("../static/", os.path.join(self.APP_NAME, "static", self.APP_NAME))
+            self._copy_and_replace("../static/", os.path.join(self.APP_NAME,
+                                                    "static", self.APP_NAME))
 
+        if os.path.exists("../db.sqlite"):
+            print("Copying db.sqlite")
+            shutil.copy("../db.sqlite", "db.sqlite")
 
         print("Creating setings.py")
         with open("settings.py", 'w') as settings:
