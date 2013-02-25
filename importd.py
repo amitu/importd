@@ -1,6 +1,20 @@
 class D(object):
-    from django.conf.urls.defaults import patterns
+    from django.conf.urls import patterns
     urlpatterns = patterns("")
+
+    class ModelHandler(object):
+
+        def __init__(self, d):
+            self.d = d
+
+        def __getattr__(self, name):
+            return getattr(d.app_models, name)
+
+        def __call__(self, cls):
+            setattr(d.app_models, cls.__name__, cls)
+
+    def __init__(self):
+        self.model = self.ModelHandler(self)
 
     def _is_management_command(self, cmd):
         return cmd in "runserver,shell".split(",")
@@ -17,8 +31,10 @@ class D(object):
 
     # tuple list of django modules imported in d
     # tuple (a, b) is equivalent to from a import b
-    # if b is an iterable (b = [c, d]), it is equivalent 
+    # if b is an iterable (b = [c, d]), it is equivalent
     # to from a import c, d
+    # if b is an empty string, the module specified in a is
+    # imported, i.e. ('django.db.models', '') := from django.db import models
     DJANGO_IMPORT = (
         ('smarturls', 'surl'),
         ('django.http', ['HttpResponse', 'Http404', 'HttpResponseRedirect']),
@@ -28,6 +44,7 @@ class D(object):
         ('django.core.wsgi', 'get_wsgi_application'),
         ('django', 'forms'),
         ('fhurl', ['RequestForm', 'fhurl', 'JSONResponse']),
+        ('django.db.models', ''),
         )
 
     def _iterate_imports(self, callback):
@@ -38,20 +55,23 @@ class D(object):
         for module_name, attributes in self.DJANGO_IMPORT:
             if isinstance(attributes, basestring):
                 attributes = [attributes]
-            callback(module_name, attributes)             # check if its a decorated view from importd
+            callback(module_name, attributes)  # check if its a decorated view from importd
 
+        # override models.Models so there metaclass magic isn't called
+        self.models.Model = object
 
     def _import_django(self):
         def set_attr(module_name, attributes):
             import importlib
             module = importlib.import_module(module_name)
             for attribute in attributes:
-                setattr(self, attribute, getattr(module, attribute))
+                if attribute:
+                    setattr(self, attribute, getattr(module, attribute))
+                else:
+                    setattr(self, module_name.split(".")[-1], module)
         self._iterate_imports(set_attr)
 
         self.wsgi_application = self.get_wsgi_application()
-
-
 
     def dotslash(self, pth):
         import os
@@ -70,9 +90,9 @@ class D(object):
         self.APP_DIR, app_filename = os.path.split(
             os.path.realpath(inspect.stack()[2][1])
         )
-        self.APP_NAME = app_filename.partition(".")[0]
+        self.APP_NAME = app_filename.partition(".")[0] + "_app"
 
-        if "regexers" in kw: 
+        if "regexers" in kw:
             self.update_regexers(kw.pop("regexers"))
 
         from django.conf import settings, global_settings
@@ -98,8 +118,28 @@ class D(object):
             self.smart_return = False
             if kw.pop("SMART_RETURN", True):
                 self.smart_return = True
-                kw.setdefault('MIDDLEWARE_CLASSES', list(global_settings.MIDDLEWARE_CLASSES)).\
-                                                                        insert(0, "importd.d.SmartReturnMiddleware")
+                kw.setdefault('MIDDLEWARE_CLASSES',
+                              list(global_settings.MIDDLEWARE_CLASSES)).\
+                              insert(0, "importd.d.SmartReturnMiddleware")
+
+            # we mock an app, so django internal model loading magic finds
+            # the models
+            class ModelsMock(object):
+                __name__ = self.APP_NAME + ".py"
+                __file__ = os.path.join(self.APP_DIR, self.APP_NAME + ".py")
+            self.app_models = ModelsMock()
+
+            class AppMock(object):
+                __file__ = os.path.join(self.APP_DIR, self.APP_NAME + ".py")
+                __name__ = self.APP_NAME + ".py"
+                models = self.app_models
+
+            sys.modules[self.APP_NAME] = AppMock()
+            sys.modules[self.APP_NAME + '.models'] = self.app_models
+
+            installed = list(kw.setdefault("INSTALLED_APPS", []))
+            installed.append(self.APP_NAME)
+            kw['INSTALLED_APPS'] = installed
 
             if "DEBUG" not in kw: kw["DEBUG"] = True
             settings.configure(**kw)
@@ -156,7 +196,7 @@ class D(object):
                 return self.wsgi_application(*args)
             if self._is_management_command(args[0]):
                 self._handle_management_command(*args, **kw)
-                return self 
+                return self
             if type(args[0]) == list:
                 self.update_urls(args[0])
                 return self
@@ -165,7 +205,7 @@ class D(object):
                 return args[0]
             def ddecorator(candidate):
                 from django.forms import forms
-                if type(candidate) == forms.DeclarativeFieldsMetaclass: # unsafe
+                if type(candidate) == forms.DeclarativeFieldsMetaclass:  # unsafe
                     self.add_form(args[0], candidate, *args[1:], **kw)
                     return candidate
                 self.add_view(args[0], candidate, *args[1:], **kw)
@@ -263,7 +303,7 @@ urlpatterns = patterns("",
         for setting in settings:
 
             if not hasattr(django_settings.default_settings, setting) or\
-                    getattr(django_settings, setting) !=\
+                    getattr(django_settings, setting) != \
                     getattr(django_settings.default_settings, setting) or\
                     setting == "INSTALLED_APPS":
 
@@ -323,7 +363,7 @@ if __name__ == "__main__":
         import os
         import shutil
         print("Creating project directory")
-        project_dir = project_title or self.APP_NAME + "_project"
+        project_dir = project_title or self.APP_NAME.replace("app", "project")
         try:
             os.makedirs(project_dir)
         except OSError, e:
@@ -341,8 +381,8 @@ if __name__ == "__main__":
         with open("__init__.py", 'w'):
             pass
 
-        print("Creating models.py")
-        with open(os.path.join(self.APP_NAME, "models.py"), 'w'):
+        print("Creating app_models.py")
+        with open(os.path.join(self.APP_NAME, "app_models.py"), 'w'):
             pass
 
         print("Creating test.py")
