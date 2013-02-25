@@ -47,7 +47,7 @@ or:
 
   $ python foo.py convert project_name
 
-An example app: https://github.com/amitu/importd/blob/master/foo.py
+Some examples: https://github.com/amitu/importd/tree/development/examples
 
 Features
 ========
