@@ -1,7 +1,7 @@
 from setuptools import setup
 
 try:
-    long_description=open('README.rst', 'rt').read(),
+    long_description=open('README.rst', 'rt').read()
 except Exception:
     long_description=""
 
