@@ -104,6 +104,7 @@ class D(object):
                                                                         insert(0, "importd.d.SmartReturnMiddleware")
 
             if "DEBUG" not in kw: kw["DEBUG"] = True
+            if "APP_DIR" not in kw: kw["APP_DIR"] = self.APP_DIR
             settings.configure(**kw)
             # import .views and .forms for each installed app
             for app in settings.INSTALLED_APPS:

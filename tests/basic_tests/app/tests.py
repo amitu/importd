@@ -7,7 +7,7 @@ import os
 
 class BasicTest(unittest.TestCase):
     def test_appdir(self):
-        self.assertEqual(self.APP_DIR + "/app/tests.py", __file__)
+        self.assertTrue(__file__.startswith(settings.APP_DIR + "/app/tests.py"))
 
     def test_debug(self):
         # django test sets up DEBUG to True, so this cant be tested like this.
