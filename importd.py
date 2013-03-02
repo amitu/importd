@@ -131,6 +131,10 @@ class D(object):
         self.urlpatterns.append(self.fhurl(regex, form_cls, *args, **kw))
 
     def _configure_django(self, **kw):
+        from django.conf import settings, global_settings
+        self.settings = settings
+        if settings.configured: return
+        
         import inspect, os
         self.APP_DIR, app_filename = os.path.split(
             os.path.realpath(inspect.stack()[2][1])
@@ -140,9 +144,6 @@ class D(object):
         if "regexers" in kw:
             self.update_regexers(kw.pop("regexers"))
 
-        from django.conf import settings, global_settings
-
-        self.settings = settings
 
         if not kw.get("dont_configure", False):
             kw["ROOT_URLCONF"] = "importd.d"
