@@ -1,6 +1,58 @@
 class D(object):
-    from django.conf.urls.defaults import patterns
+    from django.conf.urls import patterns
     urlpatterns = patterns("")
+
+    class ModelHandler(object):
+
+        def __init__(self, d):
+            self.d = d
+
+            from django.db.models import base
+
+            class ImportdModelBase(base.ModelBase):
+                """Forces Meta.app_name for each model"""
+
+                def __new__(cls, name, bases, attrs):
+                    if "Meta" in attrs:
+                        setattr(attrs['Meta'], "app_label",
+                                self.d.APP_NAME)
+                    else:
+                        attrs["Meta"] = type("Meta", (),
+                                            {"app_label": self.d.APP_NAME})
+                    new_cls = super(ImportdModelBase, cls).__new__(cls,
+                                                                   name,
+                                                                   bases,
+                                                                   attrs)
+                    if name != "ImportdModel":
+                        setattr(self.d.app_models, name.lower(), new_cls)
+                    return new_cls
+
+            class ImportdModel(base.Model):
+                __metaclass__ = ImportdModelBase
+
+                class Meta:
+                    abstract = True
+
+            self.Model = ImportdModel
+
+        def __getattr__(self, name):
+            if name.lower() in dir(self.d.app_models):
+                return getattr(self.d.app_models, name.lower())
+            else:
+                return getattr(self.d._models, name)
+
+        def __call__(self, cls):
+            if hasattr(cls, "Meta"):
+                setattr(cls.Meta, "app_label", self.d.APP_NAME)
+            else:
+                class Meta:
+                    app_label = self.d.APP_NAME
+                setattr(cls, "Meta", Meta)
+
+            from django.db.models import base
+            model = base.ModelBase(cls.__name__, (base.Model,),
+                                   dict(cls.__dict__))
+            setattr(d.app_models, cls.__name__, model)
 
     def _is_management_command(self, cmd):
         return cmd in "runserver,shell".split(",")
@@ -28,25 +80,36 @@ class D(object):
         ('django.core.wsgi', 'get_wsgi_application'),
         ('django', 'forms'),
         ('fhurl', ['RequestForm', 'fhurl', 'JSONResponse']),
+        ('django.db.models', ''),
         )
 
     def _iterate_imports(self, callback):
         """Iterates through imports and calls callback for each
         (module_name, attributes) pair. If attribute is a string, it is 
-        converted to a list first"""
+        converted to a list first. Empty strings become empty lists"""
 
         for module_name, attributes in self.DJANGO_IMPORT:
             if isinstance(attributes, basestring):
-                attributes = [attributes]
-            callback(module_name, attributes)             # check if its a decorated view from importd
+                if attributes:
+                    attributes = [attributes]
+                else:
+                    attributes = []
+            callback(module_name, attributes)  # check if its a decorated view from importd
+
+        # override models.Models so there metaclass magic isn't called
 
     def _import_django(self):
         def set_attr(module_name, attributes):
             import importlib
             module = importlib.import_module(module_name)
-            for attribute in attributes:
-                setattr(self, attribute, getattr(module, attribute))
+            if attributes:
+                for attribute in attributes:
+                        setattr(self, attribute, getattr(module, attribute))
+            else:
+                setattr(self, module_name.split(".")[-1], module)
         self._iterate_imports(set_attr)
+        self._models = self.models
+        self.models = self.ModelHandler(self)
 
         try:
             from django.core.wsgi import get_wsgi_application
@@ -72,9 +135,9 @@ class D(object):
         self.APP_DIR, app_filename = os.path.split(
             os.path.realpath(inspect.stack()[2][1])
         )
-        self.APP_NAME = app_filename.partition(".")[0]
+        self.APP_NAME = app_filename.partition(".")[0] + "_app"
 
-        if "regexers" in kw: 
+        if "regexers" in kw:
             self.update_regexers(kw.pop("regexers"))
 
         from django.conf import settings, global_settings
@@ -100,8 +163,28 @@ class D(object):
             self.smart_return = False
             if kw.pop("SMART_RETURN", True):
                 self.smart_return = True
-                kw.setdefault('MIDDLEWARE_CLASSES', list(global_settings.MIDDLEWARE_CLASSES)).\
-                                                                        insert(0, "importd.d.SmartReturnMiddleware")
+                kw.setdefault('MIDDLEWARE_CLASSES',
+                              list(global_settings.MIDDLEWARE_CLASSES)).\
+                              insert(0, "importd.d.SmartReturnMiddleware")
+
+            # we mock an app, so django internal model loading magic finds
+            # the models
+            class ModelsMock(object):
+                __name__ = self.APP_NAME + ".py"
+                __file__ = os.path.join(self.APP_DIR, self.APP_NAME + ".py")
+            self.app_models = ModelsMock()
+
+            class AppMock(object):
+                __file__ = os.path.join(self.APP_DIR, self.APP_NAME + ".py")
+                __name__ = self.APP_NAME + ".py"
+                models = self.app_models
+
+            sys.modules[self.APP_NAME] = AppMock()
+            sys.modules[self.APP_NAME + '.models'] = self.app_models
+
+            installed = list(kw.setdefault("INSTALLED_APPS", []))
+            installed.append(self.APP_NAME)
+            kw['INSTALLED_APPS'] = installed
 
             if "DEBUG" not in kw: kw["DEBUG"] = True
             if "APP_DIR" not in kw: kw["APP_DIR"] = self.APP_DIR
@@ -162,7 +245,7 @@ class D(object):
                 return self.wsgi_application(*args)
             if self._is_management_command(args[0]):
                 self._handle_management_command(*args, **kw)
-                return self 
+                return self
             if type(args[0]) == list:
                 self.update_urls(args[0])
                 return self
@@ -171,7 +254,7 @@ class D(object):
                 return args[0]
             def ddecorator(candidate):
                 from django.forms import forms
-                if type(candidate) == forms.DeclarativeFieldsMetaclass: # unsafe
+                if type(candidate) == forms.DeclarativeFieldsMetaclass:  # unsafe
                     self.add_form(args[0], candidate, *args[1:], **kw)
                     return candidate
                 self.add_view(args[0], candidate, *args[1:], **kw)
@@ -231,14 +314,22 @@ class D(object):
             used_imports.update(dobject_regex.findall(view))
             parsed_views.append(dobject_regex.sub(lambda m: m.group(1), view))
 
+        imports = []
 
         imports = []
         def create_import_strings(module_name, attributes):
-            to_import = used_imports.intersection(attributes)
-            if to_import:
-                imports.append("from {} import {}".format(
-                                                    module_name,
-                                                    ", ".join(to_import)))
+            if attributes:
+                to_import = used_imports.intersection(attributes)
+                if to_import:
+                    imports.append("from {} import {}".format(
+                                                        module_name,
+                                                        ", ".join(to_import)))
+            else:
+                if module_name.split(".")[-1] in used_imports:
+                    # special case for models
+                    imports.append("from {} import {}".format(
+                                        "{}".format(self.APP_NAME),
+                                            module_name.split(".")[-1]))
         self._iterate_imports(create_import_strings)
         return "{}\n\n\n{}".format("\n".join(imports), "\n\n".join(parsed_views))
 
@@ -260,6 +351,7 @@ urlpatterns = patterns("",
             """.format((",\n" + " " * 12).join(patterns))
 
     def _create_settings(self):
+        import os
         import re
         from pprint import pformat
         from django.conf import settings as django_settings
@@ -269,9 +361,8 @@ urlpatterns = patterns("",
         for setting in settings:
 
             if not hasattr(django_settings.default_settings, setting) or\
-                    getattr(django_settings, setting) !=\
-                    getattr(django_settings.default_settings, setting) or\
-                    setting == "INSTALLED_APPS":
+                    getattr(django_settings, setting) != \
+                    getattr(django_settings.default_settings, setting):
 
                 if setting == "ROOT_URLCONF":
                     setting_value = 'urls'
@@ -279,9 +370,11 @@ urlpatterns = patterns("",
                     setting_value = []
                     for middleware in getattr(django_settings, setting):
                         setting_value.append(middleware.replace('importd.d', "{}.middleware".format(self.APP_NAME)))
-                elif setting == 'INSTALLED_APPS':
-                    setting_value = list(getattr(django_settings, setting))
-                    setting_value.append(self.APP_NAME)
+                elif setting == "DATABASES":
+                    setting_value = getattr(django_settings, "DATABASES")
+                    db_dir, db_name = os.path.split(setting_value['default']['NAME'])
+                    setting_value['default']['NAME'] = os.path.join(db_dir, self.APP_NAME.replace("app", "project"),
+                                                                    db_name)
                 else:
                     setting_value = getattr(django_settings, setting)
 
@@ -295,6 +388,23 @@ urlpatterns = patterns("",
         for line in source_lines[0]:
             stripped_lines.append(line[4:])
         return "".join(stripped_lines)
+
+    def _create_models(self):
+        import inspect
+        models = []
+        for attr in dir(self.app_models):
+            model_candidate = getattr(self.app_models, attr)
+            if isinstance(model_candidate, type) and\
+                issubclass(model_candidate, self.models.Model):
+
+                model_source = inspect.getsource(model_candidate).replace(
+                                                        "d.models", "models")
+                models.append(model_source)
+
+        return """from django.db import models
+
+
+{}""".format("\n\n".join(models))
 
     def _create_manage(self):
         # TODO: look up django-admin.py with shutils and just copy, maybe?
@@ -329,7 +439,7 @@ if __name__ == "__main__":
         import os
         import shutil
         print("Creating project directory")
-        project_dir = project_title or self.APP_NAME + "_project"
+        project_dir = project_title or self.APP_NAME.replace("app", "project")
         try:
             os.makedirs(project_dir)
         except OSError, e:
@@ -348,8 +458,8 @@ if __name__ == "__main__":
             pass
 
         print("Creating models.py")
-        with open(os.path.join(self.APP_NAME, "models.py"), 'w'):
-            pass
+        with open(os.path.join(self.APP_NAME, "models.py"), 'w') as models:
+            models.write(self._create_models())
 
         print("Creating test.py")
         with open(os.path.join(self.APP_NAME, "tests.py"), 'w'):
@@ -367,12 +477,17 @@ if __name__ == "__main__":
         if os.path.exists("../templates") and os.path.isdir("../templates/"):
             print("Copying templates")
             dest = os.path.join(self.APP_NAME, "templates", self.APP_NAME)
-            self._copy_and_replace("../templates/", os.path.join(self.APP_NAME, "templates", self.APP_NAME))
+            self._copy_and_replace("../templates/", os.path.join(
+                                    self.APP_NAME, "templates"))
 
         if os.path.exists("../static") and os.path.isdir("../static/"):
             print("Copying static")
-            self._copy_and_replace("../static/", os.path.join(self.APP_NAME, "static", self.APP_NAME))
+            self._copy_and_replace("../static/", os.path.join(self.APP_NAME,
+                                                    "static"))
 
+        if os.path.exists("../db.sqlite"):
+            print("Copying db.sqlite")
+            shutil.copy("../db.sqlite", "db.sqlite")
 
         print("Creating setings.py")
         with open("settings.py", 'w') as settings:

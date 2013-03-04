@@ -440,8 +440,20 @@ d() method::
 importd and custom models
 -------------------------
 
-To create custom models, create an app using $ python hello.py startapp
-hello_app and add it to INSTALLED_APPS.
+You can defined own models by inheriting `d.models.Model` class::
+
+    class MyModel(d.models.Model):
+        x = d.models.CharField(max_length=20)
+        y = d.models.CharField(max_length=20)
+		
+The model class can be accessed through d.models.{model_name}. 
+The model name is not case sensitive.
+
+.. code::
+
+    @d
+    def list(request):
+	    return "list.html", {"objects": d.models.MyModel.objects.all()}
 
 easy access to commonly used django methods and classes
 -------------------------------------------------------
