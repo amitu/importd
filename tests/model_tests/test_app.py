@@ -1,4 +1,5 @@
 from importd import d
+
 d(INSTALLED_APPS=["app"])
 
 @d("/")
@@ -12,9 +13,11 @@ def add(request, value):
     TestModel.objects.create(value=value)
     return d.HttpResponse("Success!")
 
-
+#@register_admin?
 class TestModel(d.models.Model):
     value = d.models.CharField(max_length=20)
+
+d.register_admin(TestModel)
 
 if __name__ == "__main__":
     d.main()

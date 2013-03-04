@@ -1,3 +1,32 @@
+class SmartReturnMiddleware(object):
+    """Smart response middleware for views. Converts view return to the following:
+    HttpResponse - stays the same
+    string - renders the template named in the string
+    (string, dict) - renders the template with keyword arguments.
+    object - renders JSONResponse of the object"""
+
+    def process_view(self, request, view_func, view_args, view_kwargs):
+        from django.shortcuts import render_to_response
+        from django.template import RequestContext
+        try:
+            from django.http.response import HttpResponseBase as RBase
+        except ImportError:
+            from django.http import HttpResponse as RBase
+
+        from fhurl import JSONResponse
+        res = view_func(request, *view_args, **view_kwargs)
+        if isinstance(res, basestring):
+            res = res, {}
+        if isinstance(res, RBase): return res
+        if isinstance(res, tuple):
+            template_name, context = res
+            res = render_to_response(
+                template_name, context, RequestContext(request)
+            )
+        else:
+            res = JSONResponse(res)
+        return res
+
 class D(object):
     from django.conf.urls import patterns
     urlpatterns = patterns("")
@@ -104,7 +133,7 @@ class D(object):
             module = importlib.import_module(module_name)
             if attributes:
                 for attribute in attributes:
-                        setattr(self, attribute, getattr(module, attribute))
+                    setattr(self, attribute, getattr(module, attribute))
             else:
                 setattr(self, module_name.split(".")[-1], module)
         self._iterate_imports(set_attr)
@@ -122,10 +151,21 @@ class D(object):
         import os
         return os.path.join(self.APP_DIR, pth)
 
+    def register_admin(self, mdl, adm=None):
+        from django.contrib import admin
+        from django.contrib.admin.sites import AlreadyRegistered
+        if adm == None: adm = admin.ModelAdmin
+        try:
+            admin.site.register(mdl, adm)
+        except AlreadyRegistered:
+            pass
+
     def add_view(self, regex, view, *args, **kw):
         self.urlpatterns += self.patterns(
             "", self.surl(regex, view, *args, **kw)
         )
+        import django.core.urlresolvers
+        django.core.urlresolvers.clear_url_caches()
 
     def add_form(self, regex, form_cls, *args, **kw):
         self.urlpatterns.append(self.fhurl(regex, form_cls, *args, **kw))
@@ -166,18 +206,18 @@ class D(object):
                 self.smart_return = True
                 kw.setdefault('MIDDLEWARE_CLASSES',
                               list(global_settings.MIDDLEWARE_CLASSES)).\
-                              insert(0, "importd.d.SmartReturnMiddleware")
+                              insert(0, "importd.SmartReturnMiddleware")
 
             # we mock an app, so django internal model loading magic finds
             # the models
             class ModelsMock(object):
-                __name__ = self.APP_NAME + ".py"
+                __name__ = self.APP_NAME + ".models"
                 __file__ = os.path.join(self.APP_DIR, self.APP_NAME + ".py")
             self.app_models = ModelsMock()
 
             class AppMock(object):
                 __file__ = os.path.join(self.APP_DIR, self.APP_NAME + ".py")
-                __name__ = self.APP_NAME + ".py"
+                __name__ = self.APP_NAME
                 models = self.app_models
 
             sys.modules[self.APP_NAME] = AppMock()
@@ -185,11 +225,31 @@ class D(object):
 
             installed = list(kw.setdefault("INSTALLED_APPS", []))
             installed.append(self.APP_NAME)
+
+            admin_url = kw.pop("admin", "^admin/")
+
+            if admin_url:
+                if "django.contrib.auth" not in installed:
+                    installed.append("django.contrib.auth")
+                if "django.contrib.contenttypes" not in installed:
+                    installed.append("django.contrib.contenttypes")
+                if "django.contrib.auth" not in installed:
+                    installed.append("django.contrib.auth")
+                if "django.contrib.messages" not in installed:
+                    installed.append("django.contrib.messages")
+                if "django.contrib.sessions" not in installed:
+                    installed.append("django.contrib.sessions")
+                if "django.contrib.admin" not in installed:
+                    installed.append("django.contrib.admin")
+
             kw['INSTALLED_APPS'] = installed
 
             if "DEBUG" not in kw: kw["DEBUG"] = True
             if "APP_DIR" not in kw: kw["APP_DIR"] = self.APP_DIR
+
             settings.configure(**kw)
+            self._import_django()
+
             # import .views and .forms for each installed app
             for app in settings.INSTALLED_APPS:
                 try:
@@ -204,39 +264,17 @@ class D(object):
                     __import__("%s.signals" % app)
                 except ImportError:
                     pass
+
             from django.contrib.staticfiles.urls import staticfiles_urlpatterns
             self.urlpatterns += staticfiles_urlpatterns()
-        self._import_django()
+
+            if admin_url:
+                from django.contrib import admin
+                from django.conf.urls import include
+                admin.autodiscover()
+                self.add_view(admin_url, include(admin.site.urls))
+
         self._configured = True
-
-    class SmartReturnMiddleware(object):
-        """Smart response middleware for views. Converts view return to the following:
-        HttpResponse - stays the same
-        string - renders the template named in the string
-        (string, dict) - renders the template with keyword arguments.
-        object - renders JSONResponse of the object"""
-
-        def process_view(self, request, view_func, view_args, view_kwargs):
-            from django.shortcuts import render_to_response
-            from django.template import RequestContext
-            try:
-                from django.http.response import HttpResponseBase as RBase
-            except ImportError:
-                from django.http import HttpResponse as RBase
-
-            from fhurl import JSONResponse
-            res = view_func(request, *view_args, **view_kwargs)
-            if isinstance(res, basestring):
-                res = res, {}
-            if isinstance(res, RBase): return res
-            if isinstance(res, tuple):
-                template_name, context = res
-                res = render_to_response(
-                    template_name, context, RequestContext(request)
-                )
-            else:
-                res = JSONResponse(res)
-            return res
 
     def __call__(self, *args, **kw):
         if args:

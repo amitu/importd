@@ -1,0 +1,11 @@
+#!/bin/sh
+
+set -e
+
+cd basic_tests
+python main.py test app
+cd ..
+cd model_tests
+python test_app.py test app
+
+echo "All tests passed."
