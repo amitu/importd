@@ -85,3 +85,9 @@ ToDo/Known Issues
 =================
 
  * figure our whats going on with double imports
+
+Contributors
+============
+
+  * Amit Upadhyay (https://github.com/amitu)
+  * Dmytro Vorona (https://github.com/alendit)
