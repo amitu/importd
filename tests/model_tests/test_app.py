@@ -1,16 +1,15 @@
 from importd import d
-
 d(INSTALLED_APPS=["app"])
 
 @d("/")
 def main(request):
-    objects = d.models.TestModel.objects.all()
+    objects = TestModel.objects.all()
     return d.HttpResponse("\n".join(map(lambda obj: obj.value, objects)))
 
 
 @d("add/(?P<value>.*)")
 def add(request, value):
-    d.models.TestModel.objects.create(value=value)
+    TestModel.objects.create(value=value)
     return d.HttpResponse("Success!")
 
 
