@@ -1,3 +1,9 @@
+import sys
+import six
+
+if sys.version_info >= (3,):
+    basestring = unicode = str
+
 class SmartReturnMiddleware(object):
     """Smart response middleware for views. Converts view return to the following:
     HttpResponse - stays the same
@@ -56,7 +62,7 @@ class D(object):
                         setattr(self.d.app_models, name.lower(), new_cls)
                     return new_cls
 
-            class ImportdModel(base.Model):
+            class ImportdModel(base.Model, six.with_metaclass(ImportdModelBase)):
                 __metaclass__ = ImportdModelBase
 
                 class Meta:
@@ -129,7 +135,10 @@ class D(object):
 
     def _import_django(self):
         def set_attr(module_name, attributes):
-            import importlib
+            try:
+                import importlib
+            except ImportError:
+                from django.utils import importlib
             module = importlib.import_module(module_name)
             if attributes:
                 for attribute in attributes:
@@ -254,7 +263,7 @@ class D(object):
             for app in settings.INSTALLED_APPS:
                 try:
                     __import__("%s.views" % app)
-                except ImportError, e:
+                except ImportError:
                     pass
                 try:
                     __import__("%s.forms" % app)
@@ -394,8 +403,8 @@ urlpatterns = patterns("",
         import re
         from pprint import pformat
         from django.conf import settings as django_settings
-        settings = {setting for setting in dir(django_settings) \
-            if not setting.startswith("_") and re.match(r'[A-Z_]+', setting)}
+        settings = set(setting for setting in dir(django_settings) \
+            if not setting.startswith("_") and re.match(r'[A-Z_]+', setting))
         settings_lines = []
         for setting in settings:
 
@@ -481,7 +490,7 @@ if __name__ == "__main__":
         project_dir = project_title or self.APP_NAME.replace("app", "project")
         try:
             os.makedirs(project_dir)
-        except OSError, e:
+        except OSError:
             print("{} already exsists".format(project_dir))
         os.chdir(project_dir)
         print ("Creating app directory ({})".format(self.APP_NAME))
@@ -489,7 +498,7 @@ if __name__ == "__main__":
             os.makedirs(self.APP_NAME)
             with open(os.path.join(self.APP_NAME, "__init__.py"), 'w'):
                 pass
-        except OSError, e:
+        except OSError:
             print("Directory {} already exists".format(self.APP_NAME))
 
         print ("Creating __init__.py")
@@ -539,12 +548,11 @@ if __name__ == "__main__":
         print("Creating manage.py")
         with open("manage.py", 'w') as manage:
             manage.write(self._create_manage())
-            os.chmod("manage.py", 0755)
+            os.chmod("manage.py", 0o755)
 
         os.chdir("..")
 
 
 
-import sys
 d = D()
 sys.modules["importd.d"] = d

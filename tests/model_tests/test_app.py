@@ -1,3 +1,6 @@
+# make sure to use importd from the repository
+import os, sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 from importd import d
 
 d(INSTALLED_APPS=["app"])
