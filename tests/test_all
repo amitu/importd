@@ -1,0 +1,11 @@
+#!/bin/sh
+
+set -e
+
+cd basic_tests
+python -E main.py test app # -E makes interpreter ignores PYTHONPATH envvar
+cd ..
+cd model_tests
+python -E test_app.py test app
+
+echo "All tests passed."

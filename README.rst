@@ -6,16 +6,25 @@ inspired from ruby's sinatra. Hello world django project:
 
 .. code-block:: python
 
- from importd import d
- d(DEBUG=True)
+    from importd import d
+    d(DEBUG=True)
 
- @d("/")
- def idx(request):
-    return "index.html" 
+    @d("/")
+    def idx(request):
+        return "index.html", {"ids":
+        					 d.models.Index.objects.all()}
 
- @d("/post/<int:post_id">/")
- def post(request, post_id):
-    return "post.html", {"post_id": post_id}
+    @d("/post/<int:post_id>/")
+    def post(request, post_id):
+    	d.models.Index.objects.create(post_id=post_id)
+        return "post.html", {"post_id": post_id}
+        
+    class Index(d.models.Model):
+    	post_id = d.models.CharField(max_length=10)
+
+    if __name__ == "__main__":
+        d.main()
+
 
 To run it:
 
@@ -31,7 +40,19 @@ To run it in production:
 
   $ gunicorn foo:d
 
-An example app: https://github.com/amitu/importd/blob/master/foo.py
+To convert to standard django project:
+
+.. code::
+
+  $ python foo.py convert
+
+or:
+
+.. code::
+
+  $ python foo.py convert project_name
+
+Some examples: https://github.com/amitu/importd/tree/development/examples
 
 Features
 ========
@@ -46,6 +67,7 @@ Features
  * wsgi compliant
  * gunicorn support
  * works seamlessly with fhurl (http://packages.python.org/fhurl/)
+ * easily convertable to django project structure
 
 Installation
 ============
@@ -63,4 +85,9 @@ ToDo/Known Issues
 =================
 
  * figure our whats going on with double imports
- * figure out whats going on when gunicorn exits
+
+Contributors
+============
+
+  * Amit Upadhyay (https://github.com/amitu)
+  * Dmytro Vorona (https://github.com/alendit)

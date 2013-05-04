@@ -21,13 +21,16 @@ hello world with importd
 
 With importd there is no need to create a django project or app. There is no
 settings.py or urls.py, nor is there a need of manage.py. A single file is
-suffecient, eg hello.py::
+sufficient, e.g. hello.py::
 
     from importd import d
 
     @d("/")
     def index(request):
         return d.HttpResponse("hello world")
+
+    if __name__ == "__main__":
+        d.main()
 
 To run this hello.py:
 
@@ -48,16 +51,10 @@ To see if it works:
     $ curl "http://localhost:8000"
     hello world
 
-atexit magic
-------------
-
-importd uses atexit to magically call runserver as seen in previous case. This
-can be disabled by calling d(no_atexit=True).
-
 management commands
 -------------------
 
-importd, along with atexit magic acts as management command too:
+d.main() acts as management command too:
 
 .. code-block:: sh
 
@@ -87,8 +84,10 @@ importd, along with atexit magic acts as management command too:
       --version             show program's version number and exit
       -h, --help            show this help message and exit
 
+Further d.do() method can be used to call management command, eg d.do("syncdb")
+from python code.
 
-automatically configure django
+automatically configure django 
 ------------------------------
 
 `importd` sets DEBUG to true. This can be disabled by
@@ -127,8 +126,8 @@ Running hello.py with gunicorn:
     2013-02-18 21:20:06 [50847] [INFO] Booting worker with pid: 50847
     2013-02-18 21:20:06 [50848] [INFO] Booting worker with pid: 50848
 
-autoconfigution of templates
-----------------------------
+auto-configution of templates
+-----------------------------
 
 importd automatically includes templates folder in directory containing hello.py
 to TEMPLATE_DIRS settings.
@@ -164,7 +163,7 @@ continues to be relocatable.
 auto configuration of sqlite3 as database
 -----------------------------------------
 
-For testing many a times sqlite is suffecient, and for those times importd
+For testing many a times sqlite is sufficient, and for those times importd
 automatically configures django with sqlite3 as database, with sqlite file
 stored in `db.sqlite` in the same folder as hello.py.
 
@@ -183,8 +182,11 @@ url /method-name/.::
     def hello(request):
         return d.HttpResponse("hey there!")
 
+    if __name__ == "__main__":
+        d.main()
+
 In this case, importd will map hello() method to /hello/ url. This can be
-overriden by passing the URL where the view must be mapped to @d::
+overridden by passing the URL where the view must be mapped to @d::
 
     from importd import d
 
@@ -192,15 +194,23 @@ overriden by passing the URL where the view must be mapped to @d::
     def hello(request):
         return d.HttpResponse("hey there!")
 
+    if __name__ == "__main__":
+        d.main()
+
+
 In this case hello method is mapped to /.
 
-@d decorator also supprts named urls via name keyword argument, eg::
+@d decorator also supports named urls via name keyword argument, eg::
 
     from importd import d
 
     @d("^home/$", name="home")  # named urls
     def home(request):
         return "home.html"
+
+    if __name__ == "__main__":
+        d.main()
+
 
 auto imports
 ------------
@@ -223,6 +233,10 @@ Since importd uses smarturls_ underneath this::
     def hello(request):
         return d.HttpResponse("hey there!")
 
+    if __name__ == "__main__":
+        d.main()
+
+
 .. _smarturls: http://amitu.com/smarturls/
 
 is equivalent to::
@@ -233,10 +247,14 @@ is equivalent to::
     def hello(request):
         return d.HttpResponse("hey there!")
 
+    if __name__ == "__main__":
+        d.main()
+
+
 Notice the simpler URL passed to @d("/") instead of d("^$"). Either form can be
 used.
 
-Take a look at smarturls documentation to see how can simplfy url construction
+Take a look at smarturls documentation to see how can simplify url construction
 for you.
 
 importd works well with fhurl
@@ -253,6 +271,10 @@ fhurl_ is a generic view for forms and ajax. importd integrates well with fhurl.
 
         def save(self):
             return self.cleaned_data["x"] * self.cleaned_data["y"]
+
+    if __name__ == "__main__":
+        d.main()
+
 
 .. _fhurl: http://pythonhosted.org/fhurl/
 
@@ -317,6 +339,10 @@ fhurl with template::
             p = self.cleaned_data["x"] * self.cleaned_data["y"]
             return "/form-saved" # redirect to this url
 
+    if __name__ == "__main__":
+        d.main()
+
+
 form.html:
 
 .. code-block:: html+django
@@ -365,6 +391,10 @@ context::
     def index(request):
         return "index.html", {"msg": time.time()}
 
+    if __name__ == "__main__":
+        d.main()
+
+
 Further a view can also return arbitrary data structures not mentioned above, in
 such cases importd will convert that to JSON and return it to client::
 
@@ -377,6 +407,10 @@ such cases importd will convert that to JSON and return it to client::
                 int(request.GET.get("x", 0)) + int(request.GET.get("y", 0))
             )
         }
+
+    if __name__ == "__main__":
+        d.main()
+
 
 importd comes with convenience JSONResponse class to return arbitrary json
 object that may be a string, or a (string, dict) tuple.
@@ -399,11 +433,27 @@ d() method::
         user = User.objects.get(userid)
         return d.HttpResponse("hey there %" % user)
 
+    if __name__ == "__main__":
+        d.main()
+
+
 importd and custom models
 -------------------------
 
-To create custom models, create an app using $ python hello.py startapp
-hello_app and add it to INSTALLED_APPS.
+You can defined own models by inheriting `d.models.Model` class::
+
+    class MyModel(d.models.Model):
+        x = d.models.CharField(max_length=20)
+        y = d.models.CharField(max_length=20)
+		
+The model class can be accessed through d.models.{model_name}. 
+The model name is not case sensitive.
+
+.. code::
+
+    @d
+    def list(request):
+	    return "list.html", {"objects": d.models.MyModel.objects.all()}
 
 easy access to commonly used django methods and classes
 -------------------------------------------------------
@@ -422,6 +472,18 @@ importd contains aliases for django methods and classes::
     # d.patterns == django.conf.urls.defaults.patterns
     # d.RequestContext == django.template.RequestContext
     # d.forms == django.forms
+
+    if __name__ == "__main__":
+        d.main()
+
+
+convert to django project structure
+------------------------------------
+
+You can create a standard django project with::
+
+    python app.py convert
+
 
 a more detailed example
 -----------------------
@@ -468,3 +530,6 @@ This example features a few more use cases::
 
         def save(self):
             return self.cleaned_data["x"] + self.cleaned_data["y"]
+
+    if __name__ == "__main__":
+        d.main()

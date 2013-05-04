@@ -1,7 +1,7 @@
 from setuptools import setup
 
 try:
-    long_description=open('README.rst', 'rt').read(),
+    long_description=open('README.rst', 'rt').read()
 except Exception:
     long_description=""
 
@@ -17,7 +17,7 @@ setup(
     url = 'http://amitu.com/importd/',
     license = 'BSD',
 
-    install_requires = ["fhurl", "gunicorn", "smarturls"],
+    install_requires = ["fhurl>=0.1.7", "gunicorn", "smarturls", "six"],
     py_modules = ["importd"],
 
     zip_safe = True,
