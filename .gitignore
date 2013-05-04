@@ -18,3 +18,4 @@ t
 .DS_Store
 docs/html/
 docs/doctrees/
+.tox
