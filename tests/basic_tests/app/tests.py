@@ -29,8 +29,8 @@ class BasicTest(unittest.TestCase):
 
     def test_insalled_apps(self):
         self.assertEqual(
-            settings.INSTALLED_APPS, [   
-                'app', 'main_app', 'django.contrib.auth',
+            settings.INSTALLED_APPS, [
+                'app', 'django.contrib.auth',
                 'django.contrib.contenttypes', 'django.contrib.messages',
                  'django.contrib.sessions', 'django.contrib.admin'
             ]
