@@ -1,15 +1,19 @@
 import sys
 import six
 
+from importd import urlconf
+
 if sys.version_info >= (3,):
     basestring = unicode = str
 
 class SmartReturnMiddleware(object):
-    """Smart response middleware for views. Converts view return to the following:
+    """
+    Smart response middleware for views. Converts view return to the following:
     HttpResponse - stays the same
     string - renders the template named in the string
     (string, dict) - renders the template with keyword arguments.
-    object - renders JSONResponse of the object"""
+    object - renders JSONResponse of the object
+    """
 
     def process_view(self, request, view_func, view_args, view_kwargs):
         from django.shortcuts import render_to_response
@@ -34,12 +38,11 @@ class SmartReturnMiddleware(object):
         return res
 
 class D(object):
-    from django.conf.urls import patterns
-    urlpatterns = patterns("")
-
+    urlpatterns = urlconf.urlpatterns
     class ModelHandler(object):
 
         def __init__(self, d):
+
             self.d = d
 
             from django.db.models import base
@@ -183,7 +186,7 @@ class D(object):
         from django.conf import settings, global_settings
         self.settings = settings
         if settings.configured: return
-        
+
         import inspect, os
         self.APP_DIR, app_filename = os.path.split(
             os.path.realpath(inspect.stack()[2][1])
@@ -195,7 +198,7 @@ class D(object):
 
 
         if not kw.get("dont_configure", False):
-            kw["ROOT_URLCONF"] = "importd.d"
+            kw["ROOT_URLCONF"] = "importd.urlconf"
             if "TEMPLATE_DIRS" not in kw:
                 kw["TEMPLATE_DIRS"] = (self.dotslash("templates"),)
             if "STATIC_URL" not in kw:
@@ -552,7 +555,4 @@ if __name__ == "__main__":
 
         os.chdir("..")
 
-
-
 d = D()
-sys.modules["importd.d"] = d
