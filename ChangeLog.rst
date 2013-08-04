@@ -1,10 +1,10 @@
 importd ChangeLog
 =================
 
-0.1.5 - 4-Aug-2013
+0.2.0 - 4-Aug-2013
 ------------------
 
- * remove atexit magic, d.main() is the replacement
+ * BACKWARD INCOMPATIBLE: remove atexit magic, d.main() is the replacement
  * gunicorn cleanly exits now
  * tests, support django 1.4.3 and 1.5.1 for each of python 2.6, 2.7 and 3.3
  * less magic, no more sys.modules tweaking

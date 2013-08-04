@@ -11,20 +11,14 @@ inspired from ruby's sinatra. Hello world django project:
 
     @d("/")
     def idx(request):
-        return "index.html", {"ids":
-        					 d.models.Index.objects.all()}
+        return "index.html"
 
     @d("/post/<int:post_id>/")
     def post(request, post_id):
-    	d.models.Index.objects.create(post_id=post_id)
         return "post.html", {"post_id": post_id}
-        
-    class Index(d.models.Model):
-    	post_id = d.models.CharField(max_length=10)
 
     if __name__ == "__main__":
         d.main()
-
 
 To run it:
 
@@ -32,7 +26,7 @@ To run it:
 
   $ python foo.py
 
-This will start the debug server. 
+This will start the debug server.
 
 To run it in production:
 
@@ -40,19 +34,7 @@ To run it in production:
 
   $ gunicorn foo:d
 
-To convert to standard django project:
-
-.. code::
-
-  $ python foo.py convert
-
-or:
-
-.. code::
-
-  $ python foo.py convert project_name
-
-Some examples: https://github.com/amitu/importd/tree/development/examples
+Some examples: https://github.com/amitu/importd/tree/master/examples
 
 Features
 ========
@@ -67,27 +49,26 @@ Features
  * wsgi compliant
  * gunicorn support
  * works seamlessly with fhurl (http://packages.python.org/fhurl/)
- * easily convertable to django project structure
 
 Installation
 ============
 
 .. code::
 
- $ easy_install importd
+ $ pip importd
 
 Documentation
 =============
 
 docs: http://amitu.com/importd/
 
-ToDo/Known Issues
-=================
-
- * figure our whats going on with double imports
-
 Contributors
 ============
 
   * Amit Upadhyay (https://github.com/amitu)
   * Dmytro Vorona (https://github.com/alendit)
+
+LICENSE
+=======
+
+ * BSD
