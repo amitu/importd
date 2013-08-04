@@ -1,4 +1,8 @@
-#### 0.1.5 - 4-Aug-2013
+importd ChangeLog
+=================
+
+0.1.5 - 4-Aug-2013
+------------------
 
  * remove atexit magic, d.main() is the replacement
  * gunicorn cleanly exits now
@@ -7,15 +11,18 @@
  * runserver now reloads when any file changes
  * added auto generated MANIFEST.in (using check-manifest)
 
-#### 0.1.4 - 22-Oct-2012
+0.1.4 - 22-Oct-2012
+-------------------
 
  * setup.py was buggy
 
-#### 0.1.3 - 22-Oct-2012
+0.1.3 - 22-Oct-2012
+-------------------
 
  * setup.py was buggy
 
-#### 0.1.2 - 13-Aug-2012
+0.1.2 - 13-Aug-2012
+-------------------
 
  * few bug fixes, APP_DIR was calculated incorrectly
  * automatically configure databases if DATABASES is not passed
@@ -25,11 +32,13 @@
    better than import them from models.py explicitly and fighting the circular
    imports issue
 
-#### 0.1.1 - 8-Aug-2012
+0.1.1 - 8-Aug-2012
+------------------
 
  * refactored out smarturls into a separate project
 
-#### 0.1.0 - 6-Aug-2012
+0.1.0 - 6-Aug-2012
+------------------
 
 Initial release.
 
