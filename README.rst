@@ -55,7 +55,7 @@ Installation
 
 .. code::
 
- $ pip importd
+ $ pip install importd
 
 Documentation
 =============

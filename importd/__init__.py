@@ -4,6 +4,7 @@ try:
 except ImportError:
     from django.utils import importlib
 
+import django.core.urlresolvers
 from importd import urlconf
 
 if sys.version_info >= (3,):
@@ -105,24 +106,48 @@ class D(object):
     def dotslash(self, pth):
         return os.path.join(self.APP_DIR, pth)
 
-    def register_admin(self, mdl, adm=None):
-        from django.contrib import admin
-        from django.contrib.admin.sites import AlreadyRegistered
-        if adm == None: adm = admin.ModelAdmin
-        try:
-            admin.site.register(mdl, adm)
-        except AlreadyRegistered:
-            pass
+    def generate_mount_url(self, regex, v_or_f, mod):
+        # self.mounts can be None, which means no url generation,
+        # url is being managed by urlpatterns.
+        # else self.mounts is a dict, containing app name and where to mount
+        # if where it mount is None then again dont mount this fellow
+        if self.mounts is None: return # we dont want to mount anything
+        if not regex.startswith("/"): return regex
 
-    def add_view(self, regex, view, *args, **kw):
-        self.urlpatterns += self.patterns(
-            "", self.surl(regex, view, *args, **kw)
-        )
-        import django.core.urlresolvers
-        django.core.urlresolvers.clear_url_caches()
+        if not mod:
+            if isinstance(v_or_f, basestring):
+                mod = v_or_f
+            else: # if hasattr(v_or_f, "__module__")?
+                mod = v_or_f.__module__
 
-    def add_form(self, regex, form_cls, *args, **kw):
-        self.urlpatterns.append(self.fhurl(regex, form_cls, *args, **kw))
+        best_k, best_v = "", None
+
+        for k, v in self.mounts.items():
+            if mod.startswith(k) and len(k) > len(best_k):
+                best_k = k
+                best_v = v
+
+        if best_k:
+            if not best_v: return
+            if not best_v.endswith("/"): best_k += "/"
+            if best_v != "/":
+                regex = best_v[:-1] + regex
+
+        return regex
+
+    def add_view(self, regex, view, app=None, *args, **kw):
+        regex = self.generate_mount_url(regex, view, app)
+        if regex:
+            self.urlpatterns += self.patterns(
+                "", self.surl(regex, view, *args, **kw)
+            )
+            django.core.urlresolvers.clear_url_caches()
+
+    def add_form(self, regex, form_cls, app=None, *args, **kw):
+        regex = self.generate_mount_url(regex, form_cls, app)
+        if regex:
+            self.urlpatterns.append(self.fhurl(regex, form_cls, *args, **kw))
+            django.core.urlresolvers.clear_url_caches()
 
     def _configure_django(self, **kw):
         from django.conf import settings, global_settings
@@ -132,11 +157,11 @@ class D(object):
         self.APP_DIR, app_filename = os.path.split(
             os.path.realpath(inspect.stack()[2][1])
         )
-        self.APP_NAME = app_filename.partition(".")[0] + "_app"
 
         if "regexers" in kw:
             self.update_regexers(kw.pop("regexers"))
 
+        self.mounts = kw.pop("mounts", {})
 
         if not kw.get("dont_configure", False):
             kw["ROOT_URLCONF"] = "importd.urlconf"
@@ -161,7 +186,6 @@ class D(object):
                     'MIDDLEWARE_CLASSES', 
                     list(global_settings.MIDDLEWARE_CLASSES)
                 ).insert(0, "importd.SmartReturnMiddleware")
-
 
             installed = list(kw.setdefault("INSTALLED_APPS", []))
 
@@ -228,7 +252,7 @@ class D(object):
                 self.update_urls(args[0])
                 return self
             if callable(args[0]):
-                self.add_view("^%s/$" % args[0].__name__, args[0])
+                self.add_view("/%s/" % args[0].__name__, args[0])
                 return args[0]
             def ddecorator(candidate):
                 from django.forms import forms

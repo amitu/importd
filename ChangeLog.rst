@@ -10,6 +10,7 @@ importd ChangeLog
  * less magic, no more sys.modules tweaking
  * runserver now reloads when any file changes
  * added auto generated MANIFEST.in (using check-manifest)
+ * added support for mounting urls to custom locations
 
 0.1.4 - 22-Oct-2012
 -------------------

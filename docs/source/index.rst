@@ -62,7 +62,8 @@ d.main() acts as management command too:
     python hello.py help shell (02-18 21:14)
     Usage: hello.py shell [options] 
 
-    Runs a Python interactive interpreter. Tries to use IPython or bpython, if one of them is available.
+    Runs a Python interactive interpreter. Tries to use IPython or bpython, if
+    one of them is available.
 
     Options:
       -v VERBOSITY, --verbosity=VERBOSITY
@@ -87,7 +88,7 @@ d.main() acts as management command too:
 Further d.do() method can be used to call management command, eg d.do("syncdb")
 from python code.
 
-automatically configure django 
+automatically configure django
 ------------------------------
 
 `importd` sets DEBUG to true. This can be disabled by
@@ -190,7 +191,7 @@ overridden by passing the URL where the view must be mapped to @d::
 
     from importd import d
 
-    @d("^$")
+    @d("/")
     def hello(request):
         return d.HttpResponse("hey there!")
 
@@ -260,7 +261,8 @@ for you.
 importd works well with fhurl
 -----------------------------
 
-fhurl_ is a generic view for forms and ajax. importd integrates well with fhurl.::
+fhurl_ is a generic view for forms and ajax. importd integrates well with
+fhurl.::
 
     from importd import d
 
@@ -440,20 +442,8 @@ d() method::
 importd and custom models
 -------------------------
 
-You can defined own models by inheriting `d.models.Model` class::
-
-    class MyModel(d.models.Model):
-        x = d.models.CharField(max_length=20)
-        y = d.models.CharField(max_length=20)
-		
-The model class can be accessed through d.models.{model_name}. 
-The model name is not case sensitive.
-
-.. code::
-
-    @d
-    def list(request):
-	    return "list.html", {"objects": d.models.MyModel.objects.all()}
+For custom models please create an app and add it to INSTALLED_APPS during
+configuration.
 
 easy access to commonly used django methods and classes
 -------------------------------------------------------
@@ -476,13 +466,47 @@ importd contains aliases for django methods and classes::
     if __name__ == "__main__":
         d.main()
 
+url mount support
+-----------------
 
-convert to django project structure
-------------------------------------
+Given a views.py in any app, we can use @d decorators to map it to urls. While
+this is convenient, it can make things difficult for apps to be redistributed
+where the final URL has to be controlled by end user.
 
-You can create a standard django project with::
+importd has two mechanism for handling it. One option is to disable the @d view
+decorator across projects, or individual apps, or we can specify a "mount
+point" for each redistributable app.
 
-    python app.py convert
+eg:
+
+An awesome app named "app" defines "/dashboard/" as a url by havint the
+following in app/views.py::
+
+    from importd import d
+
+    @d("/dashboard/")
+    def dashboard(request):
+        return d.HttpResponse("app is awesome")
+
+Lets say our main app is main.py, and it includes "app" in INSTALLED_APPS::
+
+    from importd import d
+
+    d(DEBUG=True, INSTALLED_APPS=["app"])
+
+    if __name__ == "__main__":
+        d.main()
+
+As it stands, our view defined in app.views is accessible by the URL
+/dashboard/. But lets say we want to configure things such that its available
+on /extra/dashboard/::
+
+    from importd import d
+
+    d(DEBUG=True, INSTALLED_APPS=["app"], mounts={"app", "/extra/"})
+
+    if __name__ == "__main__":
+        d.main()
 
 
 a more detailed example
