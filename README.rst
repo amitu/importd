@@ -67,6 +67,8 @@ Contributors
 
   * Amit Upadhyay (https://github.com/amitu)
   * Dmytro Vorona (https://github.com/alendit)
+  * Jannis Leidel (https://twitter.com/jezdez)
+  * Lukasz Balcerzak (https://github.com/lukaszb)
 
 LICENSE
 =======

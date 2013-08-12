@@ -1,6 +1,11 @@
 importd ChangeLog
 =================
 
+0.2.1 - 12-Aug-2013
+-------------------
+
+ * packaging was broken, thank you @jezdez
+
 0.2.0 - 4-Aug-2013
 ------------------
 
