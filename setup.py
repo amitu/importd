@@ -18,7 +18,7 @@ setup(
     license = 'BSD',
 
     install_requires = ["fhurl>=0.1.7", "gunicorn", "smarturls", "six"],
-    py_modules = ["importd"],
+    packages = ["importd"],
 
     zip_safe = True,
 )

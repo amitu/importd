@@ -9,6 +9,5 @@ recursive-include docs *.rst
 recursive-include docs Makefile
 recursive-include examples *.html
 recursive-include examples *.py
-recursive-include importd *.py
 recursive-include tests *.css
 recursive-include tests *.py
