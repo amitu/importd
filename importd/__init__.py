@@ -48,6 +48,8 @@ class D(object):
         return cmd in "runserver,shell".split(",")
 
     def _handle_management_command(self, cmd, *args, **kw):
+        if not hasattr(self, "_configured"):
+            self._configure_django(DEBUG=True)
         from django.core import management
         management.call_command(cmd, *args, **kw)
 
@@ -67,7 +69,6 @@ class D(object):
         ('django.shortcuts', ['get_object_or_404', 'render_to_response']),
         ('django.conf.urls.defaults', ['patterns', 'url']),
         ('django.template', 'RequestContext'),
-        ('django.core.wsgi', 'get_wsgi_application'),
         ('django', 'forms'),
         ('fhurl', ['RequestForm', 'fhurl', 'JSONResponse']),
         ('django.db.models', ''),
@@ -98,7 +99,7 @@ class D(object):
 
         try:
             from django.core.wsgi import get_wsgi_application
-            self.wsgi_application = self.get_wsgi_application()
+            self.wsgi_application = get_wsgi_application()
         except ImportError:
             import django.core.handlers.wsgi
             self.wsgi_application = django.core.handlers.wsgi.WSGIHandler()
@@ -233,7 +234,10 @@ class D(object):
 
             if admin_url:
                 from django.contrib import admin
-                from django.conf.urls import include
+                try:
+                    from django.conf.urls import include
+                except ImportError:
+                    from django.conf.urls.defaults import include
                 admin.autodiscover()
                 self.add_view(admin_url, include(admin.site.urls))
 
@@ -267,6 +271,8 @@ class D(object):
         return self
 
     def _act_as_manage(self, *args):
+        if not hasattr(self, "_configured"):
+            self._configure_django(DEBUG=True)
         from django.core import management
         management.execute_from_command_line([sys.argv[0]] + list(args))
 
@@ -283,4 +289,4 @@ class D(object):
 
         return self._act_as_manage(*args)
 
-d = D()
+application = d = D()

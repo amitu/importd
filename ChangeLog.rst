@@ -1,6 +1,12 @@
 importd ChangeLog
 =================
 
+0.2.2 - 12-Aug-2013
+-------------------
+
+ * support for django 1.3.7
+ * testing django 1.5.2, 1.4.6 now.
+
 0.2.1 - 12-Aug-2013
 -------------------
 
