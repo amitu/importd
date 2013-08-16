@@ -36,6 +36,11 @@ To run it in production:
 
 Some examples: https://github.com/amitu/importd/tree/master/examples
 
+Backward Incompatibility Change
+===============================
+
+d.main() used to be not required, now it is.
+
 Features
 ========
 
@@ -60,7 +65,12 @@ Installation
 Documentation
 =============
 
-docs: http://amitu.com/importd/
+docs: http://packages.python.org/importd
+
+ChangeLog
+=========
+
+https://github.com/amitu/importd/blob/master/ChangeLog.rst
 
 Contributors
 ============

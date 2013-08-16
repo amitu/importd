@@ -1,6 +1,11 @@
 importd ChangeLog
 =================
 
+0.2.3 - 16-Aug-2013
+-------------------
+
+ * turns out importd depends on django :-)
+
 0.2.2 - 12-Aug-2013
 -------------------
 
@@ -14,6 +19,20 @@ importd ChangeLog
 
 0.2.0 - 4-Aug-2013
 ------------------
+
+There is a backward incompatible change in this release. importd has removed
+atexit magic, which means a call to d.main() must be included somewhere.
+
+.. code-block:: python
+
+    from importd import d
+
+    @d("/")
+    def hello(request):
+        return d.HttpResponse("hello world")
+
+    if __name__ == "__main__":
+        d.main() # NOTE THIS
 
  * BACKWARD INCOMPATIBLE: remove atexit magic, d.main() is the replacement
  * gunicorn cleanly exits now

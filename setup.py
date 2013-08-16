@@ -10,14 +10,16 @@ setup(
     description = "a django based miniframework, inspired by sinatra",
     long_description=long_description,
 
-    version = "0.2.2",
+    version = "0.2.3",
     author = 'Amit Upadhyay',
     author_email = "upadhyay@gmail.com",
 
-    url = 'http://amitu.com/importd/',
+    url = 'https://github.com/amitu/importd',
     license = 'BSD',
 
-    install_requires = ["fhurl>=0.1.7", "gunicorn", "smarturls", "six"],
+    install_requires = [
+        "fhurl>=0.1.7", "gunicorn", "smarturls", "six", "Django>=1.3"
+    ],
     packages = ["importd"],
 
     zip_safe = True,
