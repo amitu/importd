@@ -1,4 +1,4 @@
-import sys, os, inspect
+import sys, os, inspect, dj_database_url
 
 try:
     import importlib
@@ -180,6 +180,10 @@ class D(object):
                 kw["STATIC_ROOT"] = self.dotslash("static")
             if "MEDIA_URL" not in kw:
                 kw["MEDIA_URL"] = "/static/media/"
+            if "db" in kw:
+                kw["DATABASES"] = {
+                    "default": dj_database_url.parse(kw.pop("db"))
+                }
             if "DATABASES" not in kw:
                 kw["DATABASES"] = {
                     "default": {

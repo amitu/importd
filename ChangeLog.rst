@@ -1,6 +1,11 @@
 importd ChangeLog
 =================
 
+0.2.5 - 4-Nov-2013
+------------------
+
+ * now accepts db= kward when configuring, uses dj_database_url to parse db
+
 0.2.4 - 4-Nov-2013
 ------------------
 
