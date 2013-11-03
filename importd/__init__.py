@@ -1,4 +1,5 @@
 import sys, os, inspect
+
 try:
     import importlib
 except ImportError:
@@ -9,6 +10,7 @@ from importd import urlconf
 
 if sys.version_info >= (3,):
     basestring = unicode = str
+
 
 class SmartReturnMiddleware(object):
     """
@@ -41,6 +43,7 @@ class SmartReturnMiddleware(object):
             res = JSONResponse(res)
         return res
 
+
 class D(object):
     urlpatterns = urlconf.urlpatterns
 
@@ -61,7 +64,7 @@ class D(object):
 
     # tuple list of django modules imported in d
     # tuple (a, b) is equivalent to from a import b
-    # if b is an iterable (b = [c, d]), it is equivalent 
+    # if b is an iterable (b = [c, d]), it is equivalent
     # to from a import c, d
     DJANGO_IMPORT = (
         ('smarturls', 'surl'),
@@ -75,9 +78,11 @@ class D(object):
     )
 
     def _iterate_imports(self, callback):
-        """Iterates through imports and calls callback for each
-        (module_name, attributes) pair. If attribute is a string, it is 
-        converted to a list first. Empty strings become empty lists"""
+        """
+            Iterates through imports and calls callback for each
+            (module_name, attributes) pair. If attribute is a string, it is
+            converted to a list first. Empty strings become empty lists
+        """
 
         for module_name, attributes in self.DJANGO_IMPORT:
             if isinstance(attributes, basestring):
@@ -85,9 +90,10 @@ class D(object):
                     attributes = [attributes]
                 else:
                     attributes = []
-            callback(module_name, attributes)  # check if its a decorated view from importd
+            callback(module_name, attributes)
 
     def _import_django(self):
+
         def set_attr(module_name, attributes):
             module = importlib.import_module(module_name)
             if attributes:
@@ -111,14 +117,14 @@ class D(object):
         # self.mounts can be None, which means no url generation,
         # url is being managed by urlpatterns.
         # else self.mounts is a dict, containing app name and where to mount
-        # if where it mount is None then again dont mount this fellow
-        if self.mounts is None: return # we dont want to mount anything
+        # if where it mount is None then again don't mount this fellow
+        if self.mounts is None: return  # we don't want to mount anything
         if not regex.startswith("/"): return regex
 
         if not mod:
             if isinstance(v_or_f, basestring):
                 mod = v_or_f
-            else: # if hasattr(v_or_f, "__module__")?
+            else:  # if hasattr(v_or_f, "__module__")?
                 mod = v_or_f.__module__
 
         best_k, best_v = "", None
@@ -169,9 +175,11 @@ class D(object):
             if "TEMPLATE_DIRS" not in kw:
                 kw["TEMPLATE_DIRS"] = (self.dotslash("templates"),)
             if "STATIC_URL" not in kw:
-                kw["STATIC_URL"] = "static/"
-            if "STATICFILES_DIRS" not in kw:
-                kw["STATICFILES_DIRS"] = (self.dotslash("static"),)
+                kw["STATIC_URL"] = "/static/"
+            if "STATIC_ROOT" not in kw:
+                kw["STATIC_ROOT"] = self.dotslash("static")
+            if "MEDIA_URL" not in kw:
+                kw["MEDIA_URL"] = "/static/media/"
             if "DATABASES" not in kw:
                 kw["DATABASES"] = {
                     "default": {
@@ -184,7 +192,7 @@ class D(object):
             if kw.pop("SMART_RETURN", True):
                 self.smart_return = True
                 kw.setdefault(
-                    'MIDDLEWARE_CLASSES', 
+                    'MIDDLEWARE_CLASSES',
                     list(global_settings.MIDDLEWARE_CLASSES)
                 ).insert(0, "importd.SmartReturnMiddleware")
 
@@ -258,9 +266,11 @@ class D(object):
             if callable(args[0]):
                 self.add_view("/%s/" % args[0].__name__, args[0])
                 return args[0]
+
             def ddecorator(candidate):
                 from django.forms import forms
-                if type(candidate) == forms.DeclarativeFieldsMetaclass:  # unsafe
+                # the following is unsafe
+                if type(candidate) == forms.DeclarativeFieldsMetaclass:
                     self.add_form(args[0], candidate, *args[1:], **kw)
                     return candidate
                 self.add_view(args[0], candidate, *args[1:], **kw)

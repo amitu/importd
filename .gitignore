@@ -19,3 +19,4 @@ t
 docs/html/
 docs/doctrees/
 .tox
+.idea

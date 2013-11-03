@@ -10,7 +10,7 @@ setup(
     description = "a django based miniframework, inspired by sinatra",
     long_description=long_description,
 
-    version = "0.2.3",
+    version = "0.2.4",
     author = 'Amit Upadhyay',
     author_email = "upadhyay@gmail.com",
 

@@ -1,6 +1,11 @@
 importd ChangeLog
 =================
 
+0.2.4 - 4-Nov-2013
+------------------
+
+ * changes to serve admin static files
+
 0.2.3 - 16-Aug-2013
 -------------------
 
