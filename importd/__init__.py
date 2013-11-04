@@ -70,7 +70,6 @@ class D(object):
         ('smarturls', 'surl'),
         ('django.http', ['HttpResponse', 'Http404', 'HttpResponseRedirect']),
         ('django.shortcuts', ['get_object_or_404', 'render_to_response']),
-        ('django.conf.urls.defaults', ['patterns', 'url']),
         ('django.template', 'RequestContext'),
         ('django', 'forms'),
         ('fhurl', ['RequestForm', 'fhurl', 'JSONResponse']),
@@ -109,6 +108,13 @@ class D(object):
         except ImportError:
             import django.core.handlers.wsgi
             self.wsgi_application = django.core.handlers.wsgi.WSGIHandler()
+
+        try:
+            from django.conf.urls.defaults import patterns, url
+        except ImportError:
+            from django.conf.urls import patterns, url
+        self.patterns = patterns
+        self.url = url
 
     def dotslash(self, pth):
         return os.path.join(self.APP_DIR, pth)
