@@ -187,9 +187,15 @@ class D(object):
             if "MEDIA_URL" not in kw:
                 kw["MEDIA_URL"] = "/static/media/"
             if "db" in kw:
-                kw["DATABASES"] = {
-                    "default": dj_database_url.parse(kw.pop("db"))
-                }
+                if isinstance(kw["db"], basestring):
+                    kw["DATABASES"] = {
+                        "default": dj_database_url.parse(kw.pop("db"))
+                    }
+                else:
+                    db = kw.pop("db")
+                    default = dj_database_url.parse(db[0])
+                    default.update(db[1])
+                    kw["DATABASES"] = dict(default=default)
             if "DATABASES" not in kw:
                 kw["DATABASES"] = {
                     "default": {
