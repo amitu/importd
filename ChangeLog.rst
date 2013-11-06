@@ -1,6 +1,14 @@
 importd ChangeLog
 =================
 
+0.2.7 - 4-Nov-2013
+------------------
+
+ * db kwarg can not be a string or (string, dict), in later case dict would be
+   merged into dict returned by dj_database_url.parse(), to support extra
+   settings django allows eg OPTIONS, CONN_MAX_AGE[this one I particularly need
+   in every projct, and dont want to miss out on using dj_database_url]
+
 0.2.6 - 4-Nov-2013
 ------------------
 
