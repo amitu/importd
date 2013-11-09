@@ -1,6 +1,14 @@
 importd ChangeLog
 =================
 
+0.2.8 - 10-Nov-2013
+-------------------
+
+ * integrated with speaklater(optional), if available, d.dotslash() can be used
+   before django is configured, returns a lazy string, which becomes
+   "available" after django has been configured. suitable for configuring
+   template dirs or static files etc.
+
 0.2.7 - 4-Nov-2013
 ------------------
 

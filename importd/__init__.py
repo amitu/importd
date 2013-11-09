@@ -116,8 +116,28 @@ class D(object):
         self.patterns = patterns
         self.url = url
 
-    def dotslash(self, pth):
+    def _get_app_dir(self, pth):
         return os.path.join(self.APP_DIR, pth)
+
+    def dotslash(self, pth):
+        if hasattr(self, "APP_DIR"):
+            return os.path.join(self.APP_DIR, pth)
+        elif hasattr(self, "APP_DIR_LAZY"):
+            return self.APP_DIR_LAZY
+        else:
+            try:
+                import speaklater
+            except ImportError:
+                raise RuntimeError(
+                    "configure django first, or install speaklater"
+                )
+            else:
+                self.APP_DIR_LAZY = speaklater.make_lazy_string(
+                    self._get_app_dir, pth
+                )
+                return self.APP_DIR_LAZY
+
+
 
     def generate_mount_url(self, regex, v_or_f, mod):
         # self.mounts can be None, which means no url generation,
