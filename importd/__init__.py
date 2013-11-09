@@ -122,8 +122,6 @@ class D(object):
     def dotslash(self, pth):
         if hasattr(self, "APP_DIR"):
             return os.path.join(self.APP_DIR, pth)
-        elif hasattr(self, "APP_DIR_LAZY"):
-            return self.APP_DIR_LAZY
         else:
             try:
                 import speaklater
@@ -132,10 +130,9 @@ class D(object):
                     "configure django first, or install speaklater"
                 )
             else:
-                self.APP_DIR_LAZY = speaklater.make_lazy_string(
+                return speaklater.make_lazy_string(
                     self._get_app_dir, pth
                 )
-                return self.APP_DIR_LAZY
 
 
 

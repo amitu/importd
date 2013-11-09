@@ -1,6 +1,12 @@
 importd ChangeLog
 =================
 
+0.2.9 - 10-Nov-2013
+-------------------
+
+ * there was a bug in previous release, d.dotslash() always returned the same
+   value if called before configuring django
+
 0.2.8 - 10-Nov-2013
 -------------------
 
