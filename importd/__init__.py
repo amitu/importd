@@ -1,15 +1,26 @@
-import sys, os, inspect, dj_database_url
+# -*- coding: utf-8 -*-
+# isort:skip_file
 
-try:
-    import importlib
-except ImportError:
-    from django.utils import importlib
 
+# stdlib imports
+import inspect
+import os
+import sys
+
+# 3rd party imports
+import dj_database_url
 import django.core.urlresolvers
 from importd import urlconf
 
+# custom imports
+try:
+    import importlib
+except ImportError:
+    from django.utils import importlib  # lint:ok
+
+
 if sys.version_info >= (3,):
-    basestring = unicode = str
+    basestring = unicode = str  # lint:ok
 
 
 class SmartReturnMiddleware(object):
@@ -27,13 +38,14 @@ class SmartReturnMiddleware(object):
         try:
             from django.http.response import HttpResponseBase as RBase
         except ImportError:
-            from django.http import HttpResponse as RBase
+            from django.http import HttpResponse as RBase  # lint:ok
 
         from fhurl import JSONResponse
         res = view_func(request, *view_args, **view_kwargs)
         if isinstance(res, basestring):
             res = res, {}
-        if isinstance(res, RBase): return res
+        if isinstance(res, RBase):
+            return res
         if isinstance(res, tuple):
             template_name, context = res
             res = render_to_response(
@@ -112,7 +124,7 @@ class D(object):
         try:
             from django.conf.urls.defaults import patterns, url
         except ImportError:
-            from django.conf.urls import patterns, url
+            from django.conf.urls import patterns, url  # lint:ok
         self.patterns = patterns
         self.url = url
 
@@ -134,15 +146,15 @@ class D(object):
                     self._get_app_dir, pth
                 )
 
-
-
     def generate_mount_url(self, regex, v_or_f, mod):
         # self.mounts can be None, which means no url generation,
         # url is being managed by urlpatterns.
         # else self.mounts is a dict, containing app name and where to mount
         # if where it mount is None then again don't mount this fellow
-        if self.mounts is None: return  # we don't want to mount anything
-        if not regex.startswith("/"): return regex
+        if self.mounts is None:
+            return  # we don't want to mount anything
+        if not regex.startswith("/"):
+            return regex
 
         if not mod:
             if isinstance(v_or_f, basestring):
@@ -158,8 +170,10 @@ class D(object):
                 best_v = v
 
         if best_k:
-            if not best_v: return
-            if not best_v.endswith("/"): best_k += "/"
+            if not best_v:
+                return
+            if not best_v.endswith("/"):
+                best_k += "/"
             if best_v != "/":
                 regex = best_v[:-1] + regex
 
@@ -182,7 +196,8 @@ class D(object):
     def _configure_django(self, **kw):
         from django.conf import settings, global_settings
         self.settings = settings
-        if settings.configured: return
+        if settings.configured:
+            return
 
         self.APP_DIR, app_filename = os.path.split(
             os.path.realpath(inspect.stack()[2][1])
@@ -249,8 +264,10 @@ class D(object):
 
             kw['INSTALLED_APPS'] = installed
 
-            if "DEBUG" not in kw: kw["DEBUG"] = True
-            if "APP_DIR" not in kw: kw["APP_DIR"] = self.APP_DIR
+            if "DEBUG" not in kw:
+                kw["DEBUG"] = True
+            if "APP_DIR" not in kw:
+                kw["APP_DIR"] = self.APP_DIR
 
             settings.configure(**kw)
             self._import_django()
@@ -258,15 +275,15 @@ class D(object):
             # import .views and .forms for each installed app
             for app in settings.INSTALLED_APPS:
                 try:
-                    __import__("%s.views" % app)
+                    __import__("{}.views".format(app))  # lint:ok
                 except ImportError:
                     pass
                 try:
-                    __import__("%s.forms" % app)
+                    __import__("{}.forms".format(app))  # lint:ok
                 except ImportError:
                     pass
                 try:
-                    __import__("%s.signals" % app)
+                    __import__("{}.signals".format(app))  # lint:ok
                 except ImportError:
                     pass
 
@@ -278,7 +295,7 @@ class D(object):
                 try:
                     from django.conf.urls import include
                 except ImportError:
-                    from django.conf.urls.defaults import include
+                    from django.conf.urls.defaults import include  # lint:ok
                 admin.autodiscover()
                 self.add_view(admin_url, include(admin.site.urls))
 
@@ -297,7 +314,7 @@ class D(object):
                 self.update_urls(args[0])
                 return self
             if callable(args[0]):
-                self.add_view("/%s/" % args[0].__name__, args[0])
+                self.add_view("/{}/".format(args[0].__name__), args[0])
                 return args[0]
 
             def ddecorator(candidate):
@@ -326,7 +343,8 @@ class D(object):
             self.do()
 
     def do(self, *args):
-        if not args: args = sys.argv[1:]
+        if not args:
+            args = sys.argv[1:]
         if len(args) == 0:
             return self._handle_management_command("runserver", "8000")
 

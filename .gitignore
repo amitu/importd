@@ -14,9 +14,10 @@ parts
 *.egg-info
 build
 *.bdb
-t
+venv
 .DS_Store
 docs/html/
 docs/doctrees/
 .tox
 .idea
+
