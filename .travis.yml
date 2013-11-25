@@ -1,0 +1,30 @@
+# 2013-11-24T21:11:41 by juan .travis.yml Continuous Integration by Ninja-IDE
+language: python
+python:
+    - 2.7
+    - 3.3
+
+before_install: sudo apt-get update -qq; pip install  tox --use-mirrors --quiet
+
+install: pip install fhurl>=0.1.7 gunicorn smarturls six Django>=1.3 dj-database-url --use-mirrors --quiet
+
+before_script: rm --recursive --force --verbose *.pyc
+
+script: tox
+
+# after_script: true  # runs after tests
+
+# after_success: true  # runs when all tests passed
+
+# after_failure: true  # runs when failed
+
+notifications:
+    email:
+        recipients: upadhyay@gmail.com
+        template:
+          - "%{repository}@%{branch}: %{message}(%{build_url})"
+          - "Build: %{build_number}, SHA: %{commit}, Committer: %{author}, Diff: %{compare_url}"
+        on_success: always
+        on_failure: always
+
+cache: apt
