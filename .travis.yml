@@ -23,7 +23,7 @@ notifications:
         recipients: upadhyay@gmail.com
         template:
           - "%{repository}@%{branch}: %{message}(%{build_url})"
-          - "Build: %{build_number}, SHA: %{commit}, Committer: %{author}, Diff: %{compare_url}"
+          - "Build: %{build_number},SHA: %{commit},Committer: %{author},Diff: %{compare_url}"
         on_success: always
         on_failure: always
 
