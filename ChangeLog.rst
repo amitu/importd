@@ -71,13 +71,13 @@ atexit magic, which means a call to d.main() must be included somewhere.
     if __name__ == "__main__":
         d.main() # NOTE THIS
 
- * BACKWARD INCOMPATIBLE: remove atexit magic, d.main() is the replacement
- * gunicorn cleanly exits now
- * tests, support django 1.4.3 and 1.5.1 for each of python 2.6, 2.7 and 3.3
- * less magic, no more sys.modules tweaking
- * runserver now reloads when any file changes
- * added auto generated MANIFEST.in (using check-manifest)
- * added support for mounting urls to custom locations
+* BACKWARD INCOMPATIBLE: remove atexit magic, d.main() is the replacement
+* gunicorn cleanly exits now
+* tests, support django 1.4.3 and 1.5.1 for each of python 2.6, 2.7 and 3.3
+* less magic, no more sys.modules tweaking
+* runserver now reloads when any file changes
+* added auto generated MANIFEST.in (using check-manifest)
+* added support for mounting urls to custom locations
 
 0.1.4 - 22-Oct-2012
 -------------------
