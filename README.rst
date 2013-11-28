@@ -24,7 +24,7 @@ inspired from ruby's sinatra. Hello world django project:
 
 To run it:
 
-.. code::
+.. code:: bash
 
   $ python foo.py
 
@@ -32,37 +32,37 @@ This will start the debug server.
 
 To run it in production:
 
-.. code::
+.. code:: bash
 
   $ gunicorn foo:d
 
 Some examples: https://github.com/amitu/importd/tree/master/examples
 
-Backward Incompatibility Change
-===============================
+Backward Incompatibile Change
+=============================
 
-d.main() used to be not required, now it is.
+``d.main()`` used to be not required, now it is.
 
 Features
 ========
 
- * fully compatible with django
- * supports smarturls
- * most of regularly used django functions and classes available in d.
-   namespace, eg d.HttpResponse, d.render_to_response, d.get_object_or_404 etc
- * automatically maps "templates" folder in foo.py directory to serve templates
- * automatically maps "static" folder in foo.py to serve static content
- * management commands still available: $ python foo.py shell
- * wsgi compliant
- * gunicorn support
- * works seamlessly with fhurl (http://packages.python.org/fhurl/)
+* fully compatible with django
+* supports smarturls
+* most of regularly used django functions and classes available in d.
+  namespace, eg d.HttpResponse, d.render_to_response, d.get_object_or_404 etc
+* automatically maps "templates" folder in foo.py directory to serve templates
+* automatically maps "static" folder in foo.py to serve static content
+* management commands still available: $ python foo.py shell
+* wsgi compliant
+* gunicorn support
+* works seamlessly with fhurl (http://packages.python.org/fhurl/)
 
 Installation
 ============
 
-.. code::
+.. code:: bash
 
- $ pip install importd
+    $ pip install importd
 
 Documentation
 =============
@@ -77,12 +77,12 @@ https://github.com/amitu/importd/blob/master/ChangeLog.rst
 Contributors
 ============
 
-  * Amit Upadhyay (https://github.com/amitu)
-  * Dmytro Vorona (https://github.com/alendit)
-  * Jannis Leidel (https://twitter.com/jezdez)
-  * Lukasz Balcerzak (https://github.com/lukaszb)
+* Amit Upadhyay (https://github.com/amitu)
+* Dmytro Vorona (https://github.com/alendit)
+* Jannis Leidel (https://twitter.com/jezdez)
+* Lukasz Balcerzak (https://github.com/lukaszb)
 
 LICENSE
 =======
 
- * BSD
+* BSD
