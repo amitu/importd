@@ -1,6 +1,8 @@
 What is it?
 ===========
 
+Slides of a talk I gave about importd: http://amitu.com/importd/
+
 Django is awesome, but starting a new project in it is a pain. importd is
 inspired from ruby's sinatra. Hello world django project:
 
