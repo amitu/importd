@@ -32,7 +32,8 @@ class BasicTest(TestCase):
             settings.INSTALLED_APPS, [
                 'app', 'app2', 'django.contrib.auth',
                 'django.contrib.contenttypes', 'django.contrib.messages',
-                 'django.contrib.sessions', 'django.contrib.admin'
+                 'django.contrib.sessions', 'django.contrib.admin',
+                 'django.contrib.humanize', 'django.contrib.staticfiles'
             ]
         )
 

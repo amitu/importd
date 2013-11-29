@@ -17,6 +17,11 @@ try:
     import importlib
 except ImportError:
     from django.utils import importlib  # lint:ok
+try:
+    import debug_toolbar  # lint:ok
+    DEBUG_TOOLBAR = True
+except ImportError:
+    DEBUG_TOOLBAR = False
 
 
 if sys.version_info >= (3,):
@@ -81,7 +86,8 @@ class D(object):
     DJANGO_IMPORT = (
         ('smarturls', 'surl'),
         ('django.http', ['HttpResponse', 'Http404', 'HttpResponseRedirect']),
-        ('django.shortcuts', ['get_object_or_404', 'render_to_response']),
+        ('django.shortcuts', ['get_object_or_404', 'get_list_or_404', 
+                              'render_to_response', 'render', 'redirect']),
         ('django.template', 'RequestContext'),
         ('django', 'forms'),
         ('fhurl', ['RequestForm', 'fhurl', 'JSONResponse']),
@@ -193,6 +199,20 @@ class D(object):
             self.urlpatterns.append(self.fhurl(regex, form_cls, *args, **kw))
             django.core.urlresolvers.clear_url_caches()
 
+    def get_secret_key(self):
+        """get a django secret key,try to read provided one,else generate it"""
+        try:
+            with open(self.dotslash("secret.txt"), "r") as f:
+                secret = f.readlines()[0].strip()
+        except (IOError, IndexError):
+            with open(self.dotslash("secret.txt"), "w") as f:
+                from string import ascii_letters, digits
+                from random import sample
+                secret = "".join(sample(ascii_letters + digits, 50))
+                f.write(secret)
+        finally:
+            return secret
+
     def _configure_django(self, **kw):
         from django.conf import settings, global_settings
         self.settings = settings
@@ -261,6 +281,18 @@ class D(object):
                     installed.append("django.contrib.sessions")
                 if "django.contrib.admin" not in installed:
                     installed.append("django.contrib.admin")
+                if "django.contrib.humanize" not in installed:
+                    installed.append("django.contrib.humanize")
+                if "django.contrib.staticfiles" not in installed:
+                    installed.append("django.contrib.staticfiles")
+                if "debug_toolbar" not in installed and DEBUG_TOOLBAR:
+                    installed.append("debug_toolbar")
+                    kw['INTERNAL_IPS'] = ('127.0.0.1', '0.0.0.0')
+                    kw['MIDDLEWARE_CLASSES'].insert(1,
+                        'debug_toolbar.middleware.DebugToolbarMiddleware')
+                    kw['DEBUG_TOOLBAR_CONFIG'] = {
+                        'SHOW_TOOLBAR_CALLBACK': lambda v: 1 == 1,
+                        'INTERCEPT_REDIRECTS': False}
 
             kw['INSTALLED_APPS'] = installed
 
@@ -268,6 +300,8 @@ class D(object):
                 kw["DEBUG"] = True
             if "APP_DIR" not in kw:
                 kw["APP_DIR"] = self.APP_DIR
+            if "SECRET_KEY" not in kw:
+                kw["SECRET_KEY"] = self.get_secret_key()
 
             settings.configure(**kw)
             self._import_django()
