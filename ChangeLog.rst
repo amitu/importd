@@ -1,6 +1,17 @@
 importd ChangeLog
 =================
 
+
+0.2.9 - 29-Nov-2013
+-------------------
+
+ * Auto Add django-debug-toolbar: try to import it, if sucessful and is not on settings and the database exist(debug_toolbar needs a DB) and DEBUG=True, then configure debug_toolbar.
+ * Auto Add SECRET_KEY: If no SECRET_KEY on settings, try to read SECRET_KEY from ./secret.txt , if no ./secret.txt generate a random string then write it to ./secret.txt and finally return it as SECRET_KEY.
+ * Auto Add django.contrib.humanize.
+ * Auto Add django.contrib.staticfiles.
+ * Auto Import get_list_or_404, render, redirect from django.shortcuts.
+ * Fixed Tests for new features.
+
 0.2.8 - 10-Nov-2013
 -------------------
 
