@@ -288,8 +288,7 @@ class D(object):
                     installed.append("django.contrib.humanize")
                 if "django.contrib.staticfiles" not in installed:
                     installed.append("django.contrib.staticfiles")
-                if "debug_toolbar" not in installed and DEBUG_TOOLBAR \
-                    and os.path.isfile(self.dotslash("db.sqlite")):
+                if "debug_toolbar" not in installed and DEBUG_TOOLBAR:
                     installed.append("debug_toolbar")
                     kw['INTERNAL_IPS'] = ('127.0.0.1', '0.0.0.0')
                     kw['MIDDLEWARE_CLASSES'].insert(1,
