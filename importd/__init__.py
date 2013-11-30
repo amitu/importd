@@ -86,7 +86,7 @@ class D(object):
     DJANGO_IMPORT = (
         ('smarturls', 'surl'),
         ('django.http', ['HttpResponse', 'Http404', 'HttpResponseRedirect']),
-        ('django.shortcuts', ['get_object_or_404', 'get_list_or_404', 
+        ('django.shortcuts', ['get_object_or_404', 'get_list_or_404',
                               'render_to_response', 'render', 'redirect']),
         ('django.template', 'RequestContext'),
         ('django', 'forms'),
@@ -289,12 +289,26 @@ class D(object):
                 if "django.contrib.staticfiles" not in installed:
                     installed.append("django.contrib.staticfiles")
                 if "debug_toolbar" not in installed and DEBUG_TOOLBAR:
+                    installed.append("debug_toolbar")
                     kw['INTERNAL_IPS'] = ('127.0.0.1', '0.0.0.0')
                     kw['MIDDLEWARE_CLASSES'].insert(1,
                         'debug_toolbar.middleware.DebugToolbarMiddleware')
                     kw['DEBUG_TOOLBAR_CONFIG'] = {
                         'SHOW_TOOLBAR_CALLBACK': lambda v: 1 == 1,
                         'INTERCEPT_REDIRECTS': False}
+                    kw['DEBUG_TOOLBAR_PANELS'] = (
+                    'debug_toolbar.panels.settings_vars.SettingsVarsDebugPanel',
+                        'debug_toolbar.panels.version.VersionDebugPanel',
+                        'debug_toolbar.panels.timer.TimerDebugPanel',
+                        'debug_toolbar.panels.headers.HeaderDebugPanel',
+                        'debug_toolbar.panels.profiling.ProfilingDebugPanel',
+                        'debug_toolbar.panels.sql.SQLDebugPanel',
+                        'debug_toolbar.panels.template.TemplateDebugPanel',
+                        'debug_toolbar.panels.cache.CacheDebugPanel',
+                        'debug_toolbar.panels.signals.SignalDebugPanel',
+                        'debug_toolbar.panels.logger.LoggingPanel')
+                    # This one gives 500 if its Enabled without previous syncdb
+                    #'debug_toolbar.panels.request_vars.RequestVarsDebugPanel',
 
             kw['INSTALLED_APPS'] = installed
 
