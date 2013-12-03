@@ -10,7 +10,7 @@ Installation:
 
     $ easy_install importd
 
-Home: http://amitu.com/importd/
+Slides of a talk I gave about importd: http://amitu.com/importd/
 
 importd is being developed on http://github.com/amitu/importd/.
 
