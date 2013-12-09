@@ -157,7 +157,7 @@ class D(object):
         # url is being managed by urlpatterns.
         # else self.mounts is a dict, containing app name and where to mount
         # if where it mount is None then again don't mount this fellow
-        if self.mounts is None:
+        if getattr(self, "mounts", None) is None:
             return  # we don't want to mount anything
         if not regex.startswith("/"):
             return regex

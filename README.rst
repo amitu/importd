@@ -1,3 +1,9 @@
+Build Status: |build-status|
+
+.. |build-status| image:: https://travis-ci.org/amitu/importd.png
+    :target: https://travis-ci.org/amitu/importd
+
+
 What is it?
 ===========
 
@@ -84,6 +90,18 @@ Contributors
 * Jannis Leidel (https://twitter.com/jezdez)
 * Lukasz Balcerzak (https://github.com/lukaszb)
 * Juan Carlos (https://github.com/juancarlospaco) 
+
+Contribution Guide
+==================
+
+To view this file, or any restructuredtext file locally before comitting on
+git, install restview from pypi.
+
+**Pull Requests**: If you fork this repository to send pull request, please
+create a branch for your work instead of working directly on master. This way
+your master will track my master, and in case the pull request is rejected, or
+delayed, your master stays clean. This also makes easy to send more than one
+pull requests from your fork.
 
 LICENSE
 =======
