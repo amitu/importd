@@ -235,7 +235,9 @@ class D(object):
             if "STATIC_URL" not in kw:
                 kw["STATIC_URL"] = "/static/"
             if "STATIC_ROOT" not in kw:
-                kw["STATIC_ROOT"] = self.dotslash("static")
+                kw["STATIC_ROOT"] = self.dotslash("staticfiles")
+            if "STATICFILES_DIRS" not in kw:
+                kw["STATICFILES_DIRS"] = [self.dotslash("static")]
             if "MEDIA_URL" not in kw:
                 kw["MEDIA_URL"] = "/static/media/"
             if "db" in kw:
