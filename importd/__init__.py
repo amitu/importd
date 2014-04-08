@@ -139,7 +139,7 @@ class D(object):
 
     def dotslash(self, pth):
         if hasattr(self, "APP_DIR"):
-            return os.path.join(self.APP_DIR, pth)
+            return self._get_app_dir(pth=pth)
         else:
             try:
                 import speaklater
