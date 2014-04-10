@@ -5,9 +5,10 @@
 """ Importd django based mini framework """
 __license__ = 'BSD'
 __author__ = 'Amit Upadhyay'
+__author_email__ = "upadhyay@gmail.com"
 __url__ = 'https://github.com/amitu/importd'
-__docformat__ = 'html'
 __source__ = 'https://github.com/amitu/importd'
+__docformat__ = 'html'
 
 
 # stdlib imports
