@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
+
+
 from setuptools import setup
 
+
 try:
-    long_description = open('README.rst', 'rt').read()
+    with open('README.rst', "rt") as long_description_file_txt:
+        long_description = long_description_file_txt.read().strip()
 except Exception:
     long_description = ""
+
 
 setup(
     name="importd",

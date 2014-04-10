@@ -75,13 +75,12 @@ if python_version().startswith('3'):
 
 
 class SmartReturnMiddleware(object):
-    """
-    Smart response middleware for views. Converts view return to the following:
+    """Smart response middleware for views.
+    Converts view return to the following:
         - HttpResponse ---> stays the same
         - (string, dict) ---> renders the template with keyword arguments.
         - string ---> renders the template named in the string
-        - object ---> renders JSONResponse of the object
-    """
+        - object ---> renders JSONResponse of the object"""
 
     def process_view(self, request, view_func, view_args, view_kwargs):
         """Take a view and process it to return a smart_response."""
@@ -103,7 +102,7 @@ class SmartReturnMiddleware(object):
 
 
 class D(object):
-    """D Main Class"""
+    """D Main Class."""
     urlpatterns = urlconf.urlpatterns
     # tuple list of django modules imported in d
     # tuple (a, b) is equivalent to from a import b
@@ -125,24 +124,23 @@ class D(object):
         return command in ("runserver", "shell")
 
     def _handle_management_command(self, cmd, *args, **kw):
-        """Handler for a managment command"""
+        """Handler for a managment command."""
         if not hasattr(self, "_configured"):
             self._configure_django(DEBUG=True)
         management.call_command(cmd, *args, **kw)
 
     def update_regexers(self, new_regexers):
-        """Updates regexers with new regexers"""
+        """Updates regexers with new regexers."""
         self.regexers.update(new_regexers)
 
     def update_urls(self, new_urls):
+        """Updates urls with new urls."""
         self.urlpatterns += new_urls
 
     def _iterate_imports(self, importer_callback_function):
-        """
-        Iterates through imports and calls callback for each
+        """Iterates through imports and calls callback for each
         (module_name, attributes) pair. If attribute is a string,
-        it is converted to a list first. Empty strings become empty lists
-        """
+        it is converted to a list first. Empty strings become empty lists."""
         for module_name, classes_or_methods in self.DJANGO_IMPORT:
             if isinstance(classes_or_methods, basestring):
                 attributes = [classes_or_methods] if classes_or_methods else []
