@@ -5,7 +5,7 @@
 """ Importd django based mini framework """
 __license__ = 'BSD'
 __author__ = 'Amit Upadhyay'
-__url__ = 'http://amitu.com/importd'
+__url__ = 'https://github.com/amitu/importd'
 __docformat__ = 'html'
 __source__ = 'https://github.com/amitu/importd'
 
@@ -344,6 +344,7 @@ class D(object):
             # admins and managers
             if "ADMINS" not in kw:
                 kw["ADMINS"] = kw["MANAGERS"] = ((getuser(), ""), )
+            # configure the settings with the created dict
             settings.configure(**kw)
             self._import_django()
             # import .views and .forms for each installed app
@@ -386,7 +387,7 @@ class D(object):
                 return args[0]
 
             def ddecorator(candidate):
-                # the following is unsafe
+                """D Decorator (the following is unsafe)."""
                 if type(candidate) == forms.DeclarativeFieldsMetaclass:
                     self.add_form(args[0], candidate, *args[1:], **kw)
                     return candidate
@@ -398,6 +399,7 @@ class D(object):
         return self
 
     def _act_as_manage(self, *args):
+        """Act as Djangos Manage.py command"""
         if not hasattr(self, "_configured"):
             self._configure_django(DEBUG=True)
         management.execute_from_command_line([sys.argv[0]] + list(args))
@@ -421,3 +423,7 @@ class D(object):
 
 
 application = d = D()
+
+
+if __name__ in "__main__":
+    print(__doc__)
