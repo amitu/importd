@@ -1,15 +1,38 @@
 # -*- coding: utf-8 -*-
-# isort:skip_file
+
+
+# metadata
+""" Importd django based mini framework """
+__license__ = 'BSD'
+__author__ = 'Amit Upadhyay'
+__author_email__ = "upadhyay@gmail.com"
+__url__ = 'https://github.com/amitu/importd'
+__source__ = 'https://github.com/amitu/importd'
+__docformat__ = 'html'
 
 
 # stdlib imports
 import inspect
 import os
 import sys
+from getpass import getuser
+from platform import python_version
+from random import sample
+from string import ascii_letters, digits
 
-# 3rd party imports
-import dj_database_url
+# django imports
 import django.core.urlresolvers
+from django.conf import global_settings, settings
+from django.contrib import admin
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.core import management
+from django.forms import forms
+from django.shortcuts import render_to_response
+from django.template import RequestContext
+
+# importd and fhurl imports
+import dj_database_url
+from fhurl import JSONResponse
 from importd import urlconf
 
 # custom imports
@@ -22,63 +45,66 @@ try:
     DEBUG_TOOLBAR = True
 except ImportError:
     DEBUG_TOOLBAR = False
+try:
+    from django.http.response import HttpResponseBase as HttpResponse_base_obj
+except ImportError:
+    from django.http import HttpResponse as HttpResponse_base_obj  # lint:ok
+try:
+    from django.core.wsgi import get_wsgi_application
+except ImportError:
+    import django.core.handlers.wsgi
+try:
+    from django.conf.urls.defaults import patterns, url
+except ImportError:
+    from django.conf.urls import patterns, url  # lint:ok
+try:
+    from django.conf.urls import include
+except ImportError:
+    from django.conf.urls.defaults import include  # lint:ok
+try:
+    from speaklater import make_lazy_string
+    LAZY_STRING = True
+except ImportError:
+    LAZY_STRING = False
 
 
-if sys.version_info >= (3,):
+if python_version().startswith('3'):
     basestring = unicode = str  # lint:ok
 
 
+###############################################################################
+
+
 class SmartReturnMiddleware(object):
-    """
-    Smart response middleware for views. Converts view return to the following:
-    HttpResponse - stays the same
-    string - renders the template named in the string
-    (string, dict) - renders the template with keyword arguments.
-    object - renders JSONResponse of the object
-    """
+    """Smart response middleware for views.
+    Converts view return to the following:
+        - HttpResponse ---> stays the same
+        - (string, dict) ---> renders the template with keyword arguments.
+        - string ---> renders the template named in the string
+        - object ---> renders JSONResponse of the object"""
 
     def process_view(self, request, view_func, view_args, view_kwargs):
-        from django.shortcuts import render_to_response
-        from django.template import RequestContext
-        try:
-            from django.http.response import HttpResponseBase as RBase
-        except ImportError:
-            from django.http import HttpResponse as RBase  # lint:ok
-
-        from fhurl import JSONResponse
-        res = view_func(request, *view_args, **view_kwargs)
-        if isinstance(res, basestring):
-            res = res, {}
-        if isinstance(res, RBase):
-            return res
-        if isinstance(res, tuple):
-            template_name, context = res
-            res = render_to_response(
-                template_name, context, RequestContext(request)
-            )
+        """Take a view and process it to return a smart_response."""
+        smart_response = view_func(request, *view_args, **view_kwargs)
+        if isinstance(smart_response, basestring):
+            smart_response = (smart_response, {})
+        if isinstance(smart_response, HttpResponse_base_obj):
+            return smart_response
+        if isinstance(smart_response, tuple):
+            template_name, context = smart_response
+            smart_response = render_to_response(
+                template_name, context, RequestContext(request))
         else:
-            res = JSONResponse(res)
-        return res
+            smart_response = JSONResponse(smart_response)
+        return smart_response
+
+
+###############################################################################
 
 
 class D(object):
+    """D Main Class."""
     urlpatterns = urlconf.urlpatterns
-
-    def _is_management_command(self, cmd):
-        return cmd in "runserver,shell".split(",")
-
-    def _handle_management_command(self, cmd, *args, **kw):
-        if not hasattr(self, "_configured"):
-            self._configure_django(DEBUG=True)
-        from django.core import management
-        management.call_command(cmd, *args, **kw)
-
-    def update_regexers(self, regexers):
-        self.regexers.update(regexers)
-
-    def update_urls(self, urls):
-        self.urlpatterns += urls
-
     # tuple list of django modules imported in d
     # tuple (a, b) is equivalent to from a import b
     # if b is an iterable (b = [c, d]), it is equivalent
@@ -94,155 +120,149 @@ class D(object):
         ('django.db.models', ''),
     )
 
-    def _iterate_imports(self, callback):
-        """
-            Iterates through imports and calls callback for each
-            (module_name, attributes) pair. If attribute is a string, it is
-            converted to a list first. Empty strings become empty lists
-        """
+    def _is_management_command(self, command):
+        """Takes command str argument returns True if its runserver,shell,etc"""
+        return command in ("runserver", "shell")
 
-        for module_name, attributes in self.DJANGO_IMPORT:
-            if isinstance(attributes, basestring):
-                if attributes:
-                    attributes = [attributes]
-                else:
-                    attributes = []
-            callback(module_name, attributes)
+    def _handle_management_command(self, cmd, *args, **kw):
+        """Handler for a managment command."""
+        if not hasattr(self, "_configured"):
+            self._configure_django(DEBUG=True)
+        management.call_command(cmd, *args, **kw)
+
+    def update_regexers(self, new_regexers):
+        """Updates regexers with new regexers."""
+        self.regexers.update(new_regexers)
+
+    def update_urls(self, new_urls):
+        """Updates urls with new urls."""
+        self.urlpatterns += new_urls
+
+    def _iterate_imports(self, importer_callback_function):
+        """Iterates through imports and calls callback for each
+        (module_name, attributes) pair. If attribute is a string,
+        it is converted to a list first. Empty strings become empty lists."""
+        for module_name, classes_or_methods in self.DJANGO_IMPORT:
+            if isinstance(classes_or_methods, basestring):
+                attributes = [classes_or_methods] if classes_or_methods else []
+            importer_callback_function(module_name, attributes)
 
     def _import_django(self):
+        """Import Django itself"""
 
         def set_attr(module_name, attributes):
+            """Try to set arributes for imports"""
             module = importlib.import_module(module_name)
             if attributes:
                 for attribute in attributes:
                     setattr(self, attribute, getattr(module, attribute))
             else:
                 setattr(self, module_name.split(".")[-1], module)
+
         self._iterate_imports(set_attr)
-
         try:
-            from django.core.wsgi import get_wsgi_application
             self.wsgi_application = get_wsgi_application()
-        except ImportError:
-            import django.core.handlers.wsgi
+        except:
             self.wsgi_application = django.core.handlers.wsgi.WSGIHandler()
+        self.patterns, self.url = patterns, url
 
-        try:
-            from django.conf.urls.defaults import patterns, url
-        except ImportError:
-            from django.conf.urls import patterns, url  # lint:ok
-        self.patterns = patterns
-        self.url = url
+    def _get_app_dir(self, _path=""):
+        """Returns the app directory"""
+        return os.path.join(self.APP_DIR, _path)
 
-    def _get_app_dir(self, pth):
-        return os.path.join(self.APP_DIR, pth)
-
-    def dotslash(self, pth):
+    def dotslash(self, _path):
+        """Returns the ./ directory"""
         if hasattr(self, "APP_DIR"):
-            return self._get_app_dir(pth=pth)
+            dotslash_path = self._get_app_dir(_path=_path)
+        elif LAZY_STRING:
+            dotslash_path = make_lazy_string(self._get_app_dir, _path)
         else:
-            try:
-                import speaklater
-            except ImportError:
-                raise RuntimeError(
-                    "configure django first, or install speaklater"
-                )
-            else:
-                return speaklater.make_lazy_string(
-                    self._get_app_dir, pth
-                )
+            raise RuntimeError("Configure django, or install speaklater.")
+        return dotslash_path
 
     def generate_mount_url(self, regex, v_or_f, mod):
-        # self.mounts can be None, which means no url generation,
-        # url is being managed by urlpatterns.
-        # else self.mounts is a dict, containing app name and where to mount
-        # if where it mount is None then again don't mount this fellow
+        """self.mounts can be None, which means no url generation,
+        url is being managed by urlpatterns.
+        else self.mounts is a dict, containing app name and where to mount
+        if where it mount is None then again don't mount this fellow."""
         if getattr(self, "mounts", None) is None:
             return  # we don't want to mount anything
         if not regex.startswith("/"):
             return regex
-
         if not mod:
             if isinstance(v_or_f, basestring):
                 mod = v_or_f
             else:  # if hasattr(v_or_f, "__module__")?
                 mod = v_or_f.__module__
-
-        best_k, best_v = "", None
-
-        for k, v in self.mounts.items():
-            if mod.startswith(k) and len(k) > len(best_k):
-                best_k = k
-                best_v = v
-
-        if best_k:
-            if not best_v:
+        best_key, best_value = "", None
+        for key, value in tuple(self.mounts.items()):
+            if mod.startswith(key) and len(key) > len(best_key):
+                best_key, best_value = key, value
+        if best_key:
+            if not best_value:
                 return
-            if not best_v.endswith("/"):
-                best_k += "/"
-            if best_v != "/":
-                regex = best_v[:-1] + regex
-
+            if not best_value.endswith("/"):
+                best_key += "/"
+            if best_value != "/":
+                regex = best_value[:-1] + regex
         return regex
 
     def add_view(self, regex, view, app=None, *args, **kw):
+        """Add a new View."""
         regex = self.generate_mount_url(regex, view, app)
         if regex:
             self.urlpatterns += self.patterns(
-                "", self.surl(regex, view, *args, **kw)
-            )
+                "", self.surl(regex, view, *args, **kw))
             django.core.urlresolvers.clear_url_caches()
 
     def add_form(self, regex, form_cls, app=None, *args, **kw):
+        """Add a new Form."""
         regex = self.generate_mount_url(regex, form_cls, app)
         if regex:
             self.urlpatterns.append(self.fhurl(regex, form_cls, *args, **kw))
             django.core.urlresolvers.clear_url_caches()
 
     def get_secret_key(self):
-        """get a django secret key,try to read provided one,else generate it"""
+        """Get a django secret key,try to read provided one,else generate it."""
         try:
-            with open(self.dotslash("secret.txt"), "r") as f:
-                secret = f.readlines()[0].strip()
+            with open(self.dotslash("secret.txt"), "r") as secret_file_txt:
+                secret_key = secret_file_txt.readlines()[0].strip()
         except (IOError, IndexError):
-            with open(self.dotslash("secret.txt"), "w") as f:
-                from string import ascii_letters, digits
-                from random import sample
-                secret = "".join(sample(ascii_letters + digits, 50))
-                f.write(secret)
+            with open(self.dotslash("secret.txt"), "w") as secret_file_txt:
+                secret_key = "".join(sample(ascii_letters + digits, 50))
+                secret_file_txt.write(secret_key)
         finally:
-            return secret
+            return secret_key
 
     def _configure_django(self, **kw):
-        from django.conf import settings, global_settings
-        self.settings = settings
+        """Configure Django using keyword args"""
+        self.settings, self.mounts = settings, kw.pop("mounts", {})
+        # if settings is configured return
         if settings.configured:
             return
-
         self.APP_DIR, app_filename = os.path.split(
-            os.path.realpath(inspect.stack()[2][1])
-        )
-
+            os.path.realpath(inspect.stack()[2][1]))
+        # update regexers with keyword args
         if "regexers" in kw:
             self.update_regexers(kw.pop("regexers"))
-
-        self.mounts = kw.pop("mounts", {})
-
+        # configure django settings
         if not kw.get("dont_configure", False):
             kw["ROOT_URLCONF"] = "importd.urlconf"
+            # templates directory, is "./templates/" if not defined by user
             if "TEMPLATE_DIRS" not in kw:
-                kw["TEMPLATE_DIRS"] = (self.dotslash("templates"),)
+                kw["TEMPLATE_DIRS"] = (self.dotslash("templates"), )
+            # all static directories
             if "STATIC_URL" not in kw:
                 kw["STATIC_URL"] = "/static/"
             if "STATIC_ROOT" not in kw:
                 kw["STATIC_ROOT"] = self.dotslash("static")
             if "MEDIA_URL" not in kw:
                 kw["MEDIA_URL"] = "/static/media/"
+            # databases, is "db.sqlite3" if not defined by user
             if "db" in kw:
                 if isinstance(kw["db"], basestring):
                     kw["DATABASES"] = {
-                        "default": dj_database_url.parse(kw.pop("db"))
-                    }
+                        "default": dj_database_url.parse(kw.pop("db"))}
                 else:
                     db = kw.pop("db")
                     default = dj_database_url.parse(db[0])
@@ -252,22 +272,20 @@ class D(object):
                 kw["DATABASES"] = {
                     "default": {
                         'ENGINE': "django.db.backends.sqlite3",
-                        'NAME': self.dotslash("db.sqlite")
+                        'NAME': self.dotslash("db.sqlite3"),
+                        'CONN_MAX_AGE': None  # unlimited persistent connection
                     }
                 }
-
+            # smart return
             self.smart_return = False
             if kw.pop("SMART_RETURN", True):
                 self.smart_return = True
-                kw.setdefault(
-                    'MIDDLEWARE_CLASSES',
-                    list(global_settings.MIDDLEWARE_CLASSES)
-                ).insert(0, "importd.SmartReturnMiddleware")
-
+                kw.setdefault('MIDDLEWARE_CLASSES',
+                              list(global_settings.MIDDLEWARE_CLASSES)
+                              ).insert(0, "importd.SmartReturnMiddleware")
+            # installed_apps config
             installed = list(kw.setdefault("INSTALLED_APPS", []))
-
             admin_url = kw.pop("admin", "^admin/")
-
             if admin_url:
                 if "django.contrib.auth" not in installed:
                     installed.append("django.contrib.auth")
@@ -283,18 +301,25 @@ class D(object):
                     installed.append("django.contrib.admin")
                 if "django.contrib.humanize" not in installed:
                     installed.append("django.contrib.humanize")
+                if "django.contrib.sites" not in installed:
+                    installed.append("django.contrib.sites")
+                if "django.contrib.formtools" not in installed:
+                    installed.append("django.contrib.formtools")
+                if "django.contrib.webdesign" not in installed:
+                    installed.append("django.contrib.webdesign")
                 if "django.contrib.staticfiles" not in installed:
                     installed.append("django.contrib.staticfiles")
                 if "debug_toolbar" not in installed and DEBUG_TOOLBAR:
                     installed.append("debug_toolbar")
                     kw['INTERNAL_IPS'] = ('127.0.0.1', '0.0.0.0')
-                    kw['MIDDLEWARE_CLASSES'].insert(1,
-                        'debug_toolbar.middleware.DebugToolbarMiddleware')
+                    kw['MIDDLEWARE_CLASSES'].insert(
+                        1, 'debug_toolbar.middleware.DebugToolbarMiddleware')
                     kw['DEBUG_TOOLBAR_CONFIG'] = {
-                        'SHOW_TOOLBAR_CALLBACK': lambda v: 1 == 1,
+                        'SHOW_TOOLBAR_CALLBACK': lambda v: True,
                         'INTERCEPT_REDIRECTS': False}
                     kw['DEBUG_TOOLBAR_PANELS'] = (
-                    'debug_toolbar.panels.settings_vars.SettingsVarsDebugPanel',
+                        'debug_toolbar.panels.settings_vars.'
+                        'SettingsVarsDebugPanel',
                         'debug_toolbar.panels.version.VersionDebugPanel',
                         'debug_toolbar.panels.timer.TimerDebugPanel',
                         'debug_toolbar.panels.headers.HeaderDebugPanel',
@@ -306,19 +331,21 @@ class D(object):
                         'debug_toolbar.panels.logger.LoggingPanel')
                     # This one gives 500 if its Enabled without previous syncdb
                     #'debug_toolbar.panels.request_vars.RequestVarsDebugPanel',
-
             kw['INSTALLED_APPS'] = installed
-
+            # Debug and template debug
             if "DEBUG" not in kw:
-                kw["DEBUG"] = True
+                kw["DEBUG"] = kw["TEMPLATE_DEBUG"] = True
             if "APP_DIR" not in kw:
                 kw["APP_DIR"] = self.APP_DIR
+            # secret key
             if "SECRET_KEY" not in kw:
                 kw["SECRET_KEY"] = self.get_secret_key()
-
+            # admins and managers
+            if "ADMINS" not in kw:
+                kw["ADMINS"] = kw["MANAGERS"] = ((getuser(), ""), )
+            # configure the settings with the created dict
             settings.configure(**kw)
             self._import_django()
-
             # import .views and .forms for each installed app
             for app in settings.INSTALLED_APPS:
                 try:
@@ -333,19 +360,13 @@ class D(object):
                     __import__("{}.signals".format(app))  # lint:ok
                 except ImportError:
                     pass
-
-            from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+            # add static files url to the url patterns
             self.urlpatterns += staticfiles_urlpatterns()
-
+            # add the django admin
             if admin_url:
-                from django.contrib import admin
-                try:
-                    from django.conf.urls import include
-                except ImportError:
-                    from django.conf.urls.defaults import include  # lint:ok
                 admin.autodiscover()
                 self.add_view(admin_url, include(admin.site.urls))
-
+        # set it as configured
         self._configured = True
 
     def __call__(self, *args, **kw):
@@ -365,8 +386,7 @@ class D(object):
                 return args[0]
 
             def ddecorator(candidate):
-                from django.forms import forms
-                # the following is unsafe
+                """D Decorator (the following is unsafe)."""
                 if type(candidate) == forms.DeclarativeFieldsMetaclass:
                     self.add_form(args[0], candidate, *args[1:], **kw)
                     return candidate
@@ -378,9 +398,9 @@ class D(object):
         return self
 
     def _act_as_manage(self, *args):
+        """Act as Djangos Manage.py command"""
         if not hasattr(self, "_configured"):
             self._configure_django(DEBUG=True)
-        from django.core import management
         management.execute_from_command_line([sys.argv[0]] + list(args))
 
     def main(self):
@@ -397,4 +417,12 @@ class D(object):
 
         return self._act_as_manage(*args)
 
+
+###############################################################################
+
+
 application = d = D()
+
+
+if __name__ in "__main__":
+    print(__doc__)

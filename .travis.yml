@@ -4,11 +4,11 @@ python:
     - 2.7
     - 3.3
 
-before_install: sudo apt-get update -qq; pip install  tox --use-mirrors --quiet
+before_install: sudo apt-get update -qqm; pip install  tox --use-mirrors --quiet
 
-install: pip install fhurl>=0.1.7 gunicorn smarturls six Django>=1.3 dj-database-url --use-mirrors --quiet
+install: pip install fhurl>=0.1.7 gunicorn smarturls six Django>=1.4 dj-database-url --use-mirrors --quiet
 
-before_script: rm --recursive --force --verbose *.pyc
+before_script: rm --recursive --force --verbose *.py[cod]
 
 script: tox
 
@@ -28,4 +28,3 @@ notifications:
         on_failure: always
 
 cache: apt
-

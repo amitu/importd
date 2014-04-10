@@ -1,9 +1,11 @@
+*~
 *.swp
 *.dSYM
-*.pyc
+*.py[codw]
 *.o
 *.log
 *.sqlite
+*.sqlite3
 .installed.cfg
 bin
 develop-eggs
@@ -12,6 +14,7 @@ downloads
 eggs
 parts
 *.egg-info
+*.exe
 build
 *.bdb
 venv
@@ -20,4 +23,5 @@ docs/html/
 docs/doctrees/
 .tox
 .idea
-
+.directory
+*.so
