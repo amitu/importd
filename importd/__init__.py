@@ -35,11 +35,11 @@ try:
     import importlib
 except ImportError:
     from django.utils import importlib  # lint:ok
-try:
-    import debug_toolbar  # lint:ok
-    DEBUG_TOOLBAR = True
-except ImportError:
-    DEBUG_TOOLBAR = False
+#try:
+    #import debug_toolbar  # lint:ok
+    #DEBUG_TOOLBAR = True
+#except ImportError:
+    #DEBUG_TOOLBAR = False
 try:
     from django.http.response import HttpResponseBase as HttpResponse_base_obj
 except ImportError:
@@ -300,23 +300,23 @@ class D(object):
                     installed.append("django.contrib.humanize")
                 if "django.contrib.staticfiles" not in installed:
                     installed.append("django.contrib.staticfiles")
-                if "debug_toolbar" not in installed and DEBUG_TOOLBAR:
-                    installed.append("debug_toolbar")
-                    kw['INTERNAL_IPS'] = ('127.0.0.1', '::1', '0.0.0.0')
-                    kw['MIDDLEWARE_CLASSES'].insert(
-                        1, 'debug_toolbar.middleware.DebugToolbarMiddleware')
-                    kw['DEBUG_TOOLBAR_PANELS'] = (
-                        'debug_toolbar.panels.versions.VersionsPanel',
-                        'debug_toolbar.panels.timer.TimerPanel',
-                        'debug_toolbar.panels.settings.SettingsPanel',
-                        'debug_toolbar.panels.headers.HeadersPanel',
-                        'debug_toolbar.panels.request.RequestPanel',
-                        'debug_toolbar.panels.staticfiles.StaticFilesPanel',
-                        'debug_toolbar.panels.templates.TemplatesPanel',
-                        'debug_toolbar.panels.signals.SignalsPanel',
-                        'debug_toolbar.panels.logging.LoggingPanel',
-                        'debug_toolbar.panels.redirects.RedirectsPanel',
-                    )
+                # TODO: Disabled until we find out why it complains so much.
+                #if "debug_toolbar" not in installed and DEBUG_TOOLBAR:
+                    #installed.append("debug_toolbar")
+                    #kw['INTERNAL_IPS'] = ('127.0.0.1', '::1', '0.0.0.0')
+                    #kw['MIDDLEWARE_CLASSES'].insert(
+                        #1, 'debug_toolbar.middleware.DebugToolbarMiddleware')
+                    #kw['DEBUG_TOOLBAR_PANELS'] = (
+                        #'debug_toolbar.panels.versions.VersionsPanel',
+                        #'debug_toolbar.panels.timer.TimerPanel',
+                        #'debug_toolbar.panels.headers.HeadersPanel',
+                        #'debug_toolbar.panels.request.RequestPanel',
+                        #'debug_toolbar.panels.staticfiles.StaticFilesPanel',
+                        #'debug_toolbar.panels.templates.TemplatesPanel',
+                        #'debug_toolbar.panels.signals.SignalsPanel',
+                        #'debug_toolbar.panels.logging.LoggingPanel',
+                        #'debug_toolbar.panels.redirects.RedirectsPanel'
+                    #)
 
             kw['INSTALLED_APPS'] = installed
 
