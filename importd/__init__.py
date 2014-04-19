@@ -22,15 +22,12 @@ from string import ascii_letters, digits
 # django imports
 import django.core.urlresolvers
 from django.conf import global_settings, settings
-from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.core import management
 from django.forms import forms
-from django.shortcuts import render_to_response
 from django.template import RequestContext
 
 # importd and fhurl imports
 import dj_database_url
-from fhurl import JSONResponse
 from importd import urlconf
 
 # custom imports
@@ -91,11 +88,11 @@ class SmartReturnMiddleware(object):
             return res
         if isinstance(res, tuple):
             template_name, context = res
-            res = render_to_response(
+            res = render_to_response(  # lint:ok
                 template_name, context, RequestContext(request)
             )
         else:
-            res = JSONResponse(res)
+            res = JSONResponse(res)  # lint:ok
         return res
 
 
@@ -126,8 +123,8 @@ class D(object):
     DJANGO_IMPORT = (
         ('smarturls', 'surl'),
         ('django.http', ['HttpResponse', 'Http404', 'HttpResponseRedirect']),
-        # ('django.shortcuts', ['get_object_or_404', 'get_list_or_404',
-        #                      'render_to_response', 'render', 'redirect']),
+        ('django.shortcuts', ['get_object_or_404', 'get_list_or_404',
+                              'render_to_response', 'render', 'redirect']),
         ('django.template', 'RequestContext'),
         ('django', 'forms'),
         ('fhurl', ['RequestForm', 'fhurl', 'JSONResponse']),
@@ -346,7 +343,13 @@ class D(object):
             # admins and managers
             if "ADMINS" not in kw:
                 kw["ADMINS"] = kw["MANAGERS"] = ((getuser(), ""), )
+
             settings.configure(**kw)
+
+            # Need to be imported AFTER settings.configure() or it explodes
+            from django.shortcuts import *  # lint:ok  isort:skip
+            from fhurl import JSONResponse  # lint:ok  isort:skip
+
             self._import_django()
 
             # import .views and .forms for each installed app
@@ -364,10 +367,11 @@ class D(object):
                 except ImportError:
                     pass
 
+            from django.contrib.staticfiles.urls import staticfiles_urlpatterns
             self.urlpatterns += staticfiles_urlpatterns()
 
             if admin_url:
-                from django.contrib import admin
+                from django.contrib import admin  # isort:skip
                 admin.autodiscover()
                 self.add_view(admin_url, include(admin.site.urls))
 
@@ -405,7 +409,6 @@ class D(object):
     def _act_as_manage(self, *args):
         if not hasattr(self, "_configured"):
             self._configure_django(DEBUG=True)
-        from django.core import management
         management.execute_from_command_line([sys.argv[0]] + list(args))
 
     def main(self):
