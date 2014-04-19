@@ -345,7 +345,9 @@ class D(object):
             settings.configure(**kw)
 
             # Need to be imported AFTER settings.configure() or it explodes
-            from django.shortcuts import *  # lint:ok  isort:skip
+            from django.shortcuts import (get_object_or_404, get_list_or_404,
+                                          render_to_response, render,
+                                          redirect)  # lint:ok  isort:skip
             from fhurl import JSONResponse  # lint:ok  isort:skip
 
             self._import_django()
