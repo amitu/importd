@@ -45,10 +45,6 @@ try:
 except ImportError:
     from django.http import HttpResponse as HttpResponse_base_obj  # lint:ok
 try:
-    from django.core.wsgi import get_wsgi_application
-except ImportError:
-    import django.core.handlers.wsgi
-try:
     from django.conf.urls.defaults import patterns, url
 except ImportError:
     from django.conf.urls import patterns, url  # lint:ok
@@ -88,7 +84,8 @@ class SmartReturnMiddleware(object):
             return res
         if isinstance(res, tuple):
             template_name, context = res
-            res = render_to_response(  # lint:ok
+            from django.shortcuts import render_to_response  # isort:skip
+            res = render_to_response(
                 template_name, context, RequestContext(request)
             )
         else:
@@ -158,16 +155,17 @@ class D(object):
         self._iterate_imports(set_attr)
 
         try:
+            from django.core.wsgi import get_wsgi_application  # isort: skip
             self.wsgi_application = get_wsgi_application()
         except ImportError:
-
+            import django.core.handlers.wsgi  # isort: skip
             self.wsgi_application = django.core.handlers.wsgi.WSGIHandler()
 
         self.patterns = patterns
         self.url = url
 
-    def _get_app_dir(self, pth):
-        return os.path.join(self.APP_DIR, pth)
+    def _get_app_dir(self, _path):
+        return os.path.join(self.APP_DIR, _path)
 
     def dotslash(self, _path):
         """Returns the ./ directory"""
