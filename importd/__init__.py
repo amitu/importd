@@ -22,7 +22,6 @@ from string import ascii_letters, digits
 # django imports
 import django.core.urlresolvers
 from django.conf import global_settings, settings
-from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.core import management
 from django.forms import forms
@@ -368,6 +367,7 @@ class D(object):
             self.urlpatterns += staticfiles_urlpatterns()
 
             if admin_url:
+                from django.contrib import admin
                 admin.autodiscover()
                 self.add_view(admin_url, include(admin.site.urls))
 
