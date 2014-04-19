@@ -127,8 +127,8 @@ class D(object):
     DJANGO_IMPORT = (
         ('smarturls', 'surl'),
         ('django.http', ['HttpResponse', 'Http404', 'HttpResponseRedirect']),
-        ('django.shortcuts', ['get_object_or_404', 'get_list_or_404',
-                              'render_to_response', 'render', 'redirect']),
+        # ('django.shortcuts', ['get_object_or_404', 'get_list_or_404',
+        #                      'render_to_response', 'render', 'redirect']),
         ('django.template', 'RequestContext'),
         ('django', 'forms'),
         ('fhurl', ['RequestForm', 'fhurl', 'JSONResponse']),
