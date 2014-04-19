@@ -226,6 +226,14 @@ class D(object):
         finally:
             return secret_key
 
+    def check_if_folder_exist_else_create(self, _folder):
+        """Check if folder exists else create it."""
+        if not os.path.isdir(_folder):
+            try:
+                os.mkdir(_folder)
+            except Exception as reason_why_it_failed:
+                print(reason_why_it_failed)
+
     def _configure_django(self, **kw):
         """Configure Django with arguments."""
         self.settings = settings
@@ -239,11 +247,13 @@ class D(object):
         if not kw.get("dont_configure", False):
             kw["ROOT_URLCONF"], self.smart_return = "importd.urlconf", False
             if "TEMPLATE_DIRS" not in kw:
-                kw["TEMPLATE_DIRS"] = (self.dotslash("templates"), )
+                kw["TEMPLATE_DIRS"] = _folder = (self.dotslash("templates"), )
+                self.check_if_folder_exist_else_create(_folder[0])
             if "STATIC_URL" not in kw:
                 kw["STATIC_URL"] = "/static/"
             if "STATIC_ROOT" not in kw:
-                kw["STATIC_ROOT"] = self.dotslash("static")
+                kw["STATIC_ROOT"] = _folder = self.dotslash("static")
+                self.check_if_folder_exist_else_create(_folder)
             if "MEDIA_URL" not in kw:
                 kw["MEDIA_URL"] = "/static/media/"
             if "db" in kw:
