@@ -302,12 +302,9 @@ class D(object):
                     installed.append("django.contrib.staticfiles")
                 if "debug_toolbar" not in installed and DEBUG_TOOLBAR:
                     installed.append("debug_toolbar")
-                    kw['INTERNAL_IPS'] = ('127.0.0.1', '0.0.0.0')
+                    kw['INTERNAL_IPS'] = ('127.0.0.1', '::1', '0.0.0.0')
                     kw['MIDDLEWARE_CLASSES'].insert(
                         1, 'debug_toolbar.middleware.DebugToolbarMiddleware')
-                    kw['DEBUG_TOOLBAR_CONFIG'] = {
-                        'SHOW_TOOLBAR_CALLBACK': lambda v: True,
-                        'INTERCEPT_REDIRECTS': False}
                     kw['DEBUG_TOOLBAR_PANELS'] = (
                         'debug_toolbar.panels.versions.VersionsPanel',
                         'debug_toolbar.panels.timer.TimerPanel',
@@ -316,10 +313,10 @@ class D(object):
                         'debug_toolbar.panels.request.RequestPanel',
                         'debug_toolbar.panels.staticfiles.StaticFilesPanel',
                         'debug_toolbar.panels.templates.TemplatesPanel',
-                        'debug_toolbar.panels.cache.CachePanel',
                         'debug_toolbar.panels.signals.SignalsPanel',
                         'debug_toolbar.panels.logging.LoggingPanel',
-                        'debug_toolbar.panels.redirects.RedirectsPanel')
+                        'debug_toolbar.panels.redirects.RedirectsPanel',
+                    )
 
             kw['INSTALLED_APPS'] = installed
 
