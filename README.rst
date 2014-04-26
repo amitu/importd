@@ -1,3 +1,6 @@
+.. image:: https://badge.waffle.io/amitu/importd.png?label=ready&title=Ready 
+ :target: https://waffle.io/amitu/importd
+ :alt: 'Stories in Ready'
 Build Status: |build-status|
 
 .. |build-status| image:: https://travis-ci.org/amitu/importd.png
