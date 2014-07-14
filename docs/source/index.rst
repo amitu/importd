@@ -503,7 +503,7 @@ on /extra/dashboard/::
 
     from importd import d
 
-    d(DEBUG=True, INSTALLED_APPS=["app"], mounts={"app", "/extra/"})
+    d(DEBUG=True, INSTALLED_APPS=["app"], mounts={"app": "/extra/"})
 
     if __name__ == "__main__":
         d.main()
