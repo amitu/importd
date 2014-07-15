@@ -4,6 +4,7 @@ importd ChangeLog
 master
 ------
 
+* Changed default setting STATIC_ROOT from ``static`` to ``staticfiles`` and set new default setting STATICFILES_DIRS to ``static``. This means that if you use the collectstatic management command, it will collect the files from the ``static`` folder and copy them to ``staticfiles``. If you use an external web server, you have to change the local path of the url http://server/static/ to serve files from the ``staticfiles`` folder.
 * Auto Add django-debug-toolbar: try to import it, if sucessful and is not on settings and the database exist(debug_toolbar needs a DB) and DEBUG=True, then configure debug_toolbar.
 * Auto Add SECRET_KEY: If no SECRET_KEY on settings, try to read SECRET_KEY from ./secret.txt , if no ./secret.txt generate a random string then write it to ./secret.txt and finally return it as SECRET_KEY.
 * Auto Add django.contrib.humanize.

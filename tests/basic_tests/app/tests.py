@@ -78,6 +78,18 @@ class BasicTest(TestCase):
         self.assertEqual(response.status_code, 200)
         settings.DEBUG=False
 
+    def test_static_outside_apps(self):
+        c = Client()
+
+        self.assertEqual(
+            resolve("/static/").url_name,
+            "django.contrib.staticfiles.views.serve"
+        )
+        settings.DEBUG=True
+        response = c.get("/static/generic.css")
+        self.assertEqual(response.status_code, 200)
+        settings.DEBUG=False
+
     def test_admin(self):
         c = Client()
         response = c.get("/admin/")
