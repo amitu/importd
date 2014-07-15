@@ -93,6 +93,7 @@ Contributors
 * Jannis Leidel (https://twitter.com/jezdez)
 * Lukasz Balcerzak (https://github.com/lukaszb)
 * Juan Carlos (https://github.com/juancarlospaco) 
+* Josep Cugat (https://github.com/jcugat)
 
 Contribution Guide
 ==================
