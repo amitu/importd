@@ -11,6 +11,7 @@ import sys
 import dj_database_url
 import django.core.urlresolvers
 from importd import urlconf
+from django.conf import settings
 
 # custom imports
 try:
@@ -62,7 +63,9 @@ class SmartReturnMiddleware(object):
 
 
 class D(object):
-    urlpatterns = urlconf.urlpatterns
+    @property
+    def urlpatterns(self):
+        return self.get_urlpatterns()
 
     def _is_management_command(self, cmd):
         return cmd in "runserver,shell".split(",")
@@ -77,7 +80,12 @@ class D(object):
         self.regexers.update(regexers)
 
     def update_urls(self, urls):
-        self.urlpatterns += urls
+        urlpatterns = self.get_urlpatterns()
+        urlpatterns += urls
+
+    def get_urlpatterns(self):
+        urlconf_module = importlib.import_module(settings.ROOT_URLCONF)
+        return urlconf_module.urlpatterns
 
     # tuple list of django modules imported in d
     # tuple (a, b) is equivalent to from a import b
@@ -188,15 +196,18 @@ class D(object):
     def add_view(self, regex, view, app=None, *args, **kw):
         regex = self.generate_mount_url(regex, view, app)
         if regex:
-            self.urlpatterns += self.patterns(
+            patterns = self.patterns(
                 "", self.surl(regex, view, *args, **kw)
             )
+            urlpatterns = self.get_urlpatterns()
+            urlpatterns += patterns
             django.core.urlresolvers.clear_url_caches()
 
     def add_form(self, regex, form_cls, app=None, *args, **kw):
         regex = self.generate_mount_url(regex, form_cls, app)
         if regex:
-            self.urlpatterns.append(self.fhurl(regex, form_cls, *args, **kw))
+            urlpatterns = self.get_urlpatterns()
+            urlpatterns.append(self.fhurl(regex, form_cls, *args, **kw))
             django.core.urlresolvers.clear_url_caches()
 
     def get_secret_key(self):
@@ -338,7 +349,8 @@ class D(object):
                     pass
 
             from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-            self.urlpatterns += staticfiles_urlpatterns()
+            urlpatterns = self.get_urlpatterns()
+            urlpatterns += staticfiles_urlpatterns()
 
             if admin_url:
                 from django.contrib import admin
