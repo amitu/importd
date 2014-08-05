@@ -289,7 +289,8 @@ class D(object):
                     installed.append("django.contrib.staticfiles")
                 if "debug_toolbar" not in installed and DEBUG_TOOLBAR:
                     installed.append("debug_toolbar")
-                    kw['INTERNAL_IPS'] = ('127.0.0.1', '0.0.0.0')
+                    if 'INTERNAL_IPS' not in kw:
+                        kw['INTERNAL_IPS'] = ('127.0.0.1', '0.0.0.0')
                     kw['MIDDLEWARE_CLASSES'].insert(1,
                         'debug_toolbar.middleware.DebugToolbarMiddleware')
                     kw['DEBUG_TOOLBAR_PANELS'] = (
