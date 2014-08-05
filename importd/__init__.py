@@ -292,9 +292,6 @@ class D(object):
                     kw['INTERNAL_IPS'] = ('127.0.0.1', '0.0.0.0')
                     kw['MIDDLEWARE_CLASSES'].insert(1,
                         'debug_toolbar.middleware.DebugToolbarMiddleware')
-                    kw['DEBUG_TOOLBAR_CONFIG'] = {
-                        'SHOW_TOOLBAR_CALLBACK': lambda v: 1 == 1,
-                        'INTERCEPT_REDIRECTS': False}
                     kw['DEBUG_TOOLBAR_PANELS'] = (
                         'debug_toolbar.panels.versions.VersionsPanel',
                         'debug_toolbar.panels.timer.TimerPanel',
