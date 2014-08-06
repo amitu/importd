@@ -50,7 +50,8 @@ Examples
 
 * Simple example : https://github.com/amitu/importd/tree/master/examples
 * importd-boilerplate : https://github.com/if1live/importd-boilerplate
-    * importd + jinja2 + django-debug-toolbar + django REST framework
+
+  * importd + jinja2 + django-debug-toolbar + django REST framework
 
 
 Backward Incompatibile Change
