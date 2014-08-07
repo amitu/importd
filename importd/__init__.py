@@ -11,6 +11,7 @@ import sys
 import dj_database_url
 import django.core.urlresolvers
 from importd import urlconf
+from django.conf import settings
 
 # custom imports
 try:
@@ -62,7 +63,9 @@ class SmartReturnMiddleware(object):
 
 
 class D(object):
-    urlpatterns = urlconf.urlpatterns
+    @property
+    def urlpatterns(self):
+        return self.get_urlpatterns()
 
     def _is_management_command(self, cmd):
         return cmd in "runserver,shell".split(",")
@@ -77,7 +80,12 @@ class D(object):
         self.regexers.update(regexers)
 
     def update_urls(self, urls):
-        self.urlpatterns += urls
+        urlpatterns = self.get_urlpatterns()
+        urlpatterns += urls
+
+    def get_urlpatterns(self):
+        urlconf_module = importlib.import_module(settings.ROOT_URLCONF)
+        return urlconf_module.urlpatterns
 
     # tuple list of django modules imported in d
     # tuple (a, b) is equivalent to from a import b
@@ -188,15 +196,18 @@ class D(object):
     def add_view(self, regex, view, app=None, *args, **kw):
         regex = self.generate_mount_url(regex, view, app)
         if regex:
-            self.urlpatterns += self.patterns(
+            patterns = self.patterns(
                 "", self.surl(regex, view, *args, **kw)
             )
+            urlpatterns = self.get_urlpatterns()
+            urlpatterns += patterns
             django.core.urlresolvers.clear_url_caches()
 
     def add_form(self, regex, form_cls, app=None, *args, **kw):
         regex = self.generate_mount_url(regex, form_cls, app)
         if regex:
-            self.urlpatterns.append(self.fhurl(regex, form_cls, *args, **kw))
+            urlpatterns = self.get_urlpatterns()
+            urlpatterns.append(self.fhurl(regex, form_cls, *args, **kw))
             django.core.urlresolvers.clear_url_caches()
 
     def get_secret_key(self):
@@ -289,23 +300,24 @@ class D(object):
                     installed.append("django.contrib.staticfiles")
                 if "debug_toolbar" not in installed and DEBUG_TOOLBAR:
                     installed.append("debug_toolbar")
-                    kw['INTERNAL_IPS'] = ('127.0.0.1', '0.0.0.0')
+                    if 'INTERNAL_IPS' not in kw:
+                        kw['INTERNAL_IPS'] = ('127.0.0.1', '0.0.0.0')
                     kw['MIDDLEWARE_CLASSES'].insert(1,
                         'debug_toolbar.middleware.DebugToolbarMiddleware')
-                    kw['DEBUG_TOOLBAR_CONFIG'] = {
-                        'SHOW_TOOLBAR_CALLBACK': lambda v: 1 == 1,
-                        'INTERCEPT_REDIRECTS': False}
                     kw['DEBUG_TOOLBAR_PANELS'] = (
-                    'debug_toolbar.panels.settings_vars.SettingsVarsDebugPanel',
-                        'debug_toolbar.panels.version.VersionDebugPanel',
-                        'debug_toolbar.panels.timer.TimerDebugPanel',
-                        'debug_toolbar.panels.headers.HeaderDebugPanel',
-                        'debug_toolbar.panels.profiling.ProfilingDebugPanel',
-                        'debug_toolbar.panels.sql.SQLDebugPanel',
-                        'debug_toolbar.panels.template.TemplateDebugPanel',
-                        'debug_toolbar.panels.cache.CacheDebugPanel',
-                        'debug_toolbar.panels.signals.SignalDebugPanel',
-                        'debug_toolbar.panels.logger.LoggingPanel')
+                        'debug_toolbar.panels.versions.VersionsPanel',
+                        'debug_toolbar.panels.timer.TimerPanel',
+                        'debug_toolbar.panels.settings.SettingsPanel',
+                        'debug_toolbar.panels.headers.HeadersPanel',
+                        'debug_toolbar.panels.request.RequestPanel',
+                        'debug_toolbar.panels.sql.SQLPanel',
+                        'debug_toolbar.panels.staticfiles.StaticFilesPanel',
+                        'debug_toolbar.panels.templates.TemplatesPanel',
+                        'debug_toolbar.panels.cache.CachePanel',
+                        'debug_toolbar.panels.signals.SignalsPanel',
+                        'debug_toolbar.panels.logging.LoggingPanel',
+                        'debug_toolbar.panels.redirects.RedirectsPanel',
+                    )
                     # This one gives 500 if its Enabled without previous syncdb
                     #'debug_toolbar.panels.request_vars.RequestVarsDebugPanel',
 
@@ -337,7 +349,8 @@ class D(object):
                     pass
 
             from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-            self.urlpatterns += staticfiles_urlpatterns()
+            urlpatterns = self.get_urlpatterns()
+            urlpatterns += staticfiles_urlpatterns()
 
             if admin_url:
                 from django.contrib import admin

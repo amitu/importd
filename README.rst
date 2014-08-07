@@ -45,7 +45,14 @@ To run it in production:
 
   $ gunicorn foo:d
 
-Some examples: https://github.com/amitu/importd/tree/master/examples
+Examples
+=============================
+
+* Simple example : https://github.com/amitu/importd/tree/master/examples
+* importd-boilerplate : https://github.com/if1live/importd-boilerplate
+
+  * importd + jinja2 + django-debug-toolbar + django REST framework
+
 
 Backward Incompatibile Change
 =============================
@@ -94,6 +101,7 @@ Contributors
 * Lukasz Balcerzak (https://github.com/lukaszb)
 * Juan Carlos (https://github.com/juancarlospaco) 
 * Josep Cugat (https://github.com/jcugat)
+* Yu Byunghoo (https://github.com/if1live)
 
 Contribution Guide
 ==================

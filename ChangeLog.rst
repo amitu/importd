@@ -11,6 +11,8 @@ master
 * Auto Add django.contrib.staticfiles.
 * Auto Import get_list_or_404, render, redirect from django.shortcuts.
 * Fixed Tests for new features.
+* Support django-debug-toolbar 1.2.1
+* Add importd-boilerplate hyperlink.
 
 0.2.9 - 10-Nov-2013
 -------------------
