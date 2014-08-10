@@ -333,21 +333,6 @@ class D(object):
             settings.configure(**kw)
             self._import_django()
 
-            # import .views and .forms for each installed app
-            for app in settings.INSTALLED_APPS:
-                try:
-                    __import__("{}.views".format(app))  # lint:ok
-                except ImportError:
-                    pass
-                try:
-                    __import__("{}.forms".format(app))  # lint:ok
-                except ImportError:
-                    pass
-                try:
-                    __import__("{}.signals".format(app))  # lint:ok
-                except ImportError:
-                    pass
-
             from django.contrib.staticfiles.urls import staticfiles_urlpatterns
             urlpatterns = self.get_urlpatterns()
             urlpatterns += staticfiles_urlpatterns()
@@ -360,6 +345,21 @@ class D(object):
                     from django.conf.urls.defaults import include  # lint:ok
                 admin.autodiscover()
                 self.add_view(admin_url, include(admin.site.urls))
+
+            # import .views and .forms for each installed app
+            for app in settings.INSTALLED_APPS:
+                try:
+                    __import__("{}.forms".format(app))  # lint:ok
+                except ImportError:
+                    pass
+                try:
+                    __import__("{}.views".format(app))  # lint:ok
+                except ImportError:
+                    pass
+                try:
+                    __import__("{}.signals".format(app))  # lint:ok
+                except ImportError:
+                    pass
 
         self._configured = True
 
