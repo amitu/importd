@@ -337,15 +337,6 @@ class D(object):
             urlpatterns = self.get_urlpatterns()
             urlpatterns += staticfiles_urlpatterns()
 
-            if admin_url:
-                from django.contrib import admin
-                try:
-                    from django.conf.urls import include
-                except ImportError:
-                    from django.conf.urls.defaults import include  # lint:ok
-                admin.autodiscover()
-                self.add_view(admin_url, include(admin.site.urls))
-
             # import .views and .forms for each installed app
             for app in settings.INSTALLED_APPS:
                 try:
@@ -360,6 +351,16 @@ class D(object):
                     __import__("{}.signals".format(app))  # lint:ok
                 except ImportError:
                     pass
+
+            if admin_url:
+                from django.contrib import admin
+                try:
+                    from django.conf.urls import include
+                except ImportError:
+                    from django.conf.urls.defaults import include  # lint:ok
+                admin.autodiscover()
+                self.add_view(admin_url, include(admin.site.urls))
+
 
         self._configured = True
 
