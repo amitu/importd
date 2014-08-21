@@ -337,6 +337,17 @@ class D(object):
             urlpatterns = self.get_urlpatterns()
             urlpatterns += staticfiles_urlpatterns()
 
+            # django depends on INSTALLED_APPS's model
+            for app in settings.INSTALLED_APPS:
+                try:
+                    __import__("{}.admin".format(app))  # lint:ok
+                except ImportError:
+                    pass
+                try:
+                    __import__("{}.models".format(app))  # lint:ok
+                except ImportError:
+                    pass
+
             if admin_url:
                 from django.contrib import admin
                 try:
