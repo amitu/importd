@@ -3,10 +3,13 @@ from django.test.client import Client
 from django.core.urlresolvers import resolve
 from django.contrib.auth.models import User
 from django.test import TestCase
+import unittest
 
 import os
 
 from importd import d
+from importd import COFFIN, DJANGO_JINJA
+
 
 class BasicTest(TestCase):
     def setUp(self):
@@ -28,8 +31,21 @@ class BasicTest(TestCase):
         pass
 
     def test_insalled_apps(self):
+        installed_apps = list(settings.INSTALLED_APPS)
+        # remove unnecessary library
+        unnecessary_library_list = (
+            'django_jinja',
+            'debug_toolbar',
+            'coffin',
+        )
+        for x in unnecessary_library_list:
+            try:
+                installed_apps.remove(x)
+            except ValueError:
+                pass
+
         self.assertEqual(
-            settings.INSTALLED_APPS, [
+            installed_apps, [
                 'app', 'app2', 'django.contrib.auth',
                 'django.contrib.contenttypes', 'django.contrib.messages',
                  'django.contrib.sessions', 'django.contrib.admin',
@@ -52,9 +68,22 @@ class BasicTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["the_answer"], 42)
         self.assertTemplateUsed(response, "test1.html")
-        self.assertEqual(response.content, b"<h1>test1: 42</h1>\n")
+        # on windows, newline is CRLF.
+        self.assertEqual(response.content.replace(b'\r', b''), b"<h1>test1: 42</h1>\n")
         response = c.get("/testnotfound/")
         self.assertEqual(response.status_code, 404)
+
+    @unittest.skipIf(not COFFIN and not DJANGO_JINJA, 'jinja2 integration not exist')
+    def test_view_with_jinja(self):
+        c = Client()
+        response = c.get("/test2/")
+        self.assertEqual(response.status_code, 200)
+        if COFFIN:
+            # with django-jinja, cannout use response.context, assertTemplateUsed
+            # but with coffin, it works.
+            self.assertEqual(response.context["sample_list"], range(3))
+            self.assertTemplateUsed(response, "test2.jinja")
+        self.assertEqual(response.content, b"<h1>test2: 0|1|2</h1>")
 
     def test_mounts(self):
         c = Client()
