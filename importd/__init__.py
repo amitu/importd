@@ -24,6 +24,12 @@ try:
 except ImportError:
     DEBUG_TOOLBAR = False
 try:
+    import werkzeug
+    import django_extensions
+    RUNSERVER_PLUS = True
+except ImportError:
+    RUNSERVER_PLUS = False
+try:
     import django_jinja  # lint:ok
     DJANGO_JINJA = True
 except ImportError:
@@ -33,6 +39,7 @@ try:
     COFFIN = True
 except ImportError:
     COFFIN = False
+
 
 if sys.version_info >= (3,):
     basestring = unicode = str  # lint:ok
@@ -336,6 +343,9 @@ class D(object):
                     # This one gives 500 if its Enabled without previous syncdb
                     #'debug_toolbar.panels.request_vars.RequestVarsDebugPanel',
 
+            if RUNSERVER_PLUS:
+                installed.append('django_extensions')
+
             # django-jinja 1.0.4 support
             if DJANGO_JINJA:
                 installed.append("django_jinja")
@@ -443,7 +453,7 @@ class D(object):
 
     def main(self):
         if len(sys.argv) == 1:
-            self.do("runserver")
+            self.do(self._get_runserver_cmd())
         else:
             self.do()
 
@@ -451,8 +461,14 @@ class D(object):
         if not args:
             args = sys.argv[1:]
         if len(args) == 0:
-            return self._handle_management_command("runserver", "8000")
+            return self._handle_management_command(self._get_runserver_cmd(), "8000")
 
         return self._act_as_manage(*args)
+
+    def _get_runserver_cmd(self):
+        if RUNSERVER_PLUS:
+            return 'runserver_plus'
+        else:
+            return 'runserver'
 
 application = d = D()
