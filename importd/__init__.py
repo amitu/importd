@@ -34,12 +34,14 @@ try:
 except ImportError:
     COFFIN = False
 
+if sys.version_info >= (3,):
+    basestring = unicode = str  # lint:ok
+    # coffin is not python 3 compatible library
+    COFFIN = False
+
 # cannot use django-jinja, coffin both. primary library is coffin.
 if COFFIN and DJANGO_JINJA:
     DJANGO_JINJA = False
-
-if sys.version_info >= (3,):
-    basestring = unicode = str  # lint:ok
 
 
 class SmartReturnMiddleware(object):

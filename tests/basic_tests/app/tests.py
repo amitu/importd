@@ -3,10 +3,13 @@ from django.test.client import Client
 from django.core.urlresolvers import resolve
 from django.contrib.auth.models import User
 from django.test import TestCase
+import unittest
 
 import os
 
 from importd import d
+from importd import COFFIN, DJANGO_JINJA
+
 
 class BasicTest(TestCase):
     def setUp(self):
@@ -66,16 +69,12 @@ class BasicTest(TestCase):
         self.assertEqual(response.context["the_answer"], 42)
         self.assertTemplateUsed(response, "test1.html")
         # on windows, newline is CRLF.
-        self.assertEqual(response.content.replace('\r', ''), b"<h1>test1: 42</h1>\n")
+        self.assertEqual(response.content.replace(b'\r', b''), b"<h1>test1: 42</h1>\n")
         response = c.get("/testnotfound/")
         self.assertEqual(response.status_code, 404)
 
+    @unittest.skipIf(not COFFIN and not DJANGO_JINJA, 'jinja2 integration not exist')
     def test_view_with_jinja(self):
-        from importd import COFFIN, DJANGO_JINJA
-        if not COFFIN and not DJANGO_JINJA:
-            # cannot not jinja2 test if jinja2 integration is not exist
-            return
-
         c = Client()
         response = c.get("/test2/")
         self.assertEqual(response.status_code, 200)
