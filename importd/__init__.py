@@ -23,10 +23,25 @@ try:
     DEBUG_TOOLBAR = True
 except ImportError:
     DEBUG_TOOLBAR = False
-
+try:
+    import django_jinja  # lint:ok
+    DJANGO_JINJA = True
+except ImportError:
+    DJANGO_JINJA = False
+try:
+    import coffin  # lint:ok
+    COFFIN = True
+except ImportError:
+    COFFIN = False
 
 if sys.version_info >= (3,):
     basestring = unicode = str  # lint:ok
+    # coffin is not python 3 compatible library
+    COFFIN = False
+
+# cannot use django-jinja, coffin both. primary library is coffin.
+if COFFIN and DJANGO_JINJA:
+    DJANGO_JINJA = False
 
 
 class SmartReturnMiddleware(object):
@@ -320,6 +335,23 @@ class D(object):
                     )
                     # This one gives 500 if its Enabled without previous syncdb
                     #'debug_toolbar.panels.request_vars.RequestVarsDebugPanel',
+
+            # django-jinja 1.0.4 support
+            if DJANGO_JINJA:
+                installed.append("django_jinja")
+                kw['TEMPLATE_LOADERS'] = list(kw.get('TEMPLATE_LOADERS', []))
+                kw['TEMPLATE_LOADERS'] += (
+                    'django_jinja.loaders.AppLoader',
+                    'django_jinja.loaders.FileSystemLoader',
+                )
+            # coffin 0.3.8 support
+            if COFFIN:
+                installed.append('coffin')
+                kw['TEMPLATE_LOADERS'] = list(kw.get('TEMPLATE_LOADERS', []))
+                kw['TEMPLATE_LOADERS'] += (
+                    'coffin.contrib.loader.AppLoader',
+                    'coffin.contrib.loader.FileSystemLoader',
+                )
 
             kw['INSTALLED_APPS'] = installed
 
