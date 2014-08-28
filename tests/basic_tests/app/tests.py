@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.test.client import Client
-from django.core.urlresolvers import resolve
+from django.core.urlresolvers import resolve, reverse
 from django.contrib.auth.models import User
 from django.test import TestCase
 
@@ -30,7 +30,7 @@ class BasicTest(TestCase):
     def test_insalled_apps(self):
         self.assertEqual(
             settings.INSTALLED_APPS, [
-                'app', 'app2', 'django.contrib.auth',
+                'app', 'app2', 'app3', 'django.contrib.auth',
                 'django.contrib.contenttypes', 'django.contrib.messages',
                  'django.contrib.sessions', 'django.contrib.admin',
                  'django.contrib.humanize', 'django.contrib.staticfiles'
@@ -95,7 +95,7 @@ class BasicTest(TestCase):
         response = c.get("/admin/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            [t.name for t in response.templates], 
+            [t.name for t in response.templates],
             ['admin/login.html', u'admin/base_site.html', u'admin/base.html']
         )
         self.assertTrue(response.context["user"].is_anonymous())
@@ -109,4 +109,15 @@ class BasicTest(TestCase):
         )
         self.assertTrue(response.context["user"].is_authenticated())
 
+    def test_namespace_url_reverse(self):
+        url = reverse('app3:demo-url')
+        self.assertEqual('/app3/demo/url', url)
 
+    def test_view_with_blueprint(self):
+        c = Client()
+        response = c.get('/app3/demo/url')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b'app3/demo-url')
+        response = c.get('/app3/index3/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b'app3/index')
