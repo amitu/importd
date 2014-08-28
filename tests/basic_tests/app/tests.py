@@ -52,7 +52,8 @@ class BasicTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["the_answer"], 42)
         self.assertTemplateUsed(response, "test1.html")
-        self.assertEqual(response.content, b"<h1>test1: 42</h1>\n")
+        # on windows, newline is CRLF.
+        self.assertIn(response.content, [b"<h1>test1: 42</h1>\n", b"<h1>test1: 42</h1>\r\n"])
         response = c.get("/testnotfound/")
         self.assertEqual(response.status_code, 404)
 
