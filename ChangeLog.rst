@@ -13,6 +13,7 @@ master
 * Fixed Tests for new features.
 * Support django-debug-toolbar 1.2.1
 * Add importd-boilerplate hyperlink.
+* Auto Add coffin/django-jinja.
 
 0.2.9 - 10-Nov-2013
 -------------------

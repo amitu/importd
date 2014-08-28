@@ -1,2 +1,4 @@
 Django==1.5.5
 dj_database_url
+coffin==0.3.8
+
