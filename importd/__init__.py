@@ -33,6 +33,13 @@ try:
     COFFIN = True
 except ImportError:
     COFFIN = False
+try:
+    import werkzeug
+    import django_extensions
+    RUNSERVER_PLUS = True
+except ImportError:
+    RUNSERVER_PLUS = False
+
 
 if sys.version_info >= (3,):
     basestring = unicode = str  # lint:ok
@@ -394,6 +401,9 @@ class D(object):
                     'coffin.contrib.loader.AppLoader',
                     'coffin.contrib.loader.FileSystemLoader',
                 )
+            
+            if RUNSERVER_PLUS:
+                installed.append('django_extensions')
 
             kw['INSTALLED_APPS'] = installed
 
@@ -507,7 +517,7 @@ class D(object):
 
     def main(self):
         if len(sys.argv) == 1:
-            self.do("runserver")
+            self.do(self._get_runserver_cmd())
         else:
             self.do()
 
@@ -518,8 +528,14 @@ class D(object):
         if not args:
             args = sys.argv[1:]
         if len(args) == 0:
-            return self._handle_management_command("runserver", "8000")
+            return self._handle_management_command(self._get_runserver_cmd(), "8000")
 
         return self._act_as_manage(*args)
+
+    def _get_runserver_cmd(self):
+        if RUNSERVER_PLUS:
+            return 'runserver_plus'
+        else:
+            return 'runserver'
 
 application = d = D()
