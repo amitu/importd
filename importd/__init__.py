@@ -109,46 +109,33 @@ class D(object):
         urlconf_module = importlib.import_module(settings.ROOT_URLCONF)
         return urlconf_module.urlpatterns
 
-    # tuple list of django modules imported in d
-    # tuple (a, b) is equivalent to from a import b
-    # if b is an iterable (b = [c, d]), it is equivalent
-    # to from a import c, d
-    DJANGO_IMPORT = (
-        ('smarturls', 'surl'),
-        ('django.http', ['HttpResponse', 'Http404', 'HttpResponseRedirect']),
-        ('django.shortcuts', ['get_object_or_404', 'get_list_or_404',
-                              'render_to_response', 'render', 'redirect']),
-        ('django.template', 'RequestContext'),
-        ('django', 'forms'),
-        ('fhurl', ['RequestForm', 'fhurl', 'JSONResponse']),
-        ('django.db.models', ''),
-    )
-
-    def _iterate_imports(self, callback):
-        """
-            Iterates through imports and calls callback for each
-            (module_name, attributes) pair. If attribute is a string, it is
-            converted to a list first. Empty strings become empty lists
-        """
-
-        for module_name, attributes in self.DJANGO_IMPORT:
-            if isinstance(attributes, basestring):
-                if attributes:
-                    attributes = [attributes]
-                else:
-                    attributes = []
-            callback(module_name, attributes)
-
     def _import_django(self):
+        # issue #19. manual imports
+        from smarturls import surl
+        self.surl = surl
 
-        def set_attr(module_name, attributes):
-            module = importlib.import_module(module_name)
-            if attributes:
-                for attribute in attributes:
-                    setattr(self, attribute, getattr(module, attribute))
-            else:
-                setattr(self, module_name.split(".")[-1], module)
-        self._iterate_imports(set_attr)
+        from django.http import HttpResponse, Http404, HttpResponseRedirect
+        self.HttpResponse = HttpResponse
+        self.Http404 = Http404
+        self.HttpResponseRedirect = HttpResponseRedirect
+
+        from django.shortcuts import get_object_or_404, get_list_or_404, render_to_response, render, redirect
+        self.get_object_or_404 = get_object_or_404
+        self.get_list_or_404 = get_list_or_404
+        self.render_to_response = render_to_response
+        self.render = render
+        self.redirect = redirect
+
+        from django.template import RequestContext
+        self.RequestContext = RequestContext
+
+        from django import forms
+        self.forms = forms
+
+        from fhurl import RequestForm, fhurl, JSONResponse
+        self.RequestForm = RequestForm
+        self.fhurl = fhurl
+        self.JSONResponse = JSONResponse
 
         try:
             from django.core.wsgi import get_wsgi_application
