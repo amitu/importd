@@ -33,6 +33,13 @@ try:
     COFFIN = True
 except ImportError:
     COFFIN = False
+try:
+    import werkzeug
+    import django_extensions
+    RUNSERVER_PLUS = True
+except ImportError:
+    RUNSERVER_PLUS = False
+
 
 if sys.version_info >= (3,):
     basestring = unicode = str  # lint:ok
@@ -76,8 +83,50 @@ class SmartReturnMiddleware(object):
             res = JSONResponse(res)
         return res
 
+class Blueprint(object):
+    def __init__(self):
+        self.url_prefix = None
+        self.namespace = None
+        self.app_name = None
+
+        from django.conf.urls import patterns
+        self.patterns = patterns('')
+
+        from smarturls import surl
+        self.surl = surl
+
+        from fhurl import fhurl
+        self.fhurl = fhurl
+
+    def add_view(self, regex, view, app=None, *args, **kw):
+        url = self.surl(regex, view, *args, **kw)
+        self.patterns.append(url)
+
+    def add_form(self, regex, form_cls, app=None, *args, **kw):
+        url = self.fhurl(regex, form_cls, *args, **kw)
+        self.patterns.append(url)
+
+    def __call__(self, *args, **kw):
+        if callable(args[0]):
+            self.add_view("/{}/".format(args[0].__name__), args[0])
+            return args[0]
+
+        def ddecorator(candidate):
+            from django.forms import forms
+            # the following is unsafe
+            if type(candidate) == forms.DeclarativeFieldsMetaclass:
+                self.add_form(args[0], candidate, *args[1:], **kw)
+                return candidate
+            self.add_view(args[0], candidate, *args[1:], **kw)
+            return candidate
+        return ddecorator
+
+
 
 class D(object):
+    def __init__(self):
+        self.blueprint_list = []
+
     @property
     def urlpatterns(self):
         return self.get_urlpatterns()
@@ -352,6 +401,9 @@ class D(object):
                     'coffin.contrib.loader.AppLoader',
                     'coffin.contrib.loader.FileSystemLoader',
                 )
+            
+            if RUNSERVER_PLUS:
+                installed.append('django_extensions')
 
             kw['INSTALLED_APPS'] = installed
 
@@ -411,6 +463,8 @@ class D(object):
             if not hasattr(self, "_configured"):
                 self._configure_django(DEBUG=True)
             if type(args[0]) == dict and len(args) == 2:
+                for bp in self.blueprint_list:
+                    self.apply_blueprint(bp)
                 return self.wsgi_application(*args)
             if self._is_management_command(args[0]):
                 self._handle_management_command(*args, **kw)
@@ -441,18 +495,47 @@ class D(object):
         from django.core import management
         management.execute_from_command_line([sys.argv[0]] + list(args))
 
+    def register_blueprint(self, bp, url_prefix, namespace, app_name=''):
+        bp.url_prefix = url_prefix
+        bp.namespace = namespace
+        bp.app_name = app_name
+        self.blueprint_list.append(bp)
+
+    def apply_blueprint(self, bp):
+        try:
+            from django.conf.urls import include
+        except ImportError:
+            from django.conf.urls.defaults import include  # lint:ok
+
+        url = self.surl(bp.url_prefix, include(bp.patterns,
+                                               namespace=bp.namespace,
+                                               app_name=bp.app_name))
+
+        urlpatterns = self.get_urlpatterns()
+        urlpatterns.append(url)
+        django.core.urlresolvers.clear_url_caches()
+
     def main(self):
         if len(sys.argv) == 1:
-            self.do("runserver")
+            self.do(self._get_runserver_cmd())
         else:
             self.do()
 
     def do(self, *args):
+        for bp in self.blueprint_list:
+            self.apply_blueprint(bp)
+
         if not args:
             args = sys.argv[1:]
         if len(args) == 0:
-            return self._handle_management_command("runserver", "8000")
+            return self._handle_management_command(self._get_runserver_cmd(), "8000")
 
         return self._act_as_manage(*args)
+
+    def _get_runserver_cmd(self):
+        if RUNSERVER_PLUS:
+            return 'runserver_plus'
+        else:
+            return 'runserver'
 
 application = d = D()
