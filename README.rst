@@ -3,7 +3,7 @@
  :alt: 'Stories in Ready'
 Build Status: |build-status|
 
-.. |build-status| image:: https://travis-ci.org/amitu/importd.png
+.. |build-status| image:: https://travis-ci.org/amitu/importd.png?branch=master
     :target: https://travis-ci.org/amitu/importd
 
 
