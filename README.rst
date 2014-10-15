@@ -89,7 +89,7 @@ Installation
 Documentation
 =============
 
-docs: http://packages.python.org/importd
+http://importd.readthedocs.org/en/latest/
 
 ChangeLog
 =========
