@@ -281,10 +281,14 @@ class D(object):
             self.smart_return = False
             if kw.pop("SMART_RETURN", True):
                 self.smart_return = True
-                kw.setdefault(
-                    'MIDDLEWARE_CLASSES',
-                    list(global_settings.MIDDLEWARE_CLASSES)
-                ).insert(0, "importd.SmartReturnMiddleware")
+                if "MIDDLEWARE_CLASSES" not in kw:
+                    kw["MIDDLEWARE_CLASSES"] = (
+                        global_settings.MIDDLEWARE_CLASSES
+                    )
+                kw["MIDDLEWARE_CLASSES"] = list(kw["MIDDLEWARE_CLASSES"])
+                kw["MIDDLEWARE_CLASSES"].insert(
+                    0, "importd.SmartReturnMiddleware"
+                )
 
             installed = list(kw.setdefault("INSTALLED_APPS", []))
 
