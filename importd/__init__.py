@@ -365,6 +365,8 @@ class D(object):
 
             autoimport = kw.pop("autoimport", True)
 
+            kw["SETTINGS_MODULE"] = kw.get("SETTINGS_MODULE", "importd")
+
             settings.configure(**kw)
             self._import_django()
 

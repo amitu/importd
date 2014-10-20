@@ -23,6 +23,9 @@ class BasicTest(TestCase):
         self.root.is_staff = True
         self.root.save()
 
+    def test_settings_module(self):
+        self.assertEqual(settings.SETTINGS_MODULE, "importd")
+
     def test_appdir(self):
         self.assertTrue(__file__.startswith(settings.APP_DIR + "/app/tests.py"))
 
