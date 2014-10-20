@@ -15,6 +15,8 @@ master
 * Add importd-boilerplate hyperlink.
 * Auto Add coffin/django-jinja.
 * Added support for Django1.7 and Python3.4, removed support for python3.3.
+* Added autoimport keyword argument, to control if views etc should be auto 
+  imported.
 
 0.2.9 - 10-Nov-2013
 -------------------
