@@ -1,14 +1,17 @@
-.. image:: https://badge.waffle.io/amitu/importd.png?label=ready&title=Ready 
- :target: https://waffle.io/amitu/importd
- :alt: 'Stories in Ready'
+Issues you can help with right now: |waffle|
+
 Build Status: |build-status|
 
-.. |build-status| image:: https://travis-ci.org/amitu/importd.png
+.. |waffle| image:: https://badge.waffle.io/amitu/importd.png?label=ready&title=Ready 
+ :target: https://waffle.io/amitu/importd
+ :alt: 'Stories in Ready'
+
+.. |build-status| image:: https://travis-ci.org/amitu/importd.png?branch=master
     :target: https://travis-ci.org/amitu/importd
 
 
-What is it?
-===========
+What is importd?
+================
 
 Slides of a talk I gave about importd: http://amitu.com/importd/
 
@@ -74,6 +77,7 @@ Features
 * works seamlessly with fhurl (http://packages.python.org/fhurl/)
 * Auto Add django-debug-toolbar (Needs to add it manually to INSTALLED_APPS)
 * Auto SECRET_KEY: If no SECRET_KEY on settings, try to read SECRET_KEY from ./secret.txt , if no ./secret.txt generate a random string then write it to ./secret.txt and finally return it as SECRET_KEY.
+* Auto Add coffin/django-jinja (jinja2 integration)
 
 Installation
 ============
@@ -85,7 +89,7 @@ Installation
 Documentation
 =============
 
-docs: http://packages.python.org/importd
+http://importd.readthedocs.org/en/latest/
 
 ChangeLog
 =========

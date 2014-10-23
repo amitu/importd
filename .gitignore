@@ -20,4 +20,4 @@ docs/html/
 docs/doctrees/
 .tox
 .idea
-
+tests/basic_tests/secret.txt

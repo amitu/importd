@@ -19,7 +19,7 @@ setup(
     license='BSD',
 
     install_requires=[
-        "fhurl>=0.1.7", "gunicorn", "smarturls", "six", "Django>=1.3",
+        "fhurl>=0.1.7", "smarturls", "six", "Django>=1.3",
         "dj-database-url",
     ],
     packages=["importd"],

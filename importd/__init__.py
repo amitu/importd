@@ -23,10 +23,32 @@ try:
     DEBUG_TOOLBAR = True
 except ImportError:
     DEBUG_TOOLBAR = False
+try:
+    import werkzeug
+    import django_extensions
+    RUNSERVER_PLUS = True
+except ImportError:
+    RUNSERVER_PLUS = False
+try:
+    import django_jinja  # lint:ok
+    DJANGO_JINJA = True
+except ImportError:
+    DJANGO_JINJA = False
+try:
+    import coffin  # lint:ok
+    COFFIN = True
+except ImportError:
+    COFFIN = False
 
 
 if sys.version_info >= (3,):
     basestring = unicode = str  # lint:ok
+    # coffin is not python 3 compatible library
+    COFFIN = False
+
+# cannot use django-jinja, coffin both. primary library is coffin.
+if COFFIN and DJANGO_JINJA:
+    DJANGO_JINJA = False
 
 
 class SmartReturnMiddleware(object):
@@ -129,46 +151,33 @@ class D(object):
         urlconf_module = importlib.import_module(settings.ROOT_URLCONF)
         return urlconf_module.urlpatterns
 
-    # tuple list of django modules imported in d
-    # tuple (a, b) is equivalent to from a import b
-    # if b is an iterable (b = [c, d]), it is equivalent
-    # to from a import c, d
-    DJANGO_IMPORT = (
-        ('smarturls', 'surl'),
-        ('django.http', ['HttpResponse', 'Http404', 'HttpResponseRedirect']),
-        ('django.shortcuts', ['get_object_or_404', 'get_list_or_404',
-                              'render_to_response', 'render', 'redirect']),
-        ('django.template', 'RequestContext'),
-        ('django', 'forms'),
-        ('fhurl', ['RequestForm', 'fhurl', 'JSONResponse']),
-        ('django.db.models', ''),
-    )
-
-    def _iterate_imports(self, callback):
-        """
-            Iterates through imports and calls callback for each
-            (module_name, attributes) pair. If attribute is a string, it is
-            converted to a list first. Empty strings become empty lists
-        """
-
-        for module_name, attributes in self.DJANGO_IMPORT:
-            if isinstance(attributes, basestring):
-                if attributes:
-                    attributes = [attributes]
-                else:
-                    attributes = []
-            callback(module_name, attributes)
-
     def _import_django(self):
+        # issue #19. manual imports
+        from smarturls import surl
+        self.surl = surl
 
-        def set_attr(module_name, attributes):
-            module = importlib.import_module(module_name)
-            if attributes:
-                for attribute in attributes:
-                    setattr(self, attribute, getattr(module, attribute))
-            else:
-                setattr(self, module_name.split(".")[-1], module)
-        self._iterate_imports(set_attr)
+        from django.http import HttpResponse, Http404, HttpResponseRedirect
+        self.HttpResponse = HttpResponse
+        self.Http404 = Http404
+        self.HttpResponseRedirect = HttpResponseRedirect
+
+        from django.shortcuts import get_object_or_404, get_list_or_404, render_to_response, render, redirect
+        self.get_object_or_404 = get_object_or_404
+        self.get_list_or_404 = get_list_or_404
+        self.render_to_response = render_to_response
+        self.render = render
+        self.redirect = redirect
+
+        from django.template import RequestContext
+        self.RequestContext = RequestContext
+
+        from django import forms
+        self.forms = forms
+
+        from fhurl import RequestForm, fhurl, JSONResponse
+        self.RequestForm = RequestForm
+        self.fhurl = fhurl
+        self.JSONResponse = JSONResponse
 
         try:
             from django.core.wsgi import get_wsgi_application
@@ -314,10 +323,14 @@ class D(object):
             self.smart_return = False
             if kw.pop("SMART_RETURN", True):
                 self.smart_return = True
-                kw.setdefault(
-                    'MIDDLEWARE_CLASSES',
-                    list(global_settings.MIDDLEWARE_CLASSES)
-                ).insert(0, "importd.SmartReturnMiddleware")
+                if "MIDDLEWARE_CLASSES" not in kw:
+                    kw["MIDDLEWARE_CLASSES"] = (
+                        global_settings.MIDDLEWARE_CLASSES
+                    )
+                kw["MIDDLEWARE_CLASSES"] = list(kw["MIDDLEWARE_CLASSES"])
+                kw["MIDDLEWARE_CLASSES"].insert(
+                    0, "importd.SmartReturnMiddleware"
+                )
 
             installed = list(kw.setdefault("INSTALLED_APPS", []))
 
@@ -363,6 +376,26 @@ class D(object):
                     # This one gives 500 if its Enabled without previous syncdb
                     #'debug_toolbar.panels.request_vars.RequestVarsDebugPanel',
 
+            if RUNSERVER_PLUS:
+                installed.append('django_extensions')
+
+            # django-jinja 1.0.4 support
+            if DJANGO_JINJA:
+                installed.append("django_jinja")
+                kw['TEMPLATE_LOADERS'] = list(kw.get('TEMPLATE_LOADERS', []))
+                kw['TEMPLATE_LOADERS'] += (
+                    'django_jinja.loaders.AppLoader',
+                    'django_jinja.loaders.FileSystemLoader',
+                )
+            # coffin 0.3.8 support
+            if COFFIN:
+                installed.append('coffin')
+                kw['TEMPLATE_LOADERS'] = list(kw.get('TEMPLATE_LOADERS', []))
+                kw['TEMPLATE_LOADERS'] += (
+                    'coffin.contrib.loader.AppLoader',
+                    'coffin.contrib.loader.FileSystemLoader',
+                )
+
             kw['INSTALLED_APPS'] = installed
 
             if "DEBUG" not in kw:
@@ -372,6 +405,10 @@ class D(object):
             if "SECRET_KEY" not in kw:
                 kw["SECRET_KEY"] = self.get_secret_key()
 
+            autoimport = kw.pop("autoimport", True)
+
+            kw["SETTINGS_MODULE"] = kw.get("SETTINGS_MODULE", "importd")
+
             settings.configure(**kw)
             self._import_django()
 
@@ -379,16 +416,17 @@ class D(object):
             urlpatterns = self.get_urlpatterns()
             urlpatterns += staticfiles_urlpatterns()
 
-            # django depends on INSTALLED_APPS's model
-            for app in settings.INSTALLED_APPS:
-                try:
-                    __import__("{}.admin".format(app))  # lint:ok
-                except ImportError:
-                    pass
-                try:
-                    __import__("{}.models".format(app))  # lint:ok
-                except ImportError:
-                    pass
+            if autoimport:
+                # django depends on INSTALLED_APPS's model
+                for app in settings.INSTALLED_APPS:
+                    try:
+                        __import__("{}.admin".format(app))  # lint:ok
+                    except ImportError:
+                        pass
+                    try:
+                        __import__("{}.models".format(app))  # lint:ok
+                    except ImportError:
+                        pass
 
             if admin_url:
                 from django.contrib import admin
@@ -399,20 +437,21 @@ class D(object):
                 admin.autodiscover()
                 self.add_view(admin_url, include(admin.site.urls))
 
-            # import .views and .forms for each installed app
-            for app in settings.INSTALLED_APPS:
-                try:
-                    __import__("{}.forms".format(app))  # lint:ok
-                except ImportError:
-                    pass
-                try:
-                    __import__("{}.views".format(app))  # lint:ok
-                except ImportError:
-                    pass
-                try:
-                    __import__("{}.signals".format(app))  # lint:ok
-                except ImportError:
-                    pass
+            if autoimport:
+                # import .views and .forms for each installed app
+                for app in settings.INSTALLED_APPS:
+                    try:
+                        __import__("{}.forms".format(app))  # lint:ok
+                    except ImportError:
+                        pass
+                    try:
+                        __import__("{}.views".format(app))  # lint:ok
+                    except ImportError:
+                        pass
+                    try:
+                        __import__("{}.signals".format(app))  # lint:ok
+                    except ImportError:
+                        pass
 
         self._configured = True
 
@@ -475,7 +514,7 @@ class D(object):
 
     def main(self):
         if len(sys.argv) == 1:
-            self.do("runserver")
+            self.do(self._get_runserver_cmd())
         else:
             self.do()
 
@@ -486,8 +525,14 @@ class D(object):
         if not args:
             args = sys.argv[1:]
         if len(args) == 0:
-            return self._handle_management_command("runserver", "8000")
+            return self._handle_management_command(self._get_runserver_cmd(), "8000")
 
         return self._act_as_manage(*args)
+
+    def _get_runserver_cmd(self):
+        if RUNSERVER_PLUS:
+            return 'runserver_plus'
+        else:
+            return 'runserver'
 
 application = d = D()
