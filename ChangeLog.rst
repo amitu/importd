@@ -1,6 +1,11 @@
 importd ChangeLog
 =================
 
+0.3.1 - 27-Oct-2014
+-------------------
+
+* released without blueprint thing. rereleasing.
+
 0.3.0 - 27-Oct-2014
 -------------------
 

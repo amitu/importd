@@ -11,7 +11,7 @@ setup(
     description="a django based miniframework, inspired by sinatra",
     long_description=long_description,
 
-    version="0.3.0",
+    version="0.3.1",
     author='Amit Upadhyay',
     author_email="upadhyay@gmail.com",
 
