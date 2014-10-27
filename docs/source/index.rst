@@ -342,7 +342,7 @@ fhurl with template::
             # form by hitting ctrl-R or on browser restart etc
 
             p = self.cleaned_data["x"] * self.cleaned_data["y"]
-            return "/form-saved" # redirect to this url
+            return d.HttpResponseRedirect("/form-saved") # redirect to this url
 
     if __name__ == "__main__":
         d.main()
