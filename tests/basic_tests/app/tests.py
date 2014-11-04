@@ -177,5 +177,5 @@ class BasicTest(TestCase):
     def test_use_same_blueprint_many_times(self):
         url = reverse('app3:demo-url')
         self.assertEqual('/app3/demo/url', url)
-        url = reverse('app4:demo-url')
-        self.assertEqual('/app4/demo/url', url)
+        url = reverse('app3-clone:demo-url')
+        self.assertEqual('/app3-clone/demo/url', url)

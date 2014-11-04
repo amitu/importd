@@ -455,6 +455,18 @@ class D(object):
                     except ImportError:
                         pass
 
+        # import blueprints from config
+        self.blueprints = kw.pop("blueprints", {})
+        for namespace, meta in self.blueprints.items():
+            mod_path, bp_name = meta["blueprint"].rsplit(".", 1)
+            mod = importlib.import_module(mod_path)
+            bp = getattr(mod, bp_name)
+
+            self.register_blueprint(bp,
+                                    url_prefix=meta["url_prefix"],
+                                    namespace=namespace,
+                                    app_name=meta.get("app_name", ""))
+
         self._configured = True
 
     def __call__(self, *args, **kw):

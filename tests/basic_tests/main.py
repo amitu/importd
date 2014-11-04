@@ -7,6 +7,10 @@ d(
     DEBUG=True,
     INSTALLED_APPS=["app", "app2", "app3"],
     mounts={"app2": "/app2/"},
+    blueprints={
+        "app3": {"blueprint": "app3.views.bp", "url_prefix": "app3/"},
+        "app3-clone": {"blueprint": "app3.views.bp", "url_prefix": "app3-clone/"},
+    },
     MIDDLEWARE_CLASSES=(
         'django.middleware.common.CommonMiddleware',
         'django.contrib.sessions.middleware.SessionMiddleware',
@@ -15,10 +19,6 @@ d(
         'django.contrib.messages.middleware.MessageMiddleware',
     )
 )
-
-from app3.views import bp as bp_app3
-d.register_blueprint(bp_app3, url_prefix='app3/', namespace='app3', app_name='bar')
-d.register_blueprint(bp_app3, url_prefix='app4/', namespace='app4', app_name='foo')
 
 if __name__ == "__main__":
     d.main()
