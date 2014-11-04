@@ -173,3 +173,9 @@ class BasicTest(TestCase):
         response = c.get('/app3/index3/')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, b'app3/index')
+
+    def test_use_same_blueprint_many_times(self):
+        url = reverse('app3:demo-url')
+        self.assertEqual('/app3/demo/url', url)
+        url = reverse('app4:demo-url')
+        self.assertEqual('/app4/demo/url', url)

@@ -495,10 +495,12 @@ class D(object):
         management.execute_from_command_line([sys.argv[0]] + list(args))
 
     def register_blueprint(self, bp, url_prefix, namespace, app_name=''):
-        bp.url_prefix = url_prefix
-        bp.namespace = namespace
-        bp.app_name = app_name
-        self.blueprint_list.append(bp)
+        from copy import deepcopy
+        clone_bp = deepcopy(bp)
+        clone_bp.url_prefix = url_prefix
+        clone_bp.namespace = namespace
+        clone_bp.app_name = app_name
+        self.blueprint_list.append(clone_bp)
 
     def apply_blueprint(self, bp):
         try:

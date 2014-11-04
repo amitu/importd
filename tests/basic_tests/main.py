@@ -18,6 +18,7 @@ d(
 
 from app3.views import bp as bp_app3
 d.register_blueprint(bp_app3, url_prefix='app3/', namespace='app3', app_name='bar')
+d.register_blueprint(bp_app3, url_prefix='app4/', namespace='app4', app_name='foo')
 
 if __name__ == "__main__":
     d.main()
