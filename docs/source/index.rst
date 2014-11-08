@@ -511,6 +511,76 @@ on /extra/dashboard/::
     if __name__ == "__main__":
         d.main()
 
+Blueprint
+---------
+Blueprint is way to group urls.
+For example, we make a RESTful-API.
+API has version. Each version of API has many urls. We embed version to url.::
+
+    @d("/v1/hello/", name="v1-hello")
+    def v1_hello(request): ....
+
+    @d("/v1/echo/", name="v1-echo")
+    def v1_echo(request): ....
+
+    @d("/v2/hello/", name="v2-hello")
+    def v2_hello(request): ....
+
+    @d("/v2/echo/", name="v2-echo")
+    def v2_echo(request): ....
+
+If we can make view function group by API version, it is comfortable to manage API.::
+
+    v1 = Blueprint()
+
+    @v1("/hello/", name="hello")
+    def v1_hello(request): ....
+
+    @v1("/echo/", name="echo")
+    def v1_echo(request): ....
+
+    v2 = Blueprint()
+
+    @v2("/hello/", name="hello")
+    def v2_hello(request): ....
+
+    @v2("/echo/", name="echo")
+    def v2_echo(request): ....
+
+This is based on django URL namespace.
+https://docs.djangoproject.com/en/dev/topics/http/urls/#url-namespaces
+
+
+Usage
+=====
+First, create blueprint and register view function to blueprint.
+The usage is simililary with @d decorator.::
+
+    from importd import d, Blueprint
+    bp = Blueprint()
+
+    @bp("/index")
+    def index3(request):
+        return d.HttpResponse("app3/index")
+
+Second, register blueprint to importd. It looks like mounts.::
+
+    d(
+        DEBUG=True,
+        INSTALLED_APPS=["app3"],
+        blueprints={"app3": "app3.views.bp"}
+    )
+
+Key of blueprints is namespace. Value of blueprints is blueprint module info.
+If blueprint module info is string, url prefix is "{namespace}/".
+For example, we register index3 view function as "/index" and namespace of blueprint is "app3".
+Generated URL is "/app3/index".
+
+If you want to use more advanced features, you pass a dictionary. ::
+
+    blueprints={"app3-clone": {"blueprint": "app3.views.bp", "url_prefix": "app3-clone/"}}
+
+
 
 a more detailed example
 -----------------------
