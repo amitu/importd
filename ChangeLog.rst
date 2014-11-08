@@ -1,6 +1,10 @@
 importd ChangeLog
 =================
 
+master
+------
+* Added blueprint document.
+
 0.3.1 - 27-Oct-2014
 -------------------
 
