@@ -11,7 +11,7 @@ setup(
     description="a django based miniframework, inspired by sinatra",
     long_description=long_description,
 
-    version="0.2.9",
+    version="0.3.1",
     author='Amit Upadhyay',
     author_email="upadhyay@gmail.com",
 
@@ -19,7 +19,7 @@ setup(
     license='BSD',
 
     install_requires=[
-        "fhurl>=0.1.7", "gunicorn", "smarturls", "six", "Django>=1.3",
+        "fhurl>=0.1.7", "smarturls", "six", "Django>=1.3",
         "dj-database-url",
     ],
     packages=["importd"],

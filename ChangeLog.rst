@@ -1,8 +1,13 @@
 importd ChangeLog
 =================
 
-master
-------
+0.3.1 - 27-Oct-2014
+-------------------
+
+* released without blueprint thing. rereleasing.
+
+0.3.0 - 27-Oct-2014
+-------------------
 
 * Changed default setting STATIC_ROOT from ``static`` to ``staticfiles`` and set new default setting STATICFILES_DIRS to ``static``. This means that if you use the collectstatic management command, it will collect the files from the ``static`` folder and copy them to ``staticfiles``. If you use an external web server, you have to change the local path of the url http://server/static/ to serve files from the ``staticfiles`` folder.
 * Auto Add django-debug-toolbar: try to import it, if sucessful and is not on settings and the database exist(debug_toolbar needs a DB) and DEBUG=True, then configure debug_toolbar.
@@ -14,6 +19,11 @@ master
 * Support django-debug-toolbar 1.2.1
 * Add importd-boilerplate hyperlink.
 * Auto Add coffin/django-jinja.
+* Added support for Django1.7 and Python3.4, removed support for python3.3.
+* Added autoimport keyword argument, to control if views etc should be auto 
+  imported.
+* Added a blueprint like framework inspired from flask
+
 
 0.2.9 - 10-Nov-2013
 -------------------

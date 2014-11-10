@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# isort:skip_file
 
 
 # stdlib imports
@@ -10,8 +9,9 @@ import sys
 # 3rd party imports
 import dj_database_url
 import django.core.urlresolvers
-from importd import urlconf
+from importd import urlconf  # lint:ok
 from django.conf import settings
+from collections import Callable
 
 # custom imports
 try:
@@ -24,8 +24,8 @@ try:
 except ImportError:
     DEBUG_TOOLBAR = False
 try:
-    import werkzeug
-    import django_extensions
+    import werkzeug  # lint:ok
+    import django_extensions  # lint:ok
     RUNSERVER_PLUS = True
 except ImportError:
     RUNSERVER_PLUS = False
@@ -83,6 +83,7 @@ class SmartReturnMiddleware(object):
             res = JSONResponse(res)
         return res
 
+
 class Blueprint(object):
     def __init__(self):
         self.url_prefix = None
@@ -107,7 +108,7 @@ class Blueprint(object):
         self.patterns.append(url)
 
     def __call__(self, *args, **kw):
-        if callable(args[0]):
+        if isinstance(args[0], Callable):
             self.add_view("/{}/".format(args[0].__name__), args[0])
             return args[0]
 
@@ -120,7 +121,6 @@ class Blueprint(object):
             self.add_view(args[0], candidate, *args[1:], **kw)
             return candidate
         return ddecorator
-
 
 
 class D(object):
@@ -161,7 +161,8 @@ class D(object):
         self.Http404 = Http404
         self.HttpResponseRedirect = HttpResponseRedirect
 
-        from django.shortcuts import get_object_or_404, get_list_or_404, render_to_response, render, redirect
+        from django.shortcuts import (get_object_or_404, get_list_or_404,
+                                      render_to_response, render, redirect)
         self.get_object_or_404 = get_object_or_404
         self.get_list_or_404 = get_list_or_404
         self.render_to_response = render_to_response
@@ -229,7 +230,7 @@ class D(object):
 
         best_k, best_v = "", None
 
-        for k, v in self.mounts.items():
+        for k, v in tuple(self.mounts.items()):
             if mod.startswith(k) and len(k) > len(best_k):
                 best_k = k
                 best_v = v
@@ -323,10 +324,14 @@ class D(object):
             self.smart_return = False
             if kw.pop("SMART_RETURN", True):
                 self.smart_return = True
-                kw.setdefault(
-                    'MIDDLEWARE_CLASSES',
-                    list(global_settings.MIDDLEWARE_CLASSES)
-                ).insert(0, "importd.SmartReturnMiddleware")
+                if "MIDDLEWARE_CLASSES" not in kw:
+                    kw["MIDDLEWARE_CLASSES"] = (
+                        global_settings.MIDDLEWARE_CLASSES
+                    )
+                kw["MIDDLEWARE_CLASSES"] = list(kw["MIDDLEWARE_CLASSES"])
+                kw["MIDDLEWARE_CLASSES"].insert(
+                    0, "importd.SmartReturnMiddleware"
+                )
 
             installed = list(kw.setdefault("INSTALLED_APPS", []))
 
@@ -353,7 +358,8 @@ class D(object):
                     installed.append("debug_toolbar")
                     if 'INTERNAL_IPS' not in kw:
                         kw['INTERNAL_IPS'] = ('127.0.0.1', '0.0.0.0')
-                    kw['MIDDLEWARE_CLASSES'].insert(1,
+                    kw['MIDDLEWARE_CLASSES'].insert(
+                        1,
                         'debug_toolbar.middleware.DebugToolbarMiddleware')
                     kw['DEBUG_TOOLBAR_PANELS'] = (
                         'debug_toolbar.panels.versions.VersionsPanel',
@@ -370,7 +376,7 @@ class D(object):
                         'debug_toolbar.panels.redirects.RedirectsPanel',
                     )
                     # This one gives 500 if its Enabled without previous syncdb
-                    #'debug_toolbar.panels.request_vars.RequestVarsDebugPanel',
+                    # 'debug_toolbar.panels.request_vars.RequestVarsDebugPanel',
 
             if RUNSERVER_PLUS:
                 installed.append('django_extensions')
@@ -401,6 +407,10 @@ class D(object):
             if "SECRET_KEY" not in kw:
                 kw["SECRET_KEY"] = self.get_secret_key()
 
+            autoimport = kw.pop("autoimport", True)
+
+            kw["SETTINGS_MODULE"] = kw.get("SETTINGS_MODULE", "importd")
+
             settings.configure(**kw)
             self._import_django()
 
@@ -408,16 +418,17 @@ class D(object):
             urlpatterns = self.get_urlpatterns()
             urlpatterns += staticfiles_urlpatterns()
 
-            # django depends on INSTALLED_APPS's model
-            for app in settings.INSTALLED_APPS:
-                try:
-                    __import__("{}.admin".format(app))  # lint:ok
-                except ImportError:
-                    pass
-                try:
-                    __import__("{}.models".format(app))  # lint:ok
-                except ImportError:
-                    pass
+            if autoimport:
+                # django depends on INSTALLED_APPS's model
+                for app in settings.INSTALLED_APPS:
+                    try:
+                        __import__("{}.admin".format(app))  # lint:ok
+                    except ImportError:
+                        pass
+                    try:
+                        __import__("{}.models".format(app))  # lint:ok
+                    except ImportError:
+                        pass
 
             if admin_url:
                 from django.contrib import admin
@@ -428,20 +439,21 @@ class D(object):
                 admin.autodiscover()
                 self.add_view(admin_url, include(admin.site.urls))
 
-            # import .views and .forms for each installed app
-            for app in settings.INSTALLED_APPS:
-                try:
-                    __import__("{}.forms".format(app))  # lint:ok
-                except ImportError:
-                    pass
-                try:
-                    __import__("{}.views".format(app))  # lint:ok
-                except ImportError:
-                    pass
-                try:
-                    __import__("{}.signals".format(app))  # lint:ok
-                except ImportError:
-                    pass
+            if autoimport:
+                # import .views and .forms for each installed app
+                for app in settings.INSTALLED_APPS:
+                    try:
+                        __import__("{}.forms".format(app))  # lint:ok
+                    except ImportError:
+                        pass
+                    try:
+                        __import__("{}.views".format(app))  # lint:ok
+                    except ImportError:
+                        pass
+                    try:
+                        __import__("{}.signals".format(app))  # lint:ok
+                    except ImportError:
+                        pass
 
         self._configured = True
 
@@ -459,7 +471,7 @@ class D(object):
             if type(args[0]) == list:
                 self.update_urls(args[0])
                 return self
-            if callable(args[0]):
+            if isinstance(args[0], Callable):
                 self.add_view("/{}/".format(args[0].__name__), args[0])
                 return args[0]
 
@@ -515,7 +527,8 @@ class D(object):
         if not args:
             args = sys.argv[1:]
         if len(args) == 0:
-            return self._handle_management_command(self._get_runserver_cmd(), "8000")
+            return self._handle_management_command(
+                self._get_runserver_cmd(), "8000")
 
         return self._act_as_manage(*args)
 

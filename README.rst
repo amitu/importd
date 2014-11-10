@@ -1,14 +1,17 @@
-.. image:: https://badge.waffle.io/amitu/importd.png?label=ready&title=Ready 
- :target: https://waffle.io/amitu/importd
- :alt: 'Stories in Ready'
+Issues you can help with right now: |waffle|
+
 Build Status: |build-status|
 
-.. |build-status| image:: https://travis-ci.org/amitu/importd.png
+.. |waffle| image:: https://badge.waffle.io/amitu/importd.png?label=ready&title=Ready 
+ :target: https://waffle.io/amitu/importd
+ :alt: 'Stories in Ready'
+
+.. |build-status| image:: https://travis-ci.org/amitu/importd.png?branch=master
     :target: https://travis-ci.org/amitu/importd
 
 
-What is it?
-===========
+What is importd?
+================
 
 Slides of a talk I gave about importd: http://amitu.com/importd/
 
@@ -86,7 +89,7 @@ Installation
 Documentation
 =============
 
-docs: http://packages.python.org/importd
+http://importd.readthedocs.org/en/latest/
 
 ChangeLog
 =========

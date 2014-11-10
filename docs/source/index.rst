@@ -223,6 +223,9 @@ to make sure all such decorators get called when django is configured.
 For convenience importd also imports forms modules and signals modules of each
 app configured.
 
+In some case this is not desirable, and can be disabled by passing `autoimport=False`
+as keyword arguments to `d()`.
+
 importd works well with smarturls
 ---------------------------------
 
@@ -339,7 +342,7 @@ fhurl with template::
             # form by hitting ctrl-R or on browser restart etc
 
             p = self.cleaned_data["x"] * self.cleaned_data["y"]
-            return "/form-saved" # redirect to this url
+            return d.HttpResponseRedirect("/form-saved") # redirect to this url
 
     if __name__ == "__main__":
         d.main()
