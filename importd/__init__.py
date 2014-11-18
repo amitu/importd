@@ -2,6 +2,7 @@
 
 
 # stdlib imports
+import copy
 import inspect
 import os
 import sys
@@ -85,6 +86,12 @@ class SmartReturnMiddleware(object):
 
 
 class Blueprint(object):
+    """
+    Blueprint is way to group urls.
+    This class is used for save blueprint info.
+    The instance of blueprint class is used inside D object initialization.
+    """
+
     def __init__(self):
         self.url_prefix = None
         self.namespace = None
@@ -455,6 +462,21 @@ class D(object):
                     except ImportError:
                         pass
 
+        # import blueprints from config
+        self.blueprints = kw.pop("blueprints", {})
+        for namespace, meta in self.blueprints.items():
+            if isinstance(meta, basestring):
+                meta = {"blueprint": meta}
+
+            mod_path, bp_name = meta["blueprint"].rsplit(".", 1)
+            mod = importlib.import_module(mod_path)
+            bp = getattr(mod, bp_name)
+
+            self.register_blueprint(bp,
+                                    url_prefix=meta.get("url_prefix", namespace + "/"),
+                                    namespace=namespace,
+                                    app_name=meta.get("app_name", ""))
+
         self._configured = True
 
     def __call__(self, *args, **kw):
@@ -495,12 +517,19 @@ class D(object):
         management.execute_from_command_line([sys.argv[0]] + list(args))
 
     def register_blueprint(self, bp, url_prefix, namespace, app_name=''):
-        bp.url_prefix = url_prefix
-        bp.namespace = namespace
-        bp.app_name = app_name
-        self.blueprint_list.append(bp)
+        """
+        Interface to register blueprint.
 
-    def apply_blueprint(self, bp):
+        see django url namespace.
+        https://docs.djangoproject.com/en/1.7/topics/http/urls/#url-namespaces
+        """
+        clone_bp = copy.deepcopy(bp)
+        clone_bp.url_prefix = url_prefix
+        clone_bp.namespace = namespace
+        clone_bp.app_name = app_name
+        self.blueprint_list.append(clone_bp)
+
+    def _apply_blueprint(self, bp):
         try:
             from django.conf.urls import include
         except ImportError:
@@ -522,7 +551,7 @@ class D(object):
 
     def do(self, *args):
         for bp in self.blueprint_list:
-            self.apply_blueprint(bp)
+            self._apply_blueprint(bp)
 
         if not args:
             args = sys.argv[1:]
