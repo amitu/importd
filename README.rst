@@ -9,8 +9,8 @@ Build Status: |build-status|
 .. |build-status| image:: https://travis-ci.org/amitu/importd.png?branch=master
     :target: https://travis-ci.org/amitu/importd
 
-.. image:: https://landscape.io/github/if1live/pelican-jsfiddle/master/landscape.svg
-   :target: https://landscape.io/github/if1live/pelican-jsfiddle/master
+.. image:: https://landscape.io/github/if1live/importd/master/landscape.svg
+   :target: https://landscape.io/github/if1live/importd/master
    :alt: Code Health
 
 What is importd?
