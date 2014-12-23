@@ -6,6 +6,7 @@ import copy
 import inspect
 import os
 import sys
+import traceback
 
 # 3rd party imports
 import dj_database_url
@@ -428,14 +429,8 @@ class D(object):
             if autoimport:
                 # django depends on INSTALLED_APPS's model
                 for app in settings.INSTALLED_APPS:
-                    try:
-                        __import__("{}.admin".format(app))  # lint:ok
-                    except ImportError:
-                        pass
-                    try:
-                        __import__("{}.models".format(app))  # lint:ok
-                    except ImportError:
-                        pass
+                    self._import_app_module("{}.admin", app)
+                    self._import_app_module("{}.models", app)
 
             if admin_url:
                 from django.contrib import admin
@@ -449,18 +444,9 @@ class D(object):
             if autoimport:
                 # import .views and .forms for each installed app
                 for app in settings.INSTALLED_APPS:
-                    try:
-                        __import__("{}.forms".format(app))  # lint:ok
-                    except ImportError:
-                        pass
-                    try:
-                        __import__("{}.views".format(app))  # lint:ok
-                    except ImportError:
-                        pass
-                    try:
-                        __import__("{}.signals".format(app))  # lint:ok
-                    except ImportError:
-                        pass
+                    self._import_app_module("{}.forms", app)
+                    self._import_app_module("{}.views", app)
+                    self._import_app_module("{}.signals", app)
 
         # import blueprints from config
         self.blueprints = kw.pop("blueprints", {})
@@ -478,6 +464,16 @@ class D(object):
                                     app_name=meta.get("app_name", ""))
 
         self._configured = True
+
+    def _import_app_module(self, fmt, app):
+        try:
+            __import__(fmt.format(app))  # lint:ok
+        except ImportError:
+            pass
+        except Exception as e:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            traceback.print_exception(exc_type, exc_value, exc_traceback)
+            raise SystemExit(-1)
 
     def __call__(self, *args, **kw):
         if args:
