@@ -452,8 +452,8 @@ class D(object):
             if "SECRET_KEY" not in kw:
                 kw["SECRET_KEY"] = self.get_secret_key()
             # admins and managers
-+           if "ADMINS" not in kw:
-+               kw["ADMINS"] = kw["MANAGERS"] = ((getuser(), ""), )
+           if "ADMINS" not in kw:
+               kw["ADMINS"] = kw["MANAGERS"] = ((getuser(), ""), )
             autoimport = kw.pop("autoimport", True)
 
             kw["SETTINGS_MODULE"] = kw.get("SETTINGS_MODULE", "importd")
