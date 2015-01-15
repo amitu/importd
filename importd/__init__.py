@@ -4,12 +4,20 @@
 """ImportD django mini framework."""
 
 
+__license__ = 'BSD'
+__author__ = 'Amit Upadhyay'
+__url__ = 'http://amitu.com/importd'
+__docformat__ = 'html'
+
+
 # stdlib imports
 import copy
 import inspect
 import os
 import sys
 import traceback
+from getpass import getuser
+from platform import python_version
 
 # 3rd party imports
 import dj_database_url
@@ -46,7 +54,7 @@ except ImportError:
     COFFIN = False
 
 
-if sys.version_info >= (3,):
+if python_version().startswith('3'):
     basestring = unicode = str  # lint:ok
     # coffin is not python 3 compatible library
     COFFIN = False
@@ -438,12 +446,14 @@ class D(object):
             kw['INSTALLED_APPS'] = installed
 
             if "DEBUG" not in kw:
-                kw["DEBUG"] = True
+                kw["DEBUG"] = kw["TEMPLATE_DEBUG"] = True
             if "APP_DIR" not in kw:
                 kw["APP_DIR"] = self.APP_DIR
             if "SECRET_KEY" not in kw:
                 kw["SECRET_KEY"] = self.get_secret_key()
-
+            # admins and managers
++           if "ADMINS" not in kw:
++               kw["ADMINS"] = kw["MANAGERS"] = ((getuser(), ""), )
             autoimport = kw.pop("autoimport", True)
 
             kw["SETTINGS_MODULE"] = kw.get("SETTINGS_MODULE", "importd")
@@ -509,14 +519,14 @@ class D(object):
         if args:
             if not hasattr(self, "_configured"):
                 self._configure_django(DEBUG=True)
-            if type(args[0]) == dict and len(args) == 2:
+            if isinstance(args[0], dict) and len(args) == 2:
                 for bp in self.blueprint_list:
                     self.apply_blueprint(bp)
                 return self.wsgi_application(*args)
             if self._is_management_command(args[0]):
                 self._handle_management_command(*args, **kw)
                 return self
-            if type(args[0]) == list:
+            if isinstance(args[0], list):
                 self.update_urls(args[0])
                 return self
             if isinstance(args[0], Callable):
@@ -526,7 +536,7 @@ class D(object):
             def ddecorator(candidate):
                 from django.forms import forms
                 # the following is unsafe
-                if type(candidate) == forms.DeclarativeFieldsMetaclass:
+                if isinstance(candidate, forms.DeclarativeFieldsMetaclass):
                     self.add_form(args[0], candidate, *args[1:], **kw)
                     return candidate
                 self.add_view(args[0], candidate, *args[1:], **kw)
