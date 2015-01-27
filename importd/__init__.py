@@ -11,6 +11,7 @@ import sys
 import dj_database_url
 import django.core.urlresolvers
 from importd import urlconf
+import django
 from django.conf import settings
 
 # custom imports
@@ -410,6 +411,8 @@ class D(object):
             kw["SETTINGS_MODULE"] = kw.get("SETTINGS_MODULE", "importd")
 
             settings.configure(**kw)
+            if hasattr(django, "setup"):
+                django.setup()
             self._import_django()
 
             from django.contrib.staticfiles.urls import staticfiles_urlpatterns
