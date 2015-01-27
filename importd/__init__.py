@@ -1,18 +1,31 @@
 # -*- coding: utf-8 -*-
-# isort:skip_file
+
+
+"""ImportD django mini framework."""
+
+
+__license__ = 'BSD'
+__author__ = 'Amit Upadhyay'
+__url__ = 'http://amitu.com/importd'
+__docformat__ = 'html'
 
 
 # stdlib imports
+import copy
 import inspect
 import os
 import sys
+import traceback
+from getpass import getuser
+from platform import python_version
 
 # 3rd party imports
 import dj_database_url
 import django.core.urlresolvers
-from importd import urlconf
 import django
+from importd import urlconf  # lint:ok
 from django.conf import settings
+from collections import Callable
 
 # custom imports
 try:
@@ -25,8 +38,8 @@ try:
 except ImportError:
     DEBUG_TOOLBAR = False
 try:
-    import werkzeug
-    import django_extensions
+    import werkzeug  # lint:ok
+    import django_extensions  # lint:ok
     RUNSERVER_PLUS = True
 except ImportError:
     RUNSERVER_PLUS = False
@@ -42,7 +55,7 @@ except ImportError:
     COFFIN = False
 
 
-if sys.version_info >= (3,):
+if python_version().startswith('3'):
     basestring = unicode = str  # lint:ok
     # coffin is not python 3 compatible library
     COFFIN = False
@@ -53,8 +66,11 @@ if COFFIN and DJANGO_JINJA:
 
 
 class SmartReturnMiddleware(object):
+
     """
-    Smart response middleware for views. Converts view return to the following:
+    Smart response middleware for views.
+
+    Converts view return to the following:
     HttpResponse - stays the same
     string - renders the template named in the string
     (string, dict) - renders the template with keyword arguments.
@@ -62,6 +78,7 @@ class SmartReturnMiddleware(object):
     """
 
     def process_view(self, request, view_func, view_args, view_kwargs):
+        """Take request and view function and process with arguments."""
         from django.shortcuts import render_to_response
         from django.template import RequestContext
         try:
@@ -84,11 +101,19 @@ class SmartReturnMiddleware(object):
             res = JSONResponse(res)
         return res
 
+
 class Blueprint(object):
+
+    """
+    Blueprint is way to group urls.
+
+    This class is used for save blueprint info.
+    The instance of blueprint class is used inside D object initialization.
+    """
+
     def __init__(self):
-        self.url_prefix = None
-        self.namespace = None
-        self.app_name = None
+        """Init class."""
+        self.url_prefix, self.namespace, self.app_name = None, None, None
 
         from django.conf.urls import patterns
         self.patterns = patterns('')
@@ -100,15 +125,18 @@ class Blueprint(object):
         self.fhurl = fhurl
 
     def add_view(self, regex, view, app=None, *args, **kw):
+        """Take a regular expression and add a view to the app patterns."""
         url = self.surl(regex, view, *args, **kw)
         self.patterns.append(url)
 
     def add_form(self, regex, form_cls, app=None, *args, **kw):
+        """Take a regular expression and add a form to the app patterns."""
         url = self.fhurl(regex, form_cls, *args, **kw)
         self.patterns.append(url)
 
     def __call__(self, *args, **kw):
-        if callable(args[0]):
+        """Call the class instance."""
+        if isinstance(args[0], Callable):
             self.add_view("/{}/".format(args[0].__name__), args[0])
             return args[0]
 
@@ -123,36 +151,46 @@ class Blueprint(object):
         return ddecorator
 
 
-
 class D(object):
+
+    """D Main Class."""
+
     def __init__(self):
+        """Init class."""
         self.blueprint_list = []
 
     @property
     def urlpatterns(self):
+        """Return the regex patterns."""
         return self.get_urlpatterns()
 
     def _is_management_command(self, cmd):
-        return cmd in "runserver,shell".split(",")
+        """Take a string argument and return boolean of its a command."""
+        return cmd in ("runserver", "shell")
 
     def _handle_management_command(self, cmd, *args, **kw):
+        """Take command and arguments and call them using Django."""
         if not hasattr(self, "_configured"):
             self._configure_django(DEBUG=True)
         from django.core import management
         management.call_command(cmd, *args, **kw)
 
     def update_regexers(self, regexers):
+        """Update regular expressions."""
         self.regexers.update(regexers)
 
     def update_urls(self, urls):
+        """Update regular urls."""
         urlpatterns = self.get_urlpatterns()
         urlpatterns += urls
 
     def get_urlpatterns(self):
+        """Return url patterns."""
         urlconf_module = importlib.import_module(settings.ROOT_URLCONF)
         return urlconf_module.urlpatterns
 
     def _import_django(self):
+        """Do the Django imports."""
         # issue #19. manual imports
         from smarturls import surl
         self.surl = surl
@@ -162,7 +200,8 @@ class D(object):
         self.Http404 = Http404
         self.HttpResponseRedirect = HttpResponseRedirect
 
-        from django.shortcuts import get_object_or_404, get_list_or_404, render_to_response, render, redirect
+        from django.shortcuts import (get_object_or_404, get_list_or_404,
+                                      render_to_response, render, redirect)
         self.get_object_or_404 = get_object_or_404
         self.get_list_or_404 = get_list_or_404
         self.render_to_response = render_to_response
@@ -195,9 +234,11 @@ class D(object):
         self.url = url
 
     def _get_app_dir(self, pth):
+        """Return the path of the app."""
         return os.path.join(self.APP_DIR, pth)
 
     def dotslash(self, pth):
+        """Mimic the unix './' behaviour."""
         if hasattr(self, "APP_DIR"):
             return self._get_app_dir(pth=pth)
         else:
@@ -213,10 +254,12 @@ class D(object):
                 )
 
     def generate_mount_url(self, regex, v_or_f, mod):
-        # self.mounts can be None, which means no url generation,
-        # url is being managed by urlpatterns.
-        # else self.mounts is a dict, containing app name and where to mount
-        # if where it mount is None then again don't mount this fellow
+        """The self.mounts can be None, which means no url generation.
+
+        url is being managed by urlpatterns.
+        else self.mounts is a dict, containing app name and where to mount
+        if where it mount is None then again don't mount this fellow.
+        """
         if getattr(self, "mounts", None) is None:
             return  # we don't want to mount anything
         if not regex.startswith("/"):
@@ -230,7 +273,7 @@ class D(object):
 
         best_k, best_v = "", None
 
-        for k, v in self.mounts.items():
+        for k, v in tuple(self.mounts.items()):
             if mod.startswith(k) and len(k) > len(best_k):
                 best_k = k
                 best_v = v
@@ -246,6 +289,7 @@ class D(object):
         return regex
 
     def add_view(self, regex, view, app=None, *args, **kw):
+        """Take a view and add it to the app using regex arguments."""
         regex = self.generate_mount_url(regex, view, app)
         if regex:
             patterns = self.patterns(
@@ -256,6 +300,7 @@ class D(object):
             django.core.urlresolvers.clear_url_caches()
 
     def add_form(self, regex, form_cls, app=None, *args, **kw):
+        """Take a form and add it to the app using regex arguments."""
         regex = self.generate_mount_url(regex, form_cls, app)
         if regex:
             urlpatterns = self.get_urlpatterns()
@@ -263,7 +308,7 @@ class D(object):
             django.core.urlresolvers.clear_url_caches()
 
     def get_secret_key(self):
-        """get a django secret key,try to read provided one,else generate it"""
+        """Get a django secret key,try to read provided one,or generate it."""
         try:
             with open(self.dotslash("secret.txt"), "r") as f:
                 secret = f.readlines()[0].strip()
@@ -277,6 +322,7 @@ class D(object):
             return secret
 
     def _configure_django(self, **kw):
+        """Auto-Configure Django using arguments."""
         from django.conf import settings, global_settings
         self.settings = settings
         if settings.configured:
@@ -358,7 +404,8 @@ class D(object):
                     installed.append("debug_toolbar")
                     if 'INTERNAL_IPS' not in kw:
                         kw['INTERNAL_IPS'] = ('127.0.0.1', '0.0.0.0')
-                    kw['MIDDLEWARE_CLASSES'].insert(1,
+                    kw['MIDDLEWARE_CLASSES'].insert(
+                        1,
                         'debug_toolbar.middleware.DebugToolbarMiddleware')
                     kw['DEBUG_TOOLBAR_PANELS'] = (
                         'debug_toolbar.panels.versions.VersionsPanel',
@@ -375,7 +422,7 @@ class D(object):
                         'debug_toolbar.panels.redirects.RedirectsPanel',
                     )
                     # This one gives 500 if its Enabled without previous syncdb
-                    #'debug_toolbar.panels.request_vars.RequestVarsDebugPanel',
+                    # 'debug_toolbar.panels.request_vars.RequestVarsDebugPanel',
 
             if RUNSERVER_PLUS:
                 installed.append('django_extensions')
@@ -400,12 +447,14 @@ class D(object):
             kw['INSTALLED_APPS'] = installed
 
             if "DEBUG" not in kw:
-                kw["DEBUG"] = True
+                kw["DEBUG"] = kw["TEMPLATE_DEBUG"] = True
             if "APP_DIR" not in kw:
                 kw["APP_DIR"] = self.APP_DIR
             if "SECRET_KEY" not in kw:
                 kw["SECRET_KEY"] = self.get_secret_key()
-
+            # admins and managers
+            if "ADMINS" not in kw:
+                kw["ADMINS"] = kw["MANAGERS"] = ((getuser(), ""), )
             autoimport = kw.pop("autoimport", True)
 
             kw["SETTINGS_MODULE"] = kw.get("SETTINGS_MODULE", "importd")
@@ -422,14 +471,8 @@ class D(object):
             if autoimport:
                 # django depends on INSTALLED_APPS's model
                 for app in settings.INSTALLED_APPS:
-                    try:
-                        __import__("{}.admin".format(app))  # lint:ok
-                    except ImportError:
-                        pass
-                    try:
-                        __import__("{}.models".format(app))  # lint:ok
-                    except ImportError:
-                        pass
+                    self._import_app_module("{}.admin", app)
+                    self._import_app_module("{}.models", app)
 
             if admin_url:
                 from django.contrib import admin
@@ -443,43 +486,60 @@ class D(object):
             if autoimport:
                 # import .views and .forms for each installed app
                 for app in settings.INSTALLED_APPS:
-                    try:
-                        __import__("{}.forms".format(app))  # lint:ok
-                    except ImportError:
-                        pass
-                    try:
-                        __import__("{}.views".format(app))  # lint:ok
-                    except ImportError:
-                        pass
-                    try:
-                        __import__("{}.signals".format(app))  # lint:ok
-                    except ImportError:
-                        pass
+                    self._import_app_module("{}.forms", app)
+                    self._import_app_module("{}.views", app)
+                    self._import_app_module("{}.signals", app)
+
+        # import blueprints from config
+        self.blueprints = kw.pop("blueprints", {})
+        for namespace, meta in self.blueprints.items():
+            if isinstance(meta, basestring):
+                meta = {"blueprint": meta}
+
+            mod_path, bp_name = meta["blueprint"].rsplit(".", 1)
+            mod = importlib.import_module(mod_path)
+            bp = getattr(mod, bp_name)
+
+            self.register_blueprint(
+                bp, url_prefix=meta.get("url_prefix", namespace + "/"),
+                namespace=namespace, app_name=meta.get("app_name", ""))
 
         self._configured = True
 
+    def _import_app_module(self, fmt, app):
+        """Try to import an app module."""
+        try:
+            __import__(fmt.format(app))  # lint:ok
+        except ImportError:
+            pass
+        except Exception as e:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            traceback.print_exception(exc_type, exc_value, exc_traceback)
+            raise SystemExit(-1)
+
     def __call__(self, *args, **kw):
+        """Call instance class."""
         if args:
             if not hasattr(self, "_configured"):
                 self._configure_django(DEBUG=True)
-            if type(args[0]) == dict and len(args) == 2:
+            if isinstance(args[0], dict) and len(args) == 2:
                 for bp in self.blueprint_list:
                     self.apply_blueprint(bp)
                 return self.wsgi_application(*args)
             if self._is_management_command(args[0]):
                 self._handle_management_command(*args, **kw)
                 return self
-            if type(args[0]) == list:
+            if isinstance(args[0], list):
                 self.update_urls(args[0])
                 return self
-            if callable(args[0]):
+            if isinstance(args[0], Callable):
                 self.add_view("/{}/".format(args[0].__name__), args[0])
                 return args[0]
 
             def ddecorator(candidate):
                 from django.forms import forms
                 # the following is unsafe
-                if type(candidate) == forms.DeclarativeFieldsMetaclass:
+                if isinstance(candidate, forms.DeclarativeFieldsMetaclass):
                     self.add_form(args[0], candidate, *args[1:], **kw)
                     return candidate
                 self.add_view(args[0], candidate, *args[1:], **kw)
@@ -490,18 +550,27 @@ class D(object):
         return self
 
     def _act_as_manage(self, *args):
+        """Mimic Djangos manage.py."""
         if not hasattr(self, "_configured"):
             self._configure_django(DEBUG=True)
         from django.core import management
         management.execute_from_command_line([sys.argv[0]] + list(args))
 
     def register_blueprint(self, bp, url_prefix, namespace, app_name=''):
-        bp.url_prefix = url_prefix
-        bp.namespace = namespace
-        bp.app_name = app_name
-        self.blueprint_list.append(bp)
+        """
+        Interface to register blueprint.
 
-    def apply_blueprint(self, bp):
+        see django url namespace.
+        https://docs.djangoproject.com/en/1.7/topics/http/urls/#url-namespaces
+        """
+        clone_bp = copy.deepcopy(bp)
+        clone_bp.url_prefix = url_prefix
+        clone_bp.namespace = namespace
+        clone_bp.app_name = app_name
+        self.blueprint_list.append(clone_bp)
+
+    def _apply_blueprint(self, bp):
+        """Apply a Blueprint."""
         try:
             from django.conf.urls import include
         except ImportError:
@@ -516,26 +585,28 @@ class D(object):
         django.core.urlresolvers.clear_url_caches()
 
     def main(self):
+        """Wrapper for calling do."""
         if len(sys.argv) == 1:
             self.do(self._get_runserver_cmd())
         else:
             self.do()
 
     def do(self, *args):
+        """Run Django with ImportD."""
         for bp in self.blueprint_list:
-            self.apply_blueprint(bp)
+            self._apply_blueprint(bp)
 
         if not args:
             args = sys.argv[1:]
         if len(args) == 0:
-            return self._handle_management_command(self._get_runserver_cmd(), "8000")
+            return self._handle_management_command(
+                self._get_runserver_cmd(), "8000")
 
         return self._act_as_manage(*args)
 
     def _get_runserver_cmd(self):
-        if RUNSERVER_PLUS:
-            return 'runserver_plus'
-        else:
-            return 'runserver'
+        """Return a proper runserver command."""
+        return 'runserver_plus' if RUNSERVER_PLUS else 'runserver'
+
 
 application = d = D()

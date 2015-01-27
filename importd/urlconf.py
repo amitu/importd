@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 
+"""ImportD import helper."""
+
+
 try:
     from django.conf.urls import patterns
 except ImportError:
