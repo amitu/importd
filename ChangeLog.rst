@@ -1,9 +1,11 @@
 importd ChangeLog
 =================
 
-master
-------
+0.3.2 - 27-Jan-2015
+-------------------
+
 * Added blueprint document.
+* calling django.setup() when available
 
 0.3.1 - 27-Oct-2014
 -------------------
