@@ -143,11 +143,12 @@ class Blueprint(object):
         def ddecorator(candidate):
             from django.forms import forms
             # the following is unsafe
-            if type(candidate) == forms.DeclarativeFieldsMetaclass:
+            if isinstance(candidate, forms.DeclarativeFieldsMetaclass):
                 self.add_form(args[0], candidate, *args[1:], **kw)
                 return candidate
             self.add_view(args[0], candidate, *args[1:], **kw)
             return candidate
+
         return ddecorator
 
 
@@ -246,12 +247,10 @@ class D(object):
                 import speaklater
             except ImportError:
                 raise RuntimeError(
-                    "configure django first, or install speaklater"
+                    "Configure django first, or install speaklater."
                 )
             else:
-                return speaklater.make_lazy_string(
-                    self._get_app_dir, pth
-                )
+                return speaklater.make_lazy_string(self._get_app_dir, pth)
 
     def generate_mount_url(self, regex, v_or_f, mod):
         """The self.mounts can be None, which means no url generation.
@@ -275,8 +274,7 @@ class D(object):
 
         for k, v in tuple(self.mounts.items()):
             if mod.startswith(k) and len(k) > len(best_k):
-                best_k = k
-                best_v = v
+                best_k, best_v = k, v
 
         if best_k:
             if not best_v:
