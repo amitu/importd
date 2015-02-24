@@ -64,6 +64,11 @@ except ImportError:
     django.template.import_library = import_library
     django.template.Origin = Origin
     django.template.InvalidTemplateLibrary = InvalidTemplateLibrary
+    from django.template.utils import get_app_template_dirs
+    import django.template.loaders.app_directories
+    django.template.loaders.app_directories.app_template_dirs = (
+        get_app_template_dirs('templates')
+    )
 
 if python_version().startswith('3'):
     basestring = unicode = str  # lint:ok
