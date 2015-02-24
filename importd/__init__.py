@@ -488,13 +488,13 @@ class D(object):
 
             kw["SETTINGS_MODULE"] = kw.get("SETTINGS_MODULE", "importd")
 
-            self._fix_coffin_pre()
+            # self._fix_coffin_pre()
             settings.configure(**kw)
             if hasattr(django, "setup"):
                 django.setup()
 
             self._import_django()
-            self._fix_coffin_post()
+            # self._fix_coffin_post()
 
             from django.contrib.staticfiles.urls import staticfiles_urlpatterns
             urlpatterns = self.get_urlpatterns()
