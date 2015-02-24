@@ -336,14 +336,17 @@ class D(object):
 
     def _fix_coffin_post(self):
         try:
-            from django.template import add_to_builtins
+            from django.template.loaders.app_directories import (
+                app_template_dirs
+            )
         except ImportError:
             from django.template.utils import get_app_template_dirs
             import django.template.loaders.app_directories
             django.template.loaders.app_directories.app_template_dirs = (
                 get_app_template_dirs('templates')
             )
-
+        else:
+            app_template_dirs = app_template_dirs
 
     def _configure_django(self, **kw):
         """Auto-Configure Django using arguments."""

@@ -104,10 +104,6 @@ class BasicTest(TestCase):
     def test_static_mapped(self):
         c = Client()
 
-        self.assertEqual(
-            resolve("/static/").url_name,
-            "django.contrib.staticfiles.views.serve"
-        )
         settings.DEBUG = True
         response = c.get("/static/404.css")
         self.assertEqual(response.status_code, 404)
@@ -118,10 +114,6 @@ class BasicTest(TestCase):
     def test_static_outside_apps(self):
         c = Client()
 
-        self.assertEqual(
-            resolve("/static/").url_name,
-            "django.contrib.staticfiles.views.serve"
-        )
         settings.DEBUG = True
         response = c.get("/static/generic.css")
         self.assertEqual(response.status_code, 200)
