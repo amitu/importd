@@ -323,13 +323,15 @@ class D(object):
             from django.template import add_to_builtins
         except ImportError:
             from django.template.base import (
-                add_to_builtins, import_library, Origin, InvalidTemplateLibrary
+                add_to_builtins, import_library, Origin, InvalidTemplateLibrary,
+                builtins
             )
             import django.template
             django.template.add_to_builtins = add_to_builtins
             django.template.import_library = import_library
             django.template.Origin = Origin
             django.template.InvalidTemplateLibrary = InvalidTemplateLibrary
+            django.template.builtins = builtins
             from django.template.utils import get_app_template_dirs
             import django.template.loaders.app_directories
             django.template.loaders.app_directories.app_template_dirs = (
