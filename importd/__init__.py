@@ -318,7 +318,7 @@ class D(object):
         finally:
             return secret
 
-    def _fix_coffin(self):
+    def _fix_coffin_pre(self):
         try:
             from django.template import add_to_builtins
         except ImportError:
@@ -333,11 +333,17 @@ class D(object):
             django.template.InvalidTemplateLibrary = InvalidTemplateLibrary
             django.template.builtins = builtins
             django.template.get_library = get_library
+
+    def _fix_coffin_post(self):
+        try:
+            from django.template import add_to_builtins
+        except ImportError:
             from django.template.utils import get_app_template_dirs
             import django.template.loaders.app_directories
             django.template.loaders.app_directories.app_template_dirs = (
                 get_app_template_dirs('templates')
             )
+
 
     def _configure_django(self, **kw):
         """Auto-Configure Django using arguments."""
@@ -479,12 +485,13 @@ class D(object):
 
             kw["SETTINGS_MODULE"] = kw.get("SETTINGS_MODULE", "importd")
 
+            self._fix_coffin_pre()
             settings.configure(**kw)
             if hasattr(django, "setup"):
                 django.setup()
-            self._import_django()
-            self._fix_coffin()
 
+            self._import_django()
+            self._fix_coffin_post()
 
             from django.contrib.staticfiles.urls import staticfiles_urlpatterns
             urlpatterns = self.get_urlpatterns()
