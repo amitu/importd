@@ -54,6 +54,12 @@ try:
 except ImportError:
     COFFIN = False
 
+try:
+    from django.template import add_to_builtins
+except ImportError:
+    from django.template.base import add_to_builtins
+    import django.template
+    django.template.add_to_builtins = add_to_builtins
 
 if python_version().startswith('3'):
     basestring = unicode = str  # lint:ok
@@ -349,6 +355,8 @@ class D(object):
                 kw["STATICFILES_DIRS"] = [self.dotslash("static")]
             if "MEDIA_URL" not in kw:
                 kw["MEDIA_URL"] = "/static/media/"
+            if "lr" in kw:
+                self.lr = kw.pop("lr")
             if "db" in kw:
                 if isinstance(kw["db"], basestring):
                     kw["DATABASES"] = {
@@ -598,9 +606,24 @@ class D(object):
 
         if not args:
             args = sys.argv[1:]
+
         if len(args) == 0:
             return self._handle_management_command(
-                self._get_runserver_cmd(), "8000")
+                self._get_runserver_cmd(), "8000"
+            )
+
+        if 'livereload' in sys.argv:
+            if not hasattr(self, "lr"):
+                print("livereload setting, lr not configured.")
+                return
+            from livereload import Server
+            server = Server(self)
+            for pat, cmd in self.lr.items():
+                parts = pat.split(",")
+                for part in parts:
+                    server.watch(part, cmd)
+            server.serve(port=8000)
+            return
 
         return self._act_as_manage(*args)
 
