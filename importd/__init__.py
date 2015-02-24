@@ -57,10 +57,11 @@ except ImportError:
 try:
     from django.template import add_to_builtins
 except ImportError:
-    from django.template.base import add_to_builtins, import_library
+    from django.template.base import add_to_builtins, import_library, Origin
     import django.template
     django.template.add_to_builtins = add_to_builtins
     django.template.import_library = import_library
+    django.template.Origin = Origin
 
 if python_version().startswith('3'):
     basestring = unicode = str  # lint:ok
