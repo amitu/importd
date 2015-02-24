@@ -1,6 +1,11 @@
 importd ChangeLog
 =================
 
+0.3.3 - 24-Feb-2015
+-------------------
+
+* added livereload command/feature.
+
 0.3.2 - 27-Jan-2015
 -------------------
 
@@ -26,7 +31,7 @@ importd ChangeLog
 * Add importd-boilerplate hyperlink.
 * Auto Add coffin/django-jinja.
 * Added support for Django1.7 and Python3.4, removed support for python3.3.
-* Added autoimport keyword argument, to control if views etc should be auto 
+* Added autoimport keyword argument, to control if views etc should be auto
   imported.
 * Added a blueprint like framework inspired from flask
 

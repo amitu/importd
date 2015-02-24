@@ -2,7 +2,7 @@ Issues you can help with right now: |waffle|
 
 Build Status: |build-status|
 
-.. |waffle| image:: https://badge.waffle.io/amitu/importd.png?label=ready&title=Ready 
+.. |waffle| image:: https://badge.waffle.io/amitu/importd.png?label=ready&title=Ready
  :target: https://waffle.io/amitu/importd
  :alt: 'Stories in Ready'
 
@@ -81,6 +81,7 @@ Features
 * Auto Add django-debug-toolbar (Needs to add it manually to INSTALLED_APPS)
 * Auto SECRET_KEY: If no SECRET_KEY on settings, try to read SECRET_KEY from ./secret.txt , if no ./secret.txt generate a random string then write it to ./secret.txt and finally return it as SECRET_KEY.
 * Auto Add coffin/django-jinja (jinja2 integration)
+* Support for livereload
 
 Installation
 ============
@@ -106,7 +107,7 @@ Contributors
 * Dmytro Vorona (https://github.com/alendit)
 * Jannis Leidel (https://twitter.com/jezdez)
 * Lukasz Balcerzak (https://github.com/lukaszb)
-* Juan Carlos (https://github.com/juancarlospaco) 
+* Juan Carlos (https://github.com/juancarlospaco)
 * Josep Cugat (https://github.com/jcugat)
 * Yu Byunghoo (https://github.com/if1live)
 

@@ -60,7 +60,7 @@ d.main() acts as management command too:
 
     $ python hello.py help shell
     python hello.py help shell (02-18 21:14)
-    Usage: hello.py shell [options] 
+    Usage: hello.py shell [options]
 
     Runs a Python interactive interpreter. Tries to use IPython or bpython, if
     one of them is available.
@@ -103,7 +103,7 @@ calling d(dont_configure=True) before any other importd functionality.
 wsgi server
 -----------
 
-importd based hello.py is a `wsgi app`_ without any more work. 
+importd based hello.py is a `wsgi app`_ without any more work.
 
 ... wsgi example http://www.tornadoweb.org/documentation/wsgi.html ...
 
@@ -168,7 +168,7 @@ For testing many a times sqlite is sufficient, and for those times importd
 automatically configures django with sqlite3 as database, with sqlite file
 stored in `db.sqlite` in the same folder as hello.py.
 
-This can be disabled by passing actual database settings DATABASES to d(). 
+This can be disabled by passing actual database settings DATABASES to d().
 
 @d decorator
 ------------
@@ -374,7 +374,7 @@ Usage:
     Content-Type: text/html; charset=utf-8
     Location: http://localhost:8000/asd
 
-    $ curl -b "csrftoken=cnoaUDrr08haTTAMjpGWaPPBgt5rG1ZW" -d "csrfmiddlewaretoken=cnoaUDrr08haTTAMjpGWaPPBgt5rG1ZW&x=10&y=1" "http://localhost:8000/fhurl/?json=true"   
+    $ curl -b "csrftoken=cnoaUDrr08haTTAMjpGWaPPBgt5rG1ZW" -d "csrfmiddlewaretoken=cnoaUDrr08haTTAMjpGWaPPBgt5rG1ZW&x=10&y=1" "http://localhost:8000/fhurl/?json=true"
     {"response": 10, "success": true}
 
 
@@ -382,7 +382,7 @@ views can return non HttpResponse objects
 -----------------------------------------
 
 Django views are expected to only return HttpResponse based objects. importd
-allows you to do more than this. 
+allows you to do more than this.
 
 A view can return a string, which is treated as name of template, which is
 rendered with RequestContext and returned. A view can also return a tuple of
@@ -580,6 +580,37 @@ If you want to use more advanced features, you pass a dictionary. ::
 
     blueprints={"app3-clone": {"blueprint": "app3.views.bp", "url_prefix": "app3-clone/"}}
 
+
+livereload support
+------------------
+
+ImportD comes with livereload support.
+
+To activate it you have to pass keyword argument "lr", which is a dict.
+
+eg.
+
+.. code-block:: python
+
+    d(
+        DEBUG=True,
+        lr={
+            "static/scss,static/js": "make build"
+        }
+    )
+
+Subsequently, you can run python app.py livereload, which will listen on port
+8000 and watch the folders "static/scss" and "static/js" and run "make build"
+if any file is modified in either folder.
+
+You can pass any number of patterns as key value, eg if you want different cmds
+to run for css files and different for js files etc.
+
+In order to use this feature, please install livereload package first.
+
+This feature injects a auto reload js in each page, and runs a websocket in
+background, which signals the JS to reload the page everytime one of the watched
+file changes and command is finished.
 
 
 a more detailed example
