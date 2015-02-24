@@ -54,22 +54,6 @@ try:
 except ImportError:
     COFFIN = False
 
-try:
-    from django.template import add_to_builtins
-except ImportError:
-    from django.template.base import add_to_builtins, import_library, Origin
-    from django.template.base import InvalidTemplateLibrary
-    import django.template
-    django.template.add_to_builtins = add_to_builtins
-    django.template.import_library = import_library
-    django.template.Origin = Origin
-    django.template.InvalidTemplateLibrary = InvalidTemplateLibrary
-    from django.template.utils import get_app_template_dirs
-    import django.template.loaders.app_directories
-    django.template.loaders.app_directories.app_template_dirs = (
-        get_app_template_dirs('templates')
-    )
-
 if python_version().startswith('3'):
     basestring = unicode = str  # lint:ok
     # coffin is not python 3 compatible library
@@ -334,6 +318,24 @@ class D(object):
         finally:
             return secret
 
+    def _fix_coffin(self):
+        try:
+            from django.template import add_to_builtins
+        except ImportError:
+            from django.template.base import (
+                add_to_builtins, import_library, Origin, InvalidTemplateLibrary
+            )
+            import django.template
+            django.template.add_to_builtins = add_to_builtins
+            django.template.import_library = import_library
+            django.template.Origin = Origin
+            django.template.InvalidTemplateLibrary = InvalidTemplateLibrary
+            from django.template.utils import get_app_template_dirs
+            import django.template.loaders.app_directories
+            django.template.loaders.app_directories.app_template_dirs = (
+                get_app_template_dirs('templates')
+            )
+
     def _configure_django(self, **kw):
         """Auto-Configure Django using arguments."""
         from django.conf import settings, global_settings
@@ -478,6 +480,8 @@ class D(object):
             if hasattr(django, "setup"):
                 django.setup()
             self._import_django()
+            self._fix_coffin()
+
 
             from django.contrib.staticfiles.urls import staticfiles_urlpatterns
             urlpatterns = self.get_urlpatterns()
