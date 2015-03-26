@@ -4,10 +4,13 @@
 """ImportD django mini framework."""
 
 
-__license__ = 'BSD'
-__author__ = 'Amit Upadhyay'
-__url__ = 'http://amitu.com/importd'
-__docformat__ = 'html'
+__version__ = "0.3.4"
+__license__ = "BSD"
+__author__ = "Amit Upadhyay"
+__email__ = "upadhyay@gmail.com"
+__url__ = "http://amitu.com/importd"
+__source__ = "https://github.com/amitu/importd"
+__docformat__ = "html"
 
 
 # stdlib imports
@@ -16,6 +19,7 @@ import inspect
 import os
 import sys
 import traceback
+from datetime import datetime
 from getpass import getuser
 from platform import python_version
 
@@ -34,15 +38,13 @@ except ImportError:
     from django.utils import importlib  # lint:ok
 try:
     import debug_toolbar  # lint:ok
-    DEBUG_TOOLBAR = True
 except ImportError:
-    DEBUG_TOOLBAR = False
+    debug_toolbar = None
 try:
     import werkzeug  # lint:ok
     import django_extensions  # lint:ok
-    RUNSERVER_PLUS = True
 except ImportError:
-    RUNSERVER_PLUS = False
+    django_extensions = werkzeug = None
 try:
     import django_jinja  # lint:ok
     DJANGO_JINJA = True
@@ -53,7 +55,13 @@ try:
     COFFIN = True
 except ImportError:
     COFFIN = False
+try:
+    import resource
+except ImportError:
+    resource = None
 
+
+start_time = datetime.now()
 if python_version().startswith('3'):
     basestring = unicode = str  # lint:ok
     # coffin is not python 3 compatible library
@@ -62,6 +70,9 @@ if python_version().startswith('3'):
 # cannot use django-jinja, coffin both. primary library is coffin.
 if COFFIN and DJANGO_JINJA:
     DJANGO_JINJA = False
+
+
+##############################################################################
 
 
 class SmartReturnMiddleware(object):
@@ -93,9 +104,8 @@ class SmartReturnMiddleware(object):
             return res
         if isinstance(res, tuple):
             template_name, context = res
-            res = render_to_response(
-                template_name, context, RequestContext(request)
-            )
+            res = render_to_response(template_name, context,
+                                     RequestContext(request))
         else:
             res = JSONResponse(res)
         return res
@@ -140,8 +150,7 @@ class Blueprint(object):
             return args[0]
 
         def ddecorator(candidate):
-            from django.forms import forms
-            # the following is unsafe
+            from django.forms import forms  # the following is unsafe
             if isinstance(candidate, forms.DeclarativeFieldsMetaclass):
                 self.add_form(args[0], candidate, *args[1:], **kw)
                 return candidate
@@ -149,6 +158,9 @@ class Blueprint(object):
             return candidate
 
         return ddecorator
+
+
+##############################################################################
 
 
 class D(object):
@@ -191,22 +203,19 @@ class D(object):
 
     def _import_django(self):
         """Do the Django imports."""
-        # issue #19. manual imports
-        from smarturls import surl
+        from smarturls import surl  # issue #19. manual imports
         self.surl = surl
 
         from django.http import HttpResponse, Http404, HttpResponseRedirect
         self.HttpResponse = HttpResponse
-        self.Http404 = Http404
-        self.HttpResponseRedirect = HttpResponseRedirect
+        self.Http404, self.HttpResponseRedirect = Http404, HttpResponseRedirect
 
         from django.shortcuts import (get_object_or_404, get_list_or_404,
                                       render_to_response, render, redirect)
         self.get_object_or_404 = get_object_or_404
         self.get_list_or_404 = get_list_or_404
         self.render_to_response = render_to_response
-        self.render = render
-        self.redirect = redirect
+        self.render, self.redirect = render, redirect
 
         from django.template import RequestContext
         self.RequestContext = RequestContext
@@ -230,8 +239,7 @@ class D(object):
             from django.conf.urls.defaults import patterns, url
         except ImportError:
             from django.conf.urls import patterns, url  # lint:ok
-        self.patterns = patterns
-        self.url = url
+        self.patterns, self.url = patterns, url
 
     def _get_app_dir(self, pth):
         """Return the path of the app."""
@@ -245,9 +253,7 @@ class D(object):
             try:
                 import speaklater
             except ImportError:
-                raise RuntimeError(
-                    "Configure django first, or install speaklater."
-                )
+                raise RuntimeError("Configure django, or install speaklater.")
             else:
                 return speaklater.make_lazy_string(self._get_app_dir, pth)
 
@@ -289,9 +295,7 @@ class D(object):
         """Take a view and add it to the app using regex arguments."""
         regex = self.generate_mount_url(regex, view, app)
         if regex:
-            patterns = self.patterns(
-                "", self.surl(regex, view, *args, **kw)
-            )
+            patterns = self.patterns("", self.surl(regex, view, *args, **kw))
             urlpatterns = self.get_urlpatterns()
             urlpatterns += patterns
             django.core.urlresolvers.clear_url_caches()
@@ -323,9 +327,8 @@ class D(object):
             from django.template import add_to_builtins
         except ImportError:
             from django.template.base import (
-                add_to_builtins, import_library, Origin, InvalidTemplateLibrary,
-                builtins, get_library
-            )
+                add_to_builtins, import_library, Origin,
+                InvalidTemplateLibrary, builtins, get_library)
             import django.template
             django.template.add_to_builtins = add_to_builtins
             django.template.import_library = import_library
@@ -337,8 +340,7 @@ class D(object):
     def _fix_coffin_post(self):
         try:
             from django.template.loaders.app_directories import (
-                app_template_dirs
-            )
+                app_template_dirs)
         except ImportError:
             from django.template.utils import get_app_template_dirs
             import django.template.loaders.app_directories
@@ -367,7 +369,7 @@ class D(object):
         if not kw.get("dont_configure", False):
             kw["ROOT_URLCONF"] = "importd.urlconf"
             if "TEMPLATE_DIRS" not in kw:
-                kw["TEMPLATE_DIRS"] = (self.dotslash("templates"),)
+                kw["TEMPLATE_DIRS"] = (self.dotslash("templates"), )
             if "STATIC_URL" not in kw:
                 kw["STATIC_URL"] = "/static/"
             if "STATIC_ROOT" not in kw:
@@ -429,7 +431,7 @@ class D(object):
                     installed.append("django.contrib.humanize")
                 if "django.contrib.staticfiles" not in installed:
                     installed.append("django.contrib.staticfiles")
-                if "debug_toolbar" not in installed and DEBUG_TOOLBAR:
+                if "debug_toolbar" not in installed and debug_toolbar:
                     installed.append("debug_toolbar")
                     if 'INTERNAL_IPS' not in kw:
                         kw['INTERNAL_IPS'] = ('127.0.0.1', '0.0.0.0')
@@ -453,7 +455,7 @@ class D(object):
                     # This one gives 500 if its Enabled without previous syncdb
                     # 'debug_toolbar.panels.request_vars.RequestVarsDebugPanel',
 
-            if RUNSERVER_PLUS:
+            if django_extensions and werkzeug:
                 installed.append('django_extensions')
 
             # django-jinja 1.0.4 support
@@ -581,6 +583,13 @@ class D(object):
             self._configure_django(**kw)
         return self
 
+    def __del__(self, *args, **kw):
+        """Provide some info when the object class is destroyed on quit."""
+        print('Total Running Time: {}.'.format(datetime.now() - start_time))
+        print('Total Maximum RAM Memory used: ~{} MegaBytes.'.format(int(
+            resource.getrusage(resource.RUSAGE_SELF).ru_maxrss *
+            resource.getpagesize() / 1024 / 1024)) if resource else "")
+
     def _act_as_manage(self, *args):
         """Mimic Djangos manage.py."""
         if not hasattr(self, "_configured"):
@@ -592,7 +601,7 @@ class D(object):
         """
         Interface to register blueprint.
 
-        see django url namespace.
+        See django url namespace.
         https://docs.djangoproject.com/en/1.7/topics/http/urls/#url-namespaces
         """
         clone_bp = copy.deepcopy(bp)
@@ -633,12 +642,11 @@ class D(object):
 
         if len(args) == 0:
             return self._handle_management_command(
-                self._get_runserver_cmd(), "8000"
-            )
+                self._get_runserver_cmd(), "8000")
 
         if 'livereload' in sys.argv:
             if not hasattr(self, "lr"):
-                print("livereload setting, lr not configured.")
+                print("Livereload setting, lr not configured.")
                 return
             from livereload import Server
             server = Server(self)
@@ -653,7 +661,7 @@ class D(object):
 
     def _get_runserver_cmd(self):
         """Return a proper runserver command."""
-        return 'runserver_plus' if RUNSERVER_PLUS else 'runserver'
+        return 'runserver_plus' if django_extensions else 'runserver'
 
 
 application = d = D()
