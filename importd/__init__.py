@@ -4,7 +4,7 @@
 """ImportD django mini framework."""
 
 
-__version__ = "0.3.4"
+__version__ = "0.3.3"
 __license__ = "BSD"
 __author__ = "Amit Upadhyay"
 __email__ = "upadhyay@gmail.com"
@@ -582,13 +582,6 @@ class D(object):
         else:
             self._configure_django(**kw)
         return self
-
-    def __del__(self, *args, **kw):
-        """Provide some info when the object class is destroyed on quit."""
-        print('Total Running Time: {}.'.format(datetime.now() - start_time))
-        print('Total Maximum RAM Memory used: ~{} MegaBytes.'.format(int(
-            resource.getrusage(resource.RUSAGE_SELF).ru_maxrss *
-            resource.getpagesize() / 1024 / 1024)) if resource else "")
 
     def _act_as_manage(self, *args):
         """Mimic Djangos manage.py."""
