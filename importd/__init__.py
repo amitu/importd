@@ -425,6 +425,14 @@ class D(object):
                     installed.append("django.contrib.messages")
                 if "django.contrib.sessions" not in installed:
                     installed.append("django.contrib.sessions")
+                    # check session middleware installed
+                    # https://docs.djangoproject.com/en/1.7/topics/http/sessions/#enabling-sessions
+                    last_position = len(kw["MIDDLEWARE_CLASSES"])
+                    kw["MIDDLEWARE_CLASSES"] = list(kw["MIDDLEWARE_CLASSES"])
+                    kw["MIDDLEWARE_CLASSES"].insert(
+                        last_position,
+                        "django.contrib.sessions.middleware.SessionMiddleware"
+                    )
                 if "django.contrib.admin" not in installed:
                     installed.append("django.contrib.admin")
                 if "django.contrib.humanize" not in installed:
