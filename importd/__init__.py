@@ -591,13 +591,6 @@ class D(object):
             self._configure_django(**kw)
         return self
 
-    def __del__(self, *args, **kw):
-        """Provide some info when the object class is destroyed on quit."""
-        print('Total Running Time: {}.'.format(datetime.now() - start_time))
-        print('Total Maximum RAM Memory used: ~{} MegaBytes.'.format(int(
-            resource.getrusage(resource.RUSAGE_SELF).ru_maxrss *
-            resource.getpagesize() / 1024 / 1024)) if resource else "")
-
     def _act_as_manage(self, *args):
         """Mimic Djangos manage.py."""
         if not hasattr(self, "_configured"):
