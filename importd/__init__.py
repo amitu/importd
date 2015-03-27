@@ -409,6 +409,9 @@ class D(object):
                 kw["MIDDLEWARE_CLASSES"].insert(
                     0, "importd.SmartReturnMiddleware"
                 )
+            if not "TEMPLATE_CONTEXT_PROCESSORS" in kw:
+                kw["TEMPLATE_CONTEXT_PROCESSORS"] = list(
+                        global_settings.TEMPLATE_CONTEXT_PROCESSORS)
 
             installed = list(kw.setdefault("INSTALLED_APPS", []))
 
@@ -416,6 +419,7 @@ class D(object):
 
             if admin_url:
                 middlewares_list = []
+                context_processor_list = []
                 if "django.contrib.sessions" not in installed:
                     installed.append("django.contrib.sessions")
                     middlewares_list.append("django.contrib.sessions"
@@ -435,6 +439,8 @@ class D(object):
                     installed.append("django.contrib.messages")
                     middlewares_list.append("django.contrib.messages."
                                             "middleware.MessageMiddleware")
+                    context_processor_list.append("django.contrib.messages."
+                                                  "context_processors.messages")
                 if "django.contrib.admin" not in installed:
                     installed.append("django.contrib.admin")
                 if "django.contrib.humanize" not in installed:
@@ -464,12 +470,16 @@ class D(object):
                     )
                     # This one gives 500 if its Enabled without previous syncdb
                     # 'debug_toolbar.panels.request_vars.RequestVarsDebugPanel',
-                for middleware_str in middlewares_list:
-                    if not middleware_str in kw["MIDDLEWARE_CLASSES"]:
-                        last_pos = len(kw["MIDDLEWARE_CLASSES"])
-                        kw["MIDDLEWARE_CLASSES"].insert(last_pos,
-                                                        middleware_str)
 
+                def _insert_setting(list_strings, django_settings_key):
+                    for _str in list_strings:
+                        if not _str in kw[django_settings_key]:
+                            last_pos = len(kw[django_settings_key])
+                            kw[django_settings_key].insert(last_pos, _str)
+
+                _insert_setting(middlewares_list, "MIDDLEWARE_CLASSES")
+                _insert_setting(context_processor_list,
+                                "TEMPLATE_CONTEXT_PROCESSORS")
 
             if django_extensions and werkzeug:
                 installed.append('django_extensions')
