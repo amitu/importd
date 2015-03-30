@@ -409,7 +409,7 @@ class D(object):
                 kw["MIDDLEWARE_CLASSES"].insert(
                     0, "importd.SmartReturnMiddleware"
                 )
-            if not "TEMPLATE_CONTEXT_PROCESSORS" in kw:
+            if "TEMPLATE_CONTEXT_PROCESSORS" not in kw.keys():
                 kw["TEMPLATE_CONTEXT_PROCESSORS"] = list(
                         global_settings.TEMPLATE_CONTEXT_PROCESSORS)
 
@@ -473,7 +473,7 @@ class D(object):
 
                 def _insert_setting(list_strings, django_settings_key):
                     for _str in list_strings:
-                        if not _str in kw[django_settings_key]:
+                        if _str not in kw[django_settings_key]:
                             last_pos = len(kw[django_settings_key])
                             kw[django_settings_key].insert(last_pos, _str)
 
