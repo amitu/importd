@@ -417,14 +417,6 @@ class D(object):
                     0, "importd.SmartReturnMiddleware"
                 )
 
-            # for static assets serving in heroku
-            try:
-                import whitenoise
-                kw['STATICFILES_STORAGE'] = 'whitenoise.django.GzipManifestStaticFilesStorage'
-            except ImportError:
-                pass
-
-
             installed = list(kw.setdefault("INSTALLED_APPS", []))
 
             admin_url = kw.pop("admin", "^admin/")
