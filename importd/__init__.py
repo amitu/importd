@@ -236,6 +236,13 @@ class D(object):
             self.wsgi_application = django.core.handlers.wsgi.WSGIHandler()
 
         try:
+            # https://devcenter.heroku.com/articles/django-assets
+            from whitenoise.django import DjangoWhiteNoise
+            self.wsgi_application = DjangoWhiteNoise(self.wsgi_application)
+        except ImportError:
+            pass
+
+        try:
             from django.conf.urls.defaults import patterns, url
         except ImportError:
             from django.conf.urls import patterns, url  # lint:ok
