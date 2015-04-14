@@ -1,3 +1,4 @@
+sudo: false
 
 
 language: python
@@ -8,11 +9,12 @@ python:
     - 3.4
     - pypy
     - pypy3
+    - nightly
 
 
 os:
     - linux
-    - osx
+#   - osx
 
 
 # before_install: true
