@@ -1,6 +1,0 @@
-Django==1.4.18
-dj_database_url
-coffin==0.3.8
-jinja2==2.7.3
-django-jinja==1.0.4
-
