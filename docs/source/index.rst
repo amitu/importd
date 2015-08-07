@@ -386,7 +386,7 @@ allows you to do more than this.
 
 A view can return a string, which is treated as name of template, which is
 rendered with RequestContext and returned. A view can also return a tuple of
-(str, dict), in this case the str is treated as name of view, and dict as the
+(str, dict), in this case the str is treated as name of template, and dict as the
 context::
 
     from importd import d
