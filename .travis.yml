@@ -17,13 +17,13 @@ os:
 #   - osx
 
 
-# before_install: true
+before_install: pip install tox pip virtualenv --use-mirrors --quiet
 
 
-install: pip install fhurl>=0.1.7 gunicorn smarturls six Django>=1.3 dj-database-url tox --use-mirrors --quiet
+install: pip install fhurl>=0.1.7 gunicorn smarturls six Django>=1.3 dj-database-url --use-mirrors --quiet
 
 
-before_script: rm --recursive --force --verbose *.py[cod]
+before_script: pyclean --verbose .
 
 
 script: tox
