@@ -442,6 +442,9 @@ class D(object):
                     )
                 if "django.contrib.admin" not in installed:
                     installed.append("django.contrib.admin")
+                    kw["MIDDLEWARE_CLASSES"].append(
+                        "django.contrib.auth.middleware.AuthenticationMiddleware"
+                    )
                 if "django.contrib.humanize" not in installed:
                     installed.append("django.contrib.humanize")
                 if "django.contrib.staticfiles" not in installed:
