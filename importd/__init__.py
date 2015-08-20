@@ -160,6 +160,68 @@ class Blueprint(object):
         return ddecorator
 
 
+NotSet = object()
+
+
+def env(key, default=""):
+    if default is None and key not in os.environ:
+        raise KeyError
+
+    val = os.environ.get(key, default).strip()
+    return val
+
+
+class DSetting(object):
+    """
+    Some settings can have different value depending on if they are for debug or
+    in prod environment.
+
+    importd supports configuring those setting variables via importd.debug()
+    function such that debug stuff goes in debug environment and prod in prod.
+    """
+    def __init__(self, dvalue=NotSet, prod=NotSet):
+        self.dvalue = dvalue
+        self.pvalue = prod
+
+debug = DSetting
+
+
+class E(object):
+    """
+    importd supports a feature that allows you to selectively export things from
+    settings file to be available to templates. We have a context preprocessor
+    that adds whole settings to template contexts, but some teams find it too
+    open, as very sensitive data is stored in settings. Also this makes it
+    harder to justify a debug_settings that shows all settings variables in
+    template for temporary debug purpose.
+
+    The solution is to mark settings that you want to be exposed to templates
+    using the e() function in importd, which attaches all "exposed" settings to
+    a variable named esettings when using a context preprocessor
+    importd.esettings.
+
+    This class is used for that.
+    """
+    def __init__(self, value):
+        self.value = value
+
+
+e = E
+
+
+class ESettings(object):
+    pass
+
+
+global_esettings = ESettings()
+
+
+def esettings(request):
+    return {
+        "esettings": global_esettings
+    }
+
+
 ##############################################################################
 
 
@@ -367,6 +429,53 @@ class D(object):
         self.APP_DIR, app_filename = os.path.split(
             os.path.realpath(inspect.stack()[2][1])
         )
+
+        DEBUG = kw.get("DEBUG", False)
+        md = {}
+        dp = {}
+
+        for k, v in kw.items():
+            if isinstance(v, E):
+                md[k] = v.value
+                setattr(global_esettings, k, v.value)
+            if isinstance(v, DSetting):
+                dp[k] = v
+
+        for k, v in md.items():
+            kw[k] = v
+
+        for k, v in dp.items():
+            if DEBUG:
+                if v.dvalue is not NotSet:
+                    kw[k] = v.dvalue
+            else:
+                if v.pvalue is not NotSet:
+                    kw[k] = v.pvalue
+
+        del md
+        del dp
+
+        def do_dp(key):
+            old = kw[key]
+            kw[key] = []
+            for value in old:
+                if DEBUG:
+                    kw[key].append(value.replace("debug:", ""))
+                else:
+                    if value.startswith("debug:"):
+                        continue
+                    kw[key].append(value)
+            if old != kw[key]:
+                print(key, old, kw[key])
+
+        do_dp("MIDDLEWARE_CLASSES")
+        do_dp("INSTALLED_APPS")
+        do_dp("TEMPLATE_CONTEXT_PROCESSORS")
+
+        if "debug" in kw:
+            db = kw.pop("debug")
+            if DEBUG:
+                kw.update(db)
 
         if "regexers" in kw:
             self.update_regexers(kw.pop("regexers"))

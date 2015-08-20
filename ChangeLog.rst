@@ -1,6 +1,23 @@
 importd ChangeLog
 =================
 
+Master
+------
+
+* added `debug` keyword argument that takes dict and is added to base settings
+  only if DEBUG is true
+* added importd.env, which checks a key in environment and if not present
+  returns a default value (so that I do not have to write this utility
+  everywhere)
+* added a importd.debug() that can be used for conditional settings
+* MIDDLEWARE_CLASSES, INSTALLED_APPS or TEMPLATE_CONTEXT_PROCESSORS is looked
+  for settings that starts with "debug:", such values are dropped completely in
+  prod, and in debug the "debug:" prefix is stripped
+* created impoortd.e() which can be used to "expose" some of the settings to
+  template. in order to use it in template, add a template context processor
+  "importd.esettings", this will make available a variable named "esettings".
+
+
 0.3.3 - 24-Feb-2015
 -------------------
 
