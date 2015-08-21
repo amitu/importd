@@ -456,6 +456,8 @@ class D(object):
         del dp
 
         def do_dp(key):
+            if key not in kw:
+                return
             old = kw[key]
             kw[key] = []
             for value in old:
@@ -465,8 +467,6 @@ class D(object):
                     if value.startswith("debug:"):
                         continue
                     kw[key].append(value)
-            if old != kw[key]:
-                print(key, old, kw[key])
 
         do_dp("MIDDLEWARE_CLASSES")
         do_dp("INSTALLED_APPS")
