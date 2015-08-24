@@ -194,7 +194,9 @@ def env(key, default="", factory=None):
         # we will not have a value for factory function.
         if factory:
             if factory == bool:
-                if val.lower() in ["no", "false", "off", "0"]:
+                if isinstance(val, basestring) and val.lower() in [
+                    "no", "false", "off", "0"
+                ]:
                     val = False
             val = factory(val)
 
