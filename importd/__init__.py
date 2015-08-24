@@ -160,11 +160,14 @@ class Blueprint(object):
 
 
 NotSet = object()
+RaiseException = object()
 
 
-def env(key, default=""):
-    if default is None and key not in os.environ:
-        raise KeyError
+def env(key, default="", factory=None):
+    # default=RaiseException is a way to force an environment variable to be
+    # present else django fails to start.
+    if default is RaiseException and key not in os.environ:
+        raise KeyError(key)
 
     val = os.environ.get(key, default)
 
@@ -174,6 +177,26 @@ def env(key, default=""):
     # trailing new line.
     if isinstance(val, basestring):
         val = val.strip()
+
+    # if default value is NotSet and factory is set, we do not want to invoke
+    # factory on value as factory probably only takes string
+    if val == default == NotSet:
+        return NotSet
+
+    # if factory is set to NotSet, developer is trying to bypass whole factory
+    # handling
+    if factory != NotSet:
+        # if no factory is set, we can get factory from default value
+        if not factory and default != NotSet:
+            factory = type(default)
+
+        # if default value is not known, and factory was not specified(==None),
+        # we will not have a value for factory function.
+        if factory:
+            if factory == bool:
+                if val.lower() in ["no", "false", "off", "0"]:
+                    val = False
+            val = factory(val)
 
     return val
 

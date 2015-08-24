@@ -2,12 +2,14 @@ from __future__ import unicode_literals
 
 from django.conf import settings
 from django.test.client import Client
-from django.core.urlresolvers import resolve, reverse
+from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django.test import TestCase
-import unittest
 
-from importd import COFFIN, DJANGO_JINJA
+import unittest
+import os
+
+from importd import COFFIN, DJANGO_JINJA, env, NotSet, RaiseException
 
 
 class BasicTest(TestCase):
@@ -171,3 +173,19 @@ class BasicTest(TestCase):
         self.assertEqual('/app3/demo/url', url)
         url = reverse('app3-clone:demo-url')
         self.assertEqual('/app3-clone/demo/url', url)
+
+
+class EnvTest(BasicTest):
+    def test_env(self):
+        old = os.environ
+        os.environ = {}
+        with self.assertRaises(KeyError):
+            env("foo", default=RaiseException)
+        os.environ = {"foo": "bar"}
+        self.assertEqual(env("foo"), "bar")
+        self.assertEqual(env("foo", default=False), True)
+        self.assertEqual(env("foo", default=False, factory=NotSet), "bar")
+        for v in ["0", "off", "Off", "False", "false", "no", "No"]:
+            os.environ = {"IS_PROD": v}
+            self.assertEqual(env("IS_PROD", default=False), False)
+        os.environ = old
