@@ -27,7 +27,7 @@ from platform import python_version
 import dj_database_url
 import django.core.urlresolvers
 import django
-from importd import urlconf  # lint:ok
+from importd import urlconf  # noqa lint:ok
 from django.conf import settings
 from collections import Callable
 
@@ -46,12 +46,12 @@ try:
 except ImportError:
     django_extensions = werkzeug = None
 try:
-    import django_jinja  # lint:ok
+    import django_jinja  # noqa lint:ok
     DJANGO_JINJA = True
 except ImportError:
     DJANGO_JINJA = False
 try:
-    import coffin  # lint:ok
+    import coffin  # noqa lint:ok
     COFFIN = True
 except ImportError:
     COFFIN = False
@@ -60,10 +60,9 @@ try:
 except ImportError:
     resource = None
 
-
 start_time = datetime.now()
 if python_version().startswith('3'):
-    basestring = unicode = str  # lint:ok
+    basestring = unicode = str  # noqa lint:ok
     # coffin is not python 3 compatible library
     COFFIN = False
 
@@ -167,14 +166,22 @@ def env(key, default=""):
     if default is None and key not in os.environ:
         raise KeyError
 
-    val = os.environ.get(key, default).strip()
+    val = os.environ.get(key, default)
+
+    # why are we calling strip? envdir lets you store env variables in files,
+    # which is good but editors tend to insert extra new line at end of file,
+    # and it usually never makes sense for a environment variable to have a
+    # trailing new line.
+    if isinstance(val, basestring):
+        val = val.strip()
+
     return val
 
 
 class DSetting(object):
     """
-    Some settings can have different value depending on if they are for debug or
-    in prod environment.
+    Some settings can have different value depending on if they are for debug
+    or in prod environment.
 
     importd supports configuring those setting variables via importd.debug()
     function such that debug stuff goes in debug environment and prod in prod.
@@ -188,12 +195,12 @@ debug = DSetting
 
 class E(object):
     """
-    importd supports a feature that allows you to selectively export things from
-    settings file to be available to templates. We have a context preprocessor
-    that adds whole settings to template contexts, but some teams find it too
-    open, as very sensitive data is stored in settings. Also this makes it
-    harder to justify a debug_settings that shows all settings variables in
-    template for temporary debug purpose.
+    importd supports a feature that allows you to selectively export things
+    from settings file to be available to templates. We have a context
+    preprocessor that adds whole settings to template contexts, but some teams
+    find it too open, as very sensitive data is stored in settings. Also this
+    makes it harder to justify a debug_settings that shows all settings
+    variables in template for temporary debug purpose.
 
     The solution is to mark settings that you want to be exposed to templates
     using the e() function in importd, which attaches all "exposed" settings to
@@ -552,7 +559,8 @@ class D(object):
                 if "django.contrib.admin" not in installed:
                     installed.append("django.contrib.admin")
                     kw["MIDDLEWARE_CLASSES"].append(
-                        "django.contrib.auth.middleware.AuthenticationMiddleware"
+                        "django.contrib.auth.middleware"
+                        ".AuthenticationMiddleware"
                     )
                 if "django.contrib.humanize" not in installed:
                     installed.append("django.contrib.humanize")
@@ -673,7 +681,7 @@ class D(object):
             __import__(fmt.format(app))  # lint:ok
         except ImportError:
             pass
-        except Exception as e:
+        except Exception:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             traceback.print_exception(exc_type, exc_value, exc_traceback)
             raise SystemExit(-1)
