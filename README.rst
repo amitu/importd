@@ -90,6 +90,7 @@ With that in mind importd has ``env()``, which simply reads data from
 enironment. So in your app.py you can do:
 
 .. code:: python
+
     from importd import d, env
     d(
         DEBUG=not env("IS_PROD", False),
@@ -106,6 +107,7 @@ With ``.debug()`` you can set some setting to have different values based on
 ``DEBUG``.
 
 .. code:: python
+
     from importd import d, debug
     d(
         DEBUG=not env("IS_PROD", False),
@@ -131,6 +133,7 @@ preprocessor, and in templates you will have access to ``esettings`` variable.
 To mark a variable as exposed you have to do this:
 
 .. code:: python
+
     from importd import d, e
 
     d(
@@ -147,6 +150,7 @@ Some settings are only needed in debug environment, or need to be overwritten,
 you can use the ``debug=`` keyword argument to set things up.
 
 .. code:: python
+
     from importd import d
 
     d(
@@ -170,6 +174,7 @@ middelware etc is important, we end up copying the whole ``INSTALLED_APPS``,
 they are in different locations. Not good.
 
 .. code:: python
+
     from importd import d, env
     d(
         DEBUG=env("IS_PROD", True),
