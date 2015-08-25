@@ -59,6 +59,141 @@ Examples
 
   * importd + jinja2 + django-debug-toolbar + django REST framework
 
+Settings Framework
+==================
+
+Managing settings in django is done via a settings.py file. Then people put a
+local_settings.py to override. This does not scale too well, we end up having
+very big settings file with almost no structure, and there are many issues
+because of lack of synchronization of local_settings.py among developer's
+machines.
+
+importd has some methods to hopefully make this simpler and more standardized.
+
+First of all there is no local_settings.py. Setting customization are of two
+kinds, picking different things for development and prod, eg you want to
+activate statsd for prod, but debug_toolbar for development. Both these should
+be checked in so there is no scope of people not getting some setting
+accidentally. Then there are setting customization for not storing some things
+in version control system, say passwords and access tokens and keys. These
+should be managed via environment variable.
+
+And then there is also a concern of exposing settings to template. We have a
+template context processor, which can expost whole settings to templates, but
+that is uncomfortable to many. You may want to expose only a small subset of
+things you describe in settings, and you want to do this with minimal fuss.
+
+importd.env
+-----------
+
+With that in mind importd has `env()`, which simply reads data from enironment.
+So in your app.py you can do:
+
+```python
+from importd import d, env
+d(
+    DEBUG=not env("IS_PROD", False),
+    db=env("DB_URL", "mysql://root:@localhost/dbname")
+)
+...
+```
+
+It is highly recommended you include `envdir` in your project. May be someday
+importd will auto detect envdir and set it up.
+
+importd.debug
+-------------
+
+With `.debug()` you can set some setting to have different values based on
+DEBUG.
+
+```python
+from importd import d, debug
+d(
+    DEBUG=not env("IS_PROD", False),
+    STATSD_CLIENT=debug(
+        'django_statsd.clients.toolbar', prod='django_statsd.clients.normal'
+    ),
+)
+```
+
+This will set `STATSD_CLIENT` to appropriate value based on if we are in debug
+mode or not. This is as simple as putting an if condition, but it gets repeated
+so many times, its worth using this shortcut. Also this way things stay in same
+place, you do not look for up and down the settings file, and in
+local_settings.py to see if the variable has been overwritten.
+
+importd.e
+---------
+
+This lets you "expose" a setting for access in templates. You should not use
+"django.core.context_processors.settings" as a `TEMPLATE_CONTEXT_PROCESSORS`,
+instead use "importd.esettings" context preprocessor, and in templates you will
+have access to `esettings` variable.
+
+To mark a variable as exposed you have to do this:
+
+```python
+from importd import d, e
+
+d(
+    DEBUG=True,
+    SOME_VAR=e("its value"),
+)
+```
+
+This will make `SOME_VAR` available in settings as well as in `esettings`.
+
+d(debug={}) parameter
+---------------------
+
+Some settings are only needed in debug environment, or need to be overwritten,
+you can use the `debug=` keyword argument to set things up.
+
+```python
+from importd import d
+
+d(
+    DEBUG=False,
+    SOME_VAR="this is prod value",
+    debug=dict(
+        SOME_VAR="this is debug value"
+    )
+)
+```
+
+You can also use `importd.NotSet` as a value in debug dict, and the setting will
+be removed altogether in the approprite environment (debug or prod).
+
+debug: prefix for INSTALLED_APPS etc
+------------------------------------
+
+It is a common pattern that some apps are only needed in debug environment, say
+devserver, or debug_toolbar. And since order of apps in INSTALLED_APPS, and
+middelware etc is important, we end up copying the whole INSTALLED_APPS,
+MIDDLEWARE_CLASSES etc for prod and dev, and this then tend to diverge since
+they are in different locations. Not good.
+
+```python
+from importd import d, env
+d(
+    DEBUG=env("IS_PROD", True),
+    INSTALLED_APPS=[
+        "django.contrib.contenttypes",
+        "django.contrib.auth",
+        "django.contrib.sessions",
+
+        "debug:devserver",
+        "debug:debug_toolbar",
+
+        "myapp"
+    ]
+)
+```
+
+Notice the `debug:` prefix in `devserver` and `debug_toolbar`. Depending on the
+value of `DEBUG`, these lines would be included or not. importd looks for
+strings in MIDDLEWARE_CLASSES, INSTALLED_APPS and TEMPLATE_CONTEXT_PROCESSORS.
 
 Backward Incompatibile Change
 =============================

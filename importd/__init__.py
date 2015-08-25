@@ -27,7 +27,7 @@ from platform import python_version
 import dj_database_url
 import django.core.urlresolvers
 import django
-from importd import urlconf  # lint:ok
+from importd import urlconf  # noqa lint:ok
 from django.conf import settings
 from collections import Callable
 
@@ -46,12 +46,12 @@ try:
 except ImportError:
     django_extensions = werkzeug = None
 try:
-    import django_jinja  # lint:ok
+    import django_jinja  # noqa lint:ok
     DJANGO_JINJA = True
 except ImportError:
     DJANGO_JINJA = False
 try:
-    import coffin  # lint:ok
+    import coffin  # noqa lint:ok
     COFFIN = True
 except ImportError:
     COFFIN = False
@@ -60,10 +60,9 @@ try:
 except ImportError:
     resource = None
 
-
 start_time = datetime.now()
 if python_version().startswith('3'):
-    basestring = unicode = str  # lint:ok
+    basestring = unicode = str  # noqa lint:ok
     # coffin is not python 3 compatible library
     COFFIN = False
 
@@ -158,6 +157,101 @@ class Blueprint(object):
             return candidate
 
         return ddecorator
+
+
+NotSet = object()
+RaiseException = object()
+
+
+def env(key, default="", factory=None):
+    # default=RaiseException is a way to force an environment variable to be
+    # present else django fails to start.
+    if default is RaiseException and key not in os.environ:
+        raise KeyError(key)
+
+    val = os.environ.get(key, default)
+
+    # why are we calling strip? envdir lets you store env variables in files,
+    # which is good but editors tend to insert extra new line at end of file,
+    # and it usually never makes sense for a environment variable to have a
+    # trailing new line.
+    if isinstance(val, basestring):
+        val = val.strip()
+
+    # if default value is NotSet and factory is set, we do not want to invoke
+    # factory on value as factory probably only takes string
+    if val == default == NotSet:
+        return NotSet
+
+    # if factory is set to NotSet, developer is trying to bypass whole factory
+    # handling
+    if factory != NotSet:
+        # if no factory is set, we can get factory from default value
+        if not factory and default != NotSet:
+            factory = type(default)
+
+        # if default value is not known, and factory was not specified(==None),
+        # we will not have a value for factory function.
+        if factory:
+            if factory == bool:
+                if isinstance(val, basestring) and val.lower() in [
+                    "no", "false", "off", "0"
+                ]:
+                    val = False
+            val = factory(val)
+
+    return val
+
+
+class DSetting(object):
+    """
+    Some settings can have different value depending on if they are for debug
+    or in prod environment.
+
+    importd supports configuring those setting variables via importd.debug()
+    function such that debug stuff goes in debug environment and prod in prod.
+    """
+    def __init__(self, dvalue=NotSet, prod=NotSet):
+        self.dvalue = dvalue
+        self.pvalue = prod
+
+debug = DSetting
+
+
+class E(object):
+    """
+    importd supports a feature that allows you to selectively export things
+    from settings file to be available to templates. We have a context
+    preprocessor that adds whole settings to template contexts, but some teams
+    find it too open, as very sensitive data is stored in settings. Also this
+    makes it harder to justify a debug_settings that shows all settings
+    variables in template for temporary debug purpose.
+
+    The solution is to mark settings that you want to be exposed to templates
+    using the e() function in importd, which attaches all "exposed" settings to
+    a variable named esettings when using a context preprocessor
+    importd.esettings.
+
+    This class is used for that.
+    """
+    def __init__(self, value):
+        self.value = value
+
+
+e = E
+
+
+class ESettings(object):
+    pass
+
+
+global_esettings = ESettings()
+
+
+def esettings(request):
+    return {
+        "esettings": global_esettings
+    }
 
 
 ##############################################################################
@@ -368,6 +462,53 @@ class D(object):
             os.path.realpath(inspect.stack()[2][1])
         )
 
+        DEBUG = kw.get("DEBUG", False)
+        md = {}
+        dp = {}
+
+        for k, v in kw.items():
+            if isinstance(v, E):
+                md[k] = v.value
+                setattr(global_esettings, k, v.value)
+            if isinstance(v, DSetting):
+                dp[k] = v
+
+        for k, v in md.items():
+            kw[k] = v
+
+        for k, v in dp.items():
+            if DEBUG:
+                if v.dvalue is not NotSet:
+                    kw[k] = v.dvalue
+            else:
+                if v.pvalue is not NotSet:
+                    kw[k] = v.pvalue
+
+        del md
+        del dp
+
+        def do_dp(key):
+            if key not in kw:
+                return
+            old = kw[key]
+            kw[key] = []
+            for value in old:
+                if DEBUG:
+                    kw[key].append(value.replace("debug:", ""))
+                else:
+                    if value.startswith("debug:"):
+                        continue
+                    kw[key].append(value)
+
+        do_dp("MIDDLEWARE_CLASSES")
+        do_dp("INSTALLED_APPS")
+        do_dp("TEMPLATE_CONTEXT_PROCESSORS")
+
+        if "debug" in kw:
+            db = kw.pop("debug")
+            if DEBUG:
+                kw.update(db)
+
         if "regexers" in kw:
             self.update_regexers(kw.pop("regexers"))
 
@@ -443,7 +584,8 @@ class D(object):
                 if "django.contrib.admin" not in installed:
                     installed.append("django.contrib.admin")
                     kw["MIDDLEWARE_CLASSES"].append(
-                        "django.contrib.auth.middleware.AuthenticationMiddleware"
+                        "django.contrib.auth.middleware"
+                        ".AuthenticationMiddleware"
                     )
                 if "django.contrib.humanize" not in installed:
                     installed.append("django.contrib.humanize")
@@ -564,7 +706,7 @@ class D(object):
             __import__(fmt.format(app))  # lint:ok
         except ImportError:
             pass
-        except Exception as e:
+        except Exception:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             traceback.print_exception(exc_type, exc_value, exc_traceback)
             raise SystemExit(-1)
