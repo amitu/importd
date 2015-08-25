@@ -100,6 +100,16 @@ enironment. So in your app.py you can do:
 It is highly recommended you include ``envdir`` in your project. May be someday
 importd will auto detect envdir and set it up.
 
+``env`` is pretty smart, it takes ``default=`` and ``factory=``. If ``default``
+is passed, the string value of environment variable is converted to the
+``type()`` of ``default``. You can overwrite this behaviour by passing your own
+``factory``, or you can disable this behaviour altogether by passing
+``factory=importd.NotSet``.
+
+``env()`` also treats booleans by converting strings like "False/off/no" (case
+insensitive) to python's ``False`` value (and non empty string to True as
+``bool()`` does).
+
 ``importd.debug``
 -----------------
 
