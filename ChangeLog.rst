@@ -1,8 +1,10 @@
 importd ChangeLog
 =================
 
-Master
-------
+0.4.0 - 27-Aug-2015
+-------------------
+
+Settings Framework Release
 
 * added `debug` keyword argument that takes dict and is added to base settings
   only if DEBUG is true
@@ -23,16 +25,19 @@ Master
 
 * added livereload command/feature.
 
+
 0.3.2 - 27-Jan-2015
 -------------------
 
 * Added blueprint document.
 * calling django.setup() when available
 
+
 0.3.1 - 27-Oct-2014
 -------------------
 
 * released without blueprint thing. rereleasing.
+
 
 0.3.0 - 27-Oct-2014
 -------------------
@@ -59,6 +64,7 @@ Master
 * there was a bug in previous release, d.dotslash() always returned the same
   value if called before configuring django
 
+
 0.2.8 - 10-Nov-2013
 -------------------
 
@@ -66,6 +72,7 @@ Master
   before django is configured, returns a lazy string, which becomes
   "available" after django has been configured. suitable for configuring
   template dirs or static files etc.
+
 
 0.2.7 - 4-Nov-2013
 ------------------
@@ -75,25 +82,30 @@ Master
   settings django allows eg OPTIONS, CONN_MAX_AGE[this one I particularly need
   in every projct, and dont want to miss out on using dj_database_url]
 
+
 0.2.6 - 4-Nov-2013
 ------------------
 
 * support for django 1.6c1
+
 
 0.2.5 - 4-Nov-2013
 ------------------
 
 * now accepts db= kward when configuring, uses dj_database_url to parse db
 
+
 0.2.4 - 4-Nov-2013
 ------------------
 
 * changes to serve admin static files
 
+
 0.2.3 - 16-Aug-2013
 -------------------
 
 * turns out importd depends on django :-)
+
 
 0.2.2 - 12-Aug-2013
 -------------------
@@ -101,10 +113,12 @@ Master
 * support for django 1.3.7
 * testing django 1.5.2, 1.4.6 now.
 
+
 0.2.1 - 12-Aug-2013
 -------------------
 
 * packaging was broken, thank you @jezdez
+
 
 0.2.0 - 4-Aug-2013
 ------------------
@@ -131,15 +145,18 @@ atexit magic, which means a call to d.main() must be included somewhere.
 * added auto generated MANIFEST.in (using check-manifest)
 * added support for mounting urls to custom locations
 
+
 0.1.4 - 22-Oct-2012
 -------------------
 
 * setup.py was buggy
 
+
 0.1.3 - 22-Oct-2012
 -------------------
 
 * setup.py was buggy
+
 
 0.1.2 - 13-Aug-2012
 -------------------
@@ -152,10 +169,12 @@ atexit magic, which means a call to d.main() must be included somewhere.
   better than import them from models.py explicitly and fighting the circular
   imports issue
 
+
 0.1.1 - 8-Aug-2012
 ------------------
 
 * refactored out smarturls into a separate project
+
 
 0.1.0 - 6-Aug-2012
 ------------------

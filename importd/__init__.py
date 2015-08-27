@@ -4,7 +4,7 @@
 """ImportD django mini framework."""
 
 
-__version__ = "0.3.3"
+__version__ = "0.4.0"
 __license__ = "BSD"
 __author__ = "Amit Upadhyay"
 __email__ = "upadhyay@gmail.com"

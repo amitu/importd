@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-from fabric.api import local, cd
+from fabric.api import local
 
 
 def docs():
@@ -11,6 +11,9 @@ def docs():
 
 
 def release():
-    """Update version id in setup.py, changelog and docs/source/conf.py."""
-    local(("python setup.py bdist_egg sdist --formats=bztar,gztar,zip "
-           "upload --show-response"))
+    "Update version id in setup.py, changelog and docs/source/conf.py."
+
+    local(
+        "python setup.py bdist_egg bdist_wheel sdist "
+        "--formats=bztar,gztar,zip --show-response upload"
+    )
