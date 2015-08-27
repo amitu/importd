@@ -174,8 +174,8 @@ you can use the ``debug=`` keyword argument to set things up.
 You can also use `importd.NotSet` as a value in debug dict, and the setting will
 be removed altogether in the approprite environment (debug or prod).
 
-debug: prefix for ``INSTALLED_APPS`` etc
-----------------------------------------
+debug:/prod: prefix for ``INSTALLED_APPS`` etc
+-----------------------------------------------
 
 It is a common pattern that some apps are only needed in debug environment, say
 devserver, or debug_toolbar. And since order of apps in ``INSTALLED_APPS``, and
@@ -204,6 +204,9 @@ Notice the ``debug:`` prefix in ``devserver`` and ``debug_toolbar``. Depending
 on the value of ``DEBUG``, these lines would be included or not. importd looks
 for strings in ``MIDDLEWARE_CLASSES``, ``INSTALLED_APPS`` and
 ``TEMPLATE_CONTEXT_PROCESSORS``.
+
+Similarly if something starts with ``prod:``, it is only included in production
+environment.
 
 Backward Incompatibile Change
 =============================

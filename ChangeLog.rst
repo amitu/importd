@@ -12,7 +12,7 @@ Master
 * added a importd.debug() that can be used for conditional settings
 * MIDDLEWARE_CLASSES, INSTALLED_APPS or TEMPLATE_CONTEXT_PROCESSORS is looked
   for settings that starts with "debug:", such values are dropped completely in
-  prod, and in debug the "debug:" prefix is stripped
+  prod, and in debug the "debug:" prefix is stripped. similarly we have "prod:".
 * created impoortd.e() which can be used to "expose" some of the settings to
   template. in order to use it in template, add a template context processor
   "importd.esettings", this will make available a variable named "esettings".

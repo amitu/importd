@@ -494,11 +494,13 @@ class D(object):
             kw[key] = []
             for value in old:
                 if DEBUG:
+                    if value.startswith("prod:"):
+                        continue
                     kw[key].append(value.replace("debug:", ""))
                 else:
                     if value.startswith("debug:"):
                         continue
-                    kw[key].append(value)
+                    kw[key].append(value.replace("prod:", ""))
 
         do_dp("MIDDLEWARE_CLASSES")
         do_dp("INSTALLED_APPS")
