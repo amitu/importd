@@ -1,0 +1,6 @@
+pip>=1.4
+setuptools>=0.9
+wheel>=0.21
+Fabric==1.10.0
+tox==2.1.1
+flake8==2.4.1

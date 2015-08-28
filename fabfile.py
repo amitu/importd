@@ -15,5 +15,5 @@ def release():
 
     local(
         "python setup.py bdist_egg bdist_wheel sdist "
-        "--formats=bztar,gztar,zip --show-response upload"
+        "--formats=bztar,gztar,zip upload"
     )
