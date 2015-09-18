@@ -1,6 +1,11 @@
 importd ChangeLog
 =================
 
+master
+------
+
+* don't auto configure ROOT_URLCONF if already configured
+
 0.4.0 - 27-Aug-2015
 -------------------
 
