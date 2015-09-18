@@ -517,7 +517,7 @@ class D(object):
         self.mounts = kw.pop("mounts", {})
 
         if not kw.get("dont_configure", False):
-            kw["ROOT_URLCONF"] = "importd.urlconf"
+            kw["ROOT_URLCONF"] = kw.get("ROOT_URLCONF", "importd.urlconf")
             if "TEMPLATE_DIRS" not in kw:
                 kw["TEMPLATE_DIRS"] = (self.dotslash("templates"), )
             if "STATIC_URL" not in kw:

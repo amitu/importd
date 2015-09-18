@@ -260,6 +260,7 @@ Contributors
 * Juan Carlos (https://github.com/juancarlospaco)
 * Josep Cugat (https://github.com/jcugat)
 * Yu Byunghoo (https://github.com/if1live)
+* Arpit Singh (https://github.com/arpitremarkable)
 
 Contribution Guide
 ==================
