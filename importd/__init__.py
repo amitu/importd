@@ -60,6 +60,8 @@ try:
 except ImportError:
     resource = None
 
+from path import path
+
 start_time = datetime.now()
 if python_version().startswith('3'):
     basestring = unicode = str  # noqa lint:ok
@@ -344,7 +346,7 @@ class D(object):
 
     def _get_app_dir(self, pth):
         """Return the path of the app."""
-        return os.path.join(self.APP_DIR, pth)
+        return path(os.path.join(self.APP_DIR, pth))
 
     def dotslash(self, pth):
         """Mimic the unix './' behaviour."""
