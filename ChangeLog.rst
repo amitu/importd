@@ -6,6 +6,10 @@ master
 
 * don't auto configure ROOT_URLCONF if already configured
 
+0.5.0 - 30-Sep-2015
+-------------------
+* Fixed AttributeError when calling d.dotslash. 
+
 0.4.0 - 27-Aug-2015
 -------------------
 
