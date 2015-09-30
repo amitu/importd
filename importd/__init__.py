@@ -4,7 +4,7 @@
 """ImportD django mini framework."""
 
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 __license__ = "BSD"
 __author__ = "Amit Upadhyay"
 __email__ = "upadhyay@gmail.com"
@@ -59,6 +59,8 @@ try:
     import resource
 except ImportError:
     resource = None
+
+from path import path
 
 start_time = datetime.now()
 if python_version().startswith('3'):
@@ -344,7 +346,7 @@ class D(object):
 
     def _get_app_dir(self, pth):
         """Return the path of the app."""
-        return os.path.join(self.APP_DIR, pth)
+        return path(os.path.join(self.APP_DIR, pth))
 
     def dotslash(self, pth):
         """Mimic the unix './' behaviour."""
