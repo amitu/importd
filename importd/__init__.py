@@ -558,8 +558,8 @@ class D(object):
                         global_settings.MIDDLEWARE_CLASSES
                     )
                 kw["MIDDLEWARE_CLASSES"] = list(kw["MIDDLEWARE_CLASSES"])
-                kw["MIDDLEWARE_CLASSES"].insert(
-                    0, "importd.SmartReturnMiddleware"
+                kw["MIDDLEWARE_CLASSES"].append(
+                    "importd.SmartReturnMiddleware"
                 )
 
             installed = list(kw.setdefault("INSTALLED_APPS", []))
