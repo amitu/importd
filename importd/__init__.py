@@ -4,7 +4,7 @@
 """ImportD django mini framework."""
 
 
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 __license__ = "BSD"
 __author__ = "Amit Upadhyay"
 __email__ = "upadhyay@gmail.com"
@@ -32,6 +32,7 @@ from django.conf import settings
 from collections import Callable
 
 # custom imports
+import envdir
 try:
     import importlib
 except ImportError:
@@ -465,6 +466,12 @@ class D(object):
         )
 
         DEBUG = kw.get("DEBUG", False)
+        ENVDIR = kw.get("ENVDIR", env("ENVDIR", ""))
+        if ENVDIR:
+            envdir.open(ENVDIR)
+            if env("PYTHONPATH"):
+                sys.path.extend(env("PYTHONPATH").split(os.pathsep))
+
         md = {}
         dp = {}
 
