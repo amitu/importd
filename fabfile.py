@@ -17,3 +17,7 @@ def release():
         "python setup.py bdist_egg bdist_wheel sdist "
         "--formats=bztar,gztar,zip upload"
     )
+
+    # TODO: consider https://pypi.python.org/pypi/twine/ for secure uploads.
+
+# TODO: consider https://pypi.python.org/pypi/bumpversion/

@@ -1,11 +1,6 @@
 importd ChangeLog
 =================
 
-master
-------
-
-* don't auto configure ROOT_URLCONF if already configured
-
 0.4.2 - 9-Oct-2015
 ------------------
 * Fixed process_view of middleware not called. 
@@ -14,6 +9,7 @@ master
 0.4.1 - 30-Sep-2015
 -------------------
 * Fixed AttributeError when calling d.dotslash. 
+* don't auto configure ROOT_URLCONF if already configured
 
 0.4.0 - 27-Aug-2015
 -------------------
