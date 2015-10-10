@@ -3,3 +3,4 @@ dj_database_url
 coffin==2.0.1
 jinja2==2.8
 django-jinja==1.4.1
+envdir==0.7
