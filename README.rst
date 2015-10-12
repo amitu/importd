@@ -261,6 +261,7 @@ Contributors
 * Josep Cugat (https://github.com/jcugat)
 * Yu Byunghoo (https://github.com/if1live)
 * Arpit Singh (https://github.com/arpitremarkable)
+* Hitul Mistry (https://github.com/hitul007)
 
 Contribution Guide
 ==================
