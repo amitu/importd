@@ -4,7 +4,7 @@
 """ImportD django mini framework."""
 
 
-__version__ = "0.4.2"
+__version__ = "0.4.3"
 __license__ = "BSD"
 __author__ = "Amit Upadhyay"
 __email__ = "upadhyay@gmail.com"
@@ -258,7 +258,13 @@ def esettings(request):
 
 
 ##############################################################################
+class MirrorSetting(object):
+    count = 0
+    def __init__(self, name):
+        self.name = name
+        MirrorSetting.count += 1
 
+s = MirrorSetting
 
 class D(object):
 
@@ -267,6 +273,14 @@ class D(object):
     def __init__(self):
         """Init class."""
         self.blueprint_list = []
+
+    def openenv(self):
+        """
+        Get environment variables.
+        """
+        dir_path = os.path.dirname(os.path.realpath(inspect.stack()[-1][1]))
+        envdir.open(os.path.join(dir_path, "envdir"))
+        sys.path.extend(env("PYTHONPATH").split(os.pathsep))
 
     @property
     def urlpatterns(self):
@@ -466,12 +480,7 @@ class D(object):
         )
 
         DEBUG = kw.get("DEBUG", False)
-        ENVDIR = kw.get("ENVDIR", env("ENVDIR", ""))
-        if ENVDIR:
-            envdir.open(ENVDIR)
-            if env("PYTHONPATH"):
-                sys.path.extend(env("PYTHONPATH").split(os.pathsep))
-
+        
         md = {}
         dp = {}
 
@@ -510,6 +519,24 @@ class D(object):
                     if value.startswith("debug:"):
                         continue
                     kw[key].append(value.replace("prod:", ""))
+
+        s_found = 0
+        sd = {}
+        for k, v in kw.items():
+            if isinstance(v, MirrorSetting):
+                s_found += 1
+                if s_found > MirrorSetting.count:
+                    raise ImproperlyConfiguredError
+                sd[k] = v
+
+        if MirrorSetting.count > s_found:
+            raise ImproperlyConfiguredError
+
+        for k, v in sd.items():
+            kw[k] = kw[v.name]
+
+        del sd
+        del s_found
 
         do_dp("MIDDLEWARE_CLASSES")
         do_dp("INSTALLED_APPS")
