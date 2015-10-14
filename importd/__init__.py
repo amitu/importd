@@ -62,7 +62,7 @@ except ImportError:
     resource = None
 
 from path import path
-
+from importd.exceptions import ImproperlyConfiguredError
 start_time = datetime.now()
 if python_version().startswith('3'):
     basestring = unicode = str  # noqa lint:ok
