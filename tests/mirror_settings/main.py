@@ -11,8 +11,5 @@ d(
 
 if __name__ == "__main__":
     from django.conf import settings
-    if settings.DEBUG_TEST == True:
-        print("Test passed")
-    else:
-        raise Exception("Test failed")
+    assert settings.DEBUG_TEST
     d.main()

@@ -153,6 +153,33 @@ To mark a variable as exposed you have to do this:
 
 This will make ``SOME_VAR`` available in settings as well as in ``esettings``.
 
+``importd.s``` parameter
+-------------------------
+This lets you re-use settings variables. In settings file we define variables 
+and reuse them when needed. In importd you can reuse defined settings variables.
+
+.. code:: python
+    from importd import d, s
+     
+    d(
+        DEBUG=True, 
+        TEMPLATE_DEBUG=s("DEBUG")
+    ) 
+
+This will set ``TEMPLATE_DEBUG`` settings variable to ``DEBUG`` value. 
+``s`` will raise ``ImproperlyConfiguredError`` exception if you will try to use 
+it inside of key value. 
+
+.. code:: python
+    from importd import d, s
+
+    d(
+        EMAIL="foo@example.com",
+        ADMINS=(s("EMAIL"), "hello@example.com")
+    )
+
+Above example will raise ``ImproperlyConfiguredError``. 
+
 ``d(debug={})`` parameter
 -------------------------
 
@@ -173,6 +200,15 @@ you can use the ``debug=`` keyword argument to set things up.
 
 You can also use `importd.NotSet` as a value in debug dict, and the setting will
 be removed altogether in the approprite environment (debug or prod).
+
+d.openenv(path=None)
+---------------
+Above method will open envdir directory in current directory and will load all 
+environment variable inside this directory. If path is realpath i.e. full path
+then importd will try to look into specified path. If relative path
+specified into path then importd will look relative to current directory. 
+
+It is recommended to call it just after importing d.
 
 debug:/prod: prefix for ``INSTALLED_APPS`` etc
 -----------------------------------------------

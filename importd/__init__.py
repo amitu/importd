@@ -274,12 +274,24 @@ class D(object):
         """Init class."""
         self.blueprint_list = []
 
-    def openenv(self):
+    def openenv(self, path=None):
         """
         Get environment variables.
         """
-        dir_path = os.path.dirname(os.path.realpath(inspect.stack()[-1][1]))
-        envdir.open(os.path.join(dir_path, "envdir"))
+        if path:
+            if not os.path.isabs(path):
+                path = os.path.realpath(
+                    os.path.join(
+                        os.path.dirname(
+                            os.path.realpath(inspect.stack()[-1][1])
+                        ),
+                        path
+                    )
+                )
+        else:
+            path = os.path.dirname(os.path.realpath(inspect.stack()[-1][1]))
+
+        envdir.open(os.path.join(path, "envdir"))
         sys.path.extend(env("PYTHONPATH").split(os.pathsep))
 
     @property
