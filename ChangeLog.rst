@@ -1,6 +1,12 @@
 importd ChangeLog
 =================
 
+0.4.3 - 12-Oct-2015
+-------------------
+* New tag s added.  
+* It is recommended to call d.openenv before calling it in main. 
+* Extra python path cannot be added into d as kwargs. 
+ 
 0.4.2 - 9-Oct-2015
 ------------------
 * Fixed process_view of middleware not called. 
