@@ -9,8 +9,7 @@ d(
     MIDDLEWARE_CLASSES=(
         'middlewares.middleware_demo.middleware_demo',
     ),
-    B=s("DEBUG"),
-    N=s("DEBUG")
+    INSTALLED_APPS=['middlewares'],
 )
 
 @d("/", name="main")

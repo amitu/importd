@@ -5,7 +5,8 @@ from importd import d
 
 d(
     DEBUG=True,
-    LOG_LOCATION=d.dotslash("temp-log.py"),
+    LOG_LOCATION=d.dotslash(""),
+    INSTALLED_APPS=['test_app'],
 )
 
 if __name__ == "__main__":
