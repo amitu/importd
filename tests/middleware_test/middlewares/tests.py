@@ -7,7 +7,7 @@ class TestMiddleware(TestCase):
     
     def test_middleware(self):
         response = self.client.get(reverse("main"))
-        self.assertEqual(response.content, "middleware_called")
+        self.assertEqual(response.content.decode("utf-8"), "middleware_called")
             
 
        
