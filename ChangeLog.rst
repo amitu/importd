@@ -1,9 +1,6 @@
 importd ChangeLog
 =================
 
-master
-------
-
 0.4.3 - 12-Oct-2015
 -------------------
 * New tag s added.  
