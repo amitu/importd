@@ -4,8 +4,6 @@ importd ChangeLog
 master
 ------
 
-* don't auto configure ROOT_URLCONF if already configured
-
 0.4.3 - 12-Oct-2015
 -------------------
 * New tag s added.  
