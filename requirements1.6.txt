@@ -4,3 +4,4 @@ coffin==0.3.8
 jinja2==2.7.3
 django-jinja==1.0.4
 envdir==0.7
+speaklater
