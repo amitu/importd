@@ -607,30 +607,38 @@ class D(object):
                 kw["MIDDLEWARE_CLASSES"].append(
                     "importd.SmartReturnMiddleware"
                 )
+            if "TEMPLATE_CONTEXT_PROCESSORS" not in kw.keys():
+                kw["TEMPLATE_CONTEXT_PROCESSORS"] = list(
+                        global_settings.TEMPLATE_CONTEXT_PROCESSORS)
 
             installed = list(kw.setdefault("INSTALLED_APPS", []))
 
             admin_url = kw.pop("admin", "^admin/")
 
             if admin_url:
+                middlewares_list = []
+                context_processor_list = []
+                if "django.contrib.sessions" not in installed:
+                    installed.append("django.contrib.sessions")
+                    middlewares_list.append("django.contrib.sessions"
+                                            ".middleware."
+                                            "SessionMiddleware")
                 if "django.contrib.auth" not in installed:
                     installed.append("django.contrib.auth")
+                    middlewares_list.append("django.contrib.auth.middleware"
+                                            ".AuthenticationMiddleware")
                 if "django.contrib.contenttypes" not in installed:
                     installed.append("django.contrib.contenttypes")
                 if "django.contrib.auth" not in installed:
                     installed.append("django.contrib.auth")
+                    middlewares_list.append("django.contrib.auth.middleware"
+                                            ".AuthenticationMiddleware")
                 if "django.contrib.messages" not in installed:
                     installed.append("django.contrib.messages")
-                if "django.contrib.sessions" not in installed:
-                    installed.append("django.contrib.sessions")
-                    # check session middleware installed
-                    # https://docs.djangoproject.com/en/1.7/topics/http/sessions/#enabling-sessions
-                    last_position = len(kw["MIDDLEWARE_CLASSES"])
-                    kw["MIDDLEWARE_CLASSES"] = list(kw["MIDDLEWARE_CLASSES"])
-                    kw["MIDDLEWARE_CLASSES"].insert(
-                        last_position,
-                        "django.contrib.sessions.middleware.SessionMiddleware"
-                    )
+                    middlewares_list.append("django.contrib.messages."
+                                            "middleware.MessageMiddleware")
+                    context_processor_list.append("django.contrib.messages."
+                                                  "context_processors.messages")
                 if "django.contrib.admin" not in installed:
                     installed.append("django.contrib.admin")
                     kw["MIDDLEWARE_CLASSES"].append(
@@ -664,6 +672,16 @@ class D(object):
                     )
                     # This one gives 500 if its Enabled without previous syncdb
                     # 'debug_toolbar.panels.request_vars.RequestVarsDebugPanel',
+
+                def _insert_setting(list_strings, django_settings_key):
+                    for _str in list_strings:
+                        if _str not in kw[django_settings_key]:
+                            last_pos = len(kw[django_settings_key])
+                            kw[django_settings_key].insert(last_pos, _str)
+
+                _insert_setting(middlewares_list, "MIDDLEWARE_CLASSES")
+                _insert_setting(context_processor_list,
+                                "TEMPLATE_CONTEXT_PROCESSORS")
 
             if django_extensions and werkzeug:
                 installed.append('django_extensions')
