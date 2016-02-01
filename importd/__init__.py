@@ -429,16 +429,16 @@ class D(object):
 
     def get_secret_key(self):
         """Get a django secret key,try to read provided one,or generate it."""
-        secret_json_file = self.dotslash("secret.json")
-        try:
-            with open(secret_json_file, "r") as f:
-                secret = loads(f.read()).get("secret")
-        except (IOError, IndexError):
-            with open(secret_json_file, "w") as f:
-                secret = uuid4().hex
-                f.write(dumps({"secret": secret}, indent=4) + "\n")
-        finally:
-            return secret
+        jsonf, secret = self.dotslash("secret.json"), os.environ.get("secret")
+        if not secret:
+            try:
+                with open(jsonf, "r") as f:
+                    secret = loads(f.read()).get("secret")
+            except (IOError, IndexError):
+                with open(jsonf, "w") as f:
+                    secret = uuid4().hex
+                    f.write(dumps({"secret": secret}, indent=4) + "\n")
+        return secret
 
     def _configure_django(self, **kw):
         """Auto-Configure Django using arguments."""
