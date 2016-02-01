@@ -1,6 +1,12 @@
 importd ChangeLog
 =================
 
+0.5.0 - 1-Feb-2016
+-------------------
+* Django 1.9 Support.  
+* Clean Up and Deprecate stuff from https://github.com/amitu/importd/issues/72. 
+* Tox Tests from Python2.7 Django1.5 to Python3.5 Django1.9.
+
 0.4.3 - 12-Oct-2015
 -------------------
 * New tag s added.  
@@ -196,4 +202,3 @@ atexit magic, which means a call to d.main() must be included somewhere.
 ------------------
 
 Initial release.
-
