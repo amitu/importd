@@ -12,7 +12,7 @@ from setuptools import setup
 
 try:
     long_description = open('README.rst', 'rt').read()
-    long_description += open('ChangeLog.rst', 'rt').read()
+    long_description += open('ChangeLog.rst', 'rt').read().strip()
 except Exception:
     long_description = ""
 
@@ -49,7 +49,7 @@ setup(
 
 
     install_requires=[
-        "fhurl>=0.1.7", "smarturls", "six", "Django>=1.3",
+        "fhurl>=0.1", "smarturls", "Django>=1.3",
         "dj-database-url", "path.py", "envdir", "speaklater"
     ],
 
