@@ -1,7 +1,4 @@
-Django==1.6.11
+Django==1.6
 dj_database_url
-coffin==0.3.8
-jinja2==2.7.3
-django-jinja==1.0.4
 envdir==0.7
 speaklater
