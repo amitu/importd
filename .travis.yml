@@ -6,8 +6,7 @@ language: python
 
 python:
     - 2.7
-    - 3.4
-    - 3.5-dev
+    - 3.5
     - pypy
     - pypy3
     - nightly
@@ -18,7 +17,7 @@ os:
 #   - osx
 
 
-before_install: pip install --upgrade tox pip virtualenv --quiet
+before_install: pip install --upgrade tox pip virtualenv wheel setuptools --quiet
 
 
 install: pip install fhurl gunicorn smarturls six dj-database-url --quiet
