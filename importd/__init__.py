@@ -4,7 +4,7 @@
 """ImportD django mini framework."""
 
 
-__version__ = "0.4.3"
+__version__ = "0.5.0"
 __license__ = "BSD"
 __author__ = "Amit Upadhyay"
 __email__ = "upadhyay@gmail.com"
@@ -41,21 +41,7 @@ try:
     import debug_toolbar  # lint:ok
 except ImportError:
     debug_toolbar = None
-try:
-    import werkzeug  # lint:ok
-    import django_extensions  # lint:ok
-except ImportError:
-    django_extensions = werkzeug = None
-try:
-    import django_jinja  # noqa lint:ok
-    DJANGO_JINJA = True
-except ImportError:
-    DJANGO_JINJA = False
-try:
-    import coffin  # noqa lint:ok
-    COFFIN = True
-except ImportError:
-    COFFIN = False
+
 try:
     import resource
 except ImportError:
@@ -63,15 +49,11 @@ except ImportError:
 
 from path import path
 from importd.exceptions import ImproperlyConfiguredError
+
+
 start_time = datetime.now()
 if python_version().startswith('3'):
     basestring = unicode = str  # noqa lint:ok
-    # coffin is not python 3 compatible library
-    COFFIN = False
-
-# cannot use django-jinja, coffin both. primary library is coffin.
-if COFFIN and DJANGO_JINJA:
-    DJANGO_JINJA = False
 
 
 ##############################################################################
@@ -452,34 +434,6 @@ class D(object):
         finally:
             return secret
 
-    def _fix_coffin_pre(self):
-        try:
-            from django.template import add_to_builtins
-        except ImportError:
-            from django.template.base import (
-                add_to_builtins, import_library, Origin,
-                InvalidTemplateLibrary, builtins, get_library)
-            import django.template
-            django.template.add_to_builtins = add_to_builtins
-            django.template.import_library = import_library
-            django.template.Origin = Origin
-            django.template.InvalidTemplateLibrary = InvalidTemplateLibrary
-            django.template.builtins = builtins
-            django.template.get_library = get_library
-
-    def _fix_coffin_post(self):
-        try:
-            from django.template.loaders.app_directories import (
-                app_template_dirs)
-        except ImportError:
-            from django.template.utils import get_app_template_dirs
-            import django.template.loaders.app_directories
-            django.template.loaders.app_directories.app_template_dirs = (
-                get_app_template_dirs('templates')
-            )
-        else:
-            app_template_dirs = app_template_dirs
-
     def _configure_django(self, **kw):
         """Auto-Configure Django using arguments."""
         from django.conf import settings, global_settings
@@ -665,26 +619,6 @@ class D(object):
                     # This one gives 500 if its Enabled without previous syncdb
                     # 'debug_toolbar.panels.request_vars.RequestVarsDebugPanel',
 
-            if django_extensions and werkzeug:
-                installed.append('django_extensions')
-
-            # django-jinja 1.0.4 support
-            if DJANGO_JINJA:
-                installed.append("django_jinja")
-                kw['TEMPLATE_LOADERS'] = list(kw.get('TEMPLATE_LOADERS', []))
-                kw['TEMPLATE_LOADERS'] += (
-                    'django_jinja.loaders.AppLoader',
-                    'django_jinja.loaders.FileSystemLoader',
-                )
-            # coffin 0.3.8 support
-            if COFFIN:
-                installed.append('coffin')
-                kw['TEMPLATE_LOADERS'] = list(kw.get('TEMPLATE_LOADERS', []))
-                kw['TEMPLATE_LOADERS'] += (
-                    'coffin.contrib.loader.AppLoader',
-                    'coffin.contrib.loader.FileSystemLoader',
-                )
-
             kw['INSTALLED_APPS'] = installed
 
             if "DEBUG" not in kw:
@@ -700,13 +634,11 @@ class D(object):
 
             kw["SETTINGS_MODULE"] = kw.get("SETTINGS_MODULE", "importd")
 
-            # self._fix_coffin_pre()
             settings.configure(**kw)
             if hasattr(django, "setup"):
                 django.setup()
 
             self._import_django()
-            # self._fix_coffin_post()
 
             from django.contrib.staticfiles.urls import staticfiles_urlpatterns
             urlpatterns = self.get_urlpatterns()
