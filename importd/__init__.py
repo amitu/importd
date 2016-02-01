@@ -4,15 +4,6 @@
 """ImportD django mini framework."""
 
 
-__version__ = "0.5.0"
-__license__ = "BSD"
-__author__ = "Amit Upadhyay"
-__email__ = "upadhyay@gmail.com"
-__url__ = "http://amitu.com/importd"
-__source__ = "https://github.com/amitu/importd"
-__docformat__ = "html"
-
-
 # stdlib imports
 import copy
 import inspect
@@ -49,6 +40,15 @@ except ImportError:
 
 from path import path
 from importd.exceptions import ImproperlyConfiguredError
+
+
+__version__ = "0.5.0"
+__license__ = "BSD"
+__author__ = "Amit Upadhyay"
+__email__ = "upadhyay@gmail.com"
+__url__ = "http://amitu.com/importd"
+__source__ = "https://github.com/amitu/importd"
+__docformat__ = "html"
 
 
 start_time = datetime.now()
@@ -240,13 +240,18 @@ def esettings(request):
 
 
 ##############################################################################
+
+
 class MirrorSetting(object):
+
     count = 0
+
     def __init__(self, name):
         self.name = name
         MirrorSetting.count += 1
 
 s = MirrorSetting
+
 
 class D(object):
 
@@ -446,7 +451,6 @@ class D(object):
         )
 
         DEBUG = kw.get("DEBUG", False)
-        
         md = {}
         dp = {}
 
@@ -796,7 +800,7 @@ class D(object):
 
     def _get_runserver_cmd(self):
         """Return a proper runserver command."""
-        return 'runserver_plus' if django_extensions else 'runserver'
+        return 'runserver'
 
 
 application = d = D()
