@@ -13,6 +13,7 @@ import traceback
 from datetime import datetime
 from getpass import getuser
 from platform import python_version
+from uuid import uuid4
 
 # 3rd party imports
 import dj_database_url
@@ -432,9 +433,7 @@ class D(object):
                 secret = f.readlines()[0].strip()
         except (IOError, IndexError):
             with open(self.dotslash("secret.txt"), "w") as f:
-                from string import ascii_letters, digits
-                from random import sample
-                secret = "".join(sample(ascii_letters + digits, 50))
+                secret = uuid4().hex
                 f.write(secret)
         finally:
             return secret
