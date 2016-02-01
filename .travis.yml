@@ -20,7 +20,7 @@ os:
 before_install: pip install --upgrade tox pip virtualenv wheel setuptools --quiet
 
 
-install: pip install fhurl gunicorn smarturls six dj-database-url --quiet
+install: pip install fhurl gunicorn smarturls dj-database-url --quiet
 
 
 before_script: pyclean --verbose .

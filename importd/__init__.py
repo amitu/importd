@@ -14,6 +14,7 @@ from datetime import datetime
 from getpass import getuser
 from platform import python_version
 from uuid import uuid4
+from json import dumps, loads
 
 # 3rd party imports
 import dj_database_url
@@ -428,13 +429,14 @@ class D(object):
 
     def get_secret_key(self):
         """Get a django secret key,try to read provided one,or generate it."""
+        secret_json_file = self.dotslash("secret.json")
         try:
-            with open(self.dotslash("secret.txt"), "r") as f:
-                secret = f.readlines()[0].strip()
+            with open(secret_json_file, "r") as f:
+                secret = loads(f.read()).get("secret")
         except (IOError, IndexError):
-            with open(self.dotslash("secret.txt"), "w") as f:
+            with open(secret_json_file, "w") as f:
                 secret = uuid4().hex
-                f.write(secret)
+                f.write(dumps({"secret": secret}, indent=4) + "\n")
         finally:
             return secret
 
