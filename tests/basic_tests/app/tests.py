@@ -9,7 +9,7 @@ from django.test import TestCase
 import unittest
 import os
 
-from importd import COFFIN, DJANGO_JINJA, env, NotSet, RaiseException
+from importd import env, NotSet, RaiseException
 
 
 class BasicTest(TestCase):
@@ -33,31 +33,7 @@ class BasicTest(TestCase):
 
     def test_debug(self):
         # django test sets up DEBUG to True, so this cant be tested like this.
-        # self.assertTrue(settings.DEBUG)
-        pass
-
-    def test_insalled_apps(self):
-        installed_apps = list(settings.INSTALLED_APPS)
-        # remove unnecessary library
-        unnecessary_library_list = (
-            'django_jinja',
-            'debug_toolbar',
-            'coffin',
-        )
-        for x in unnecessary_library_list:
-            try:
-                installed_apps.remove(x)
-            except ValueError:
-                pass
-
-        self.assertEqual(
-            installed_apps, [
-                'app', 'app2', 'app3', 'django.contrib.auth',
-                'django.contrib.contenttypes', 'django.contrib.messages',
-                'django.contrib.sessions', 'django.contrib.admin',
-                'django.contrib.humanize', 'django.contrib.staticfiles'
-            ]
-        )
+        self.assertFalse(settings.DEBUG)
 
     def test_views_imported(self):
         self.assertTrue(settings.VIEWS_IMPORTED)
@@ -80,20 +56,6 @@ class BasicTest(TestCase):
         )
         response = c.get("/testnotfound/")
         self.assertEqual(response.status_code, 404)
-
-    @unittest.skipIf(
-        not COFFIN and not DJANGO_JINJA, 'jinja2 integration not exist'
-    )
-    def test_view_with_jinja(self):
-        c = Client()
-        response = c.get("/test2/")
-        self.assertEqual(response.status_code, 200)
-        if COFFIN:
-            # with django-jinja, cannot use response.context, assertTemplateUsed
-            # but with coffin, it works.
-            self.assertEqual(response.context["sample_list"], range(3))
-            self.assertTemplateUsed(response, "test2.jinja")
-        self.assertEqual(response.content, b"<h1>test2: 0|1|2</h1>")
 
     def test_mounts(self):
         c = Client()
@@ -127,23 +89,14 @@ class BasicTest(TestCase):
 
         # django < 1.7 returns 200, 1.7 returns 302, refer: http://goo.gl/9GTv9H
         self.assertIn(response.status_code, [200, 302])
-        if response.status_code == 302:
-            self.assertEqual(
-                response["Location"],
-                "http://testserver/admin/login/?next=/admin/"
-            )
-        else:
+        if response.status_code != 302:
             #self.assertEqual(  # TODO: Fix
                 #[t.name for t in response.templates],
                 #['admin/login.html', 'admin/base_site.html', 'admin/base.html']
             #)
             self.assertTrue(response.context["user"].is_anonymous())
 
-        self.assertEqual(c.get("/usern/").content, b"AnonymousUser")
-
         self.assertTrue(c.login(username="root", password="root"))
-
-        self.assertEqual(c.get("/usern/").content, b"root")
 
         response = None
         response = c.get("/admin/")

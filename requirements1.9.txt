@@ -1,0 +1,4 @@
+Django==1.9
+dj_database_url
+envdir==0.7
+speaklater
