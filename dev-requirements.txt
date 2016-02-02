@@ -4,3 +4,4 @@ wheel
 Fabric==1.10.0
 tox
 pylama
+isort
