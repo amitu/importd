@@ -61,6 +61,11 @@ if python_version().startswith('3'):
 ##############################################################################
 
 
+# https://github.com/amitu/importd/issues/59
+for d_env_variable in [_ for _ in os.environ.items() if _[0].startswith("D_")]:
+    globals().update({d_env_variable[0]: d_env_variable[1]}) # tuple to dict
+
+
 class SmartReturnMiddleware(object):
 
     """
