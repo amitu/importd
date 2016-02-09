@@ -35,11 +35,6 @@ try:
 except ImportError:
     debug_toolbar = None
 
-try:
-    import resource
-except ImportError:
-    resource = None
-
 
 __version__ = "0.5.0"
 __license__ = "BSD"
@@ -750,7 +745,7 @@ class D(object):
     def main(self):
         """Wrapper for calling do."""
         if len(sys.argv) == 1:
-            self.do(self._get_runserver_cmd())
+            self.do("runserver")
         else:
             self.do()
 
@@ -763,8 +758,7 @@ class D(object):
             args = sys.argv[1:]
 
         if len(args) == 0:
-            return self._handle_management_command(
-                self._get_runserver_cmd(), "8000")
+            return self._handle_management_command("runserver", "8000")
 
         if 'livereload' in sys.argv:
             if not hasattr(self, "lr"):
@@ -780,10 +774,6 @@ class D(object):
             return
 
         return self._act_as_manage(*args)
-
-    def _get_runserver_cmd(self):
-        """Return a proper runserver command."""
-        return 'runserver'
 
 
 application = d = D()
