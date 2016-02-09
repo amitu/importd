@@ -40,9 +40,6 @@ try:
 except ImportError:
     resource = None
 
-from path import path
-from importd.exceptions import ImproperlyConfiguredError
-
 
 __version__ = "0.5.0"
 __license__ = "BSD"
@@ -66,6 +63,10 @@ for d_env_variable in [_ for _ in os.environ.items() if _[0].startswith("D_")]:
     globals().update({d_env_variable[0]: d_env_variable[1]}) # tuple to dict
 
 
+class ImproperlyConfiguredError(Exception):
+    pass
+
+
 class SmartReturnMiddleware(object):
 
     """
@@ -87,7 +88,6 @@ class SmartReturnMiddleware(object):
         except ImportError:
             from django.http import HttpResponse as RBase  # lint:ok
 
-        from fhurl import JSONResponse
         res = view_func(request, *view_args, **view_kwargs)
         if isinstance(res, basestring):
             res = res, {}
@@ -97,8 +97,6 @@ class SmartReturnMiddleware(object):
             template_name, context = res
             res = render_to_response(template_name, context,
                                      RequestContext(request))
-        else:
-            res = JSONResponse(res)
         return res
 
 
@@ -121,17 +119,9 @@ class Blueprint(object):
         from smarturls import surl
         self.surl = surl
 
-        from fhurl import fhurl
-        self.fhurl = fhurl
-
     def add_view(self, regex, view, app=None, *args, **kw):
         """Take a regular expression and add a view to the app patterns."""
         url = self.surl(regex, view, *args, **kw)
-        self.patterns.append(url)
-
-    def add_form(self, regex, form_cls, app=None, *args, **kw):
-        """Take a regular expression and add a form to the app patterns."""
-        url = self.fhurl(regex, form_cls, *args, **kw)
         self.patterns.append(url)
 
     def __call__(self, *args, **kw):
@@ -340,11 +330,6 @@ class D(object):
         from django import forms
         self.forms = forms
 
-        from fhurl import RequestForm, fhurl, JSONResponse
-        self.RequestForm = RequestForm
-        self.fhurl = fhurl
-        self.JSONResponse = JSONResponse
-
         try:
             from django.core.wsgi import get_wsgi_application
             self.wsgi_application = get_wsgi_application()
@@ -367,7 +352,7 @@ class D(object):
 
     def _get_app_dir(self, pth):
         """Return the path of the app."""
-        return path(os.path.join(self.APP_DIR, pth))
+        return os.path.join(self.APP_DIR, pth)
 
     def dotslash(self, pth):
         """Mimic the unix './' behaviour."""
@@ -422,14 +407,6 @@ class D(object):
             patterns = self.patterns("", self.surl(regex, view, *args, **kw))
             urlpatterns = self.get_urlpatterns()
             urlpatterns += patterns
-            django.core.urlresolvers.clear_url_caches()
-
-    def add_form(self, regex, form_cls, app=None, *args, **kw):
-        """Take a form and add it to the app using regex arguments."""
-        regex = self.generate_mount_url(regex, form_cls, app)
-        if regex:
-            urlpatterns = self.get_urlpatterns()
-            urlpatterns.append(self.fhurl(regex, form_cls, *args, **kw))
             django.core.urlresolvers.clear_url_caches()
 
     def get_secret_key(self):

@@ -49,8 +49,7 @@ setup(
 
 
     install_requires=[
-        "fhurl>=0.1", "smarturls", "Django>=1.3",
-        "dj-database-url", "path.py", "envdir", "speaklater"
+        "smarturls", "Django>=1.5", "dj-database-url", "envdir", "speaklater",
     ],
 
 
