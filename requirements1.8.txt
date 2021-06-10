@@ -1,4 +1,4 @@
-Django==1.8
+Django==2.2.24
 dj_database_url
 envdir==0.7
 speaklater
